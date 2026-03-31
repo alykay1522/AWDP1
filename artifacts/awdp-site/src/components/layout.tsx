@@ -1,0 +1,269 @@
+import { Link, useLocation } from "wouter";
+import { ReactNode } from "react";
+import { useCart } from "@/lib/cart";
+import { ShoppingCart, Menu, X, Phone, Search, ChevronRight, CheckCircle2, Shield, Wrench, PackageSearch } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import logo from "@assets/CopilotHEADER_1774977472463.png";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+
+export function Layout({ children }: { children: ReactNode }) {
+  const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const [, setLocation] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setLocation(`/shop?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col font-sans">
+      {/* Full-Width Logo Banner */}
+      <Link href="/" className="block w-full">
+        <img
+          src={logo}
+          alt="All Window Door Parts"
+          className="w-full object-cover object-center"
+          style={{ display: "block", maxHeight: "220px" }}
+        />
+      </Link>
+
+      {/* Sticky Navigation Bar */}
+      <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-4 md:gap-8">
+
+            {/* Desktop Nav & Search */}
+            <div className="hidden md:flex flex-1 items-center gap-6">
+              <nav className="flex items-center gap-5 font-semibold text-primary-foreground">
+                <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+                <Link href="/shop" className="hover:text-accent transition-colors">Shop Parts</Link>
+                <Link href="/categories" className="hover:text-accent transition-colors">Categories</Link>
+                <Link href="/parts-identification" className="text-accent hover:text-accent/80 transition-colors flex items-center gap-1 font-bold uppercase tracking-wide text-sm">
+                  <PackageSearch className="w-4 h-4" /> Free Parts ID
+                </Link>
+                <Link href="/about" className="hover:text-accent transition-colors">About</Link>
+                <Link href="/contact" className="hover:text-accent transition-colors">Contact</Link>
+              </nav>
+
+              <form onSubmit={handleSearch} className="flex-1 max-w-sm relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/60 group-focus-within:text-accent transition-colors" />
+                <Input
+                  type="search"
+                  placeholder="Search by SKU, brand, or part..."
+                  className="w-full pl-9 bg-white/10 border-white/20 text-primary-foreground placeholder:text-primary-foreground/50 focus-visible:bg-white/20 focus-visible:ring-accent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </form>
+            </div>
+
+            {/* Phone - desktop */}
+            <a href="tel:785-533-0244" className="hidden md:flex items-center gap-2 text-primary-foreground hover:text-accent transition-colors font-bold text-sm shrink-0">
+              <Phone className="w-4 h-4" /> 785-533-0244
+            </a>
+
+            {/* Mobile: site name + icons */}
+            <div className="md:hidden flex items-center gap-2 text-primary-foreground font-bold text-sm">
+              <Phone className="w-4 h-4" />
+              <a href="tel:785-533-0244">785-533-0244</a>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0">
+              <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="relative border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                    <ShoppingCart className="w-5 h-5" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-md flex flex-col">
+                  <SheetHeader>
+                    <SheetTitle>Your Cart ({totalItems} items)</SheetTitle>
+                  </SheetHeader>
+                  <ScrollArea className="flex-1 -mx-6 px-6 py-4">
+                    {items.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <ShoppingCart className="w-12 h-12 text-muted-foreground mb-4 opacity-20" />
+                        <p className="text-lg font-medium text-foreground mb-2">Your cart is empty</p>
+                        <p className="text-muted-foreground mb-6">Looks like you haven't added any parts yet.</p>
+                        <Button onClick={() => { setIsCartOpen(false); setLocation("/shop"); }}>
+                          Browse Parts
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {items.map((item) => (
+                          <div key={item.id} className="flex gap-4 border-b pb-4">
+                            <div className="w-20 h-20 bg-muted rounded-md overflow-hidden shrink-0 flex items-center justify-center">
+                              {item.imageUrl ? (
+                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Wrench className="w-8 h-8 text-muted-foreground opacity-50" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm leading-tight truncate">{item.name}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">SKU: {item.sku}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center border rounded-md">
+                                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 py-1 text-muted-foreground hover:bg-muted">-</button>
+                                  <span className="px-2 text-sm font-medium">{item.quantity}</span>
+                                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 py-1 text-muted-foreground hover:bg-muted">+</button>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-bold text-primary">${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  {items.length > 0 && (
+                    <div className="border-t pt-4 mt-auto">
+                      <div className="flex justify-between items-center mb-4 text-lg font-bold">
+                        <span>Subtotal</span>
+                        <span>${totalPrice.toFixed(2)}</span>
+                      </div>
+                      <Button className="w-full text-lg h-12 gap-2">
+                        Secure Checkout <ChevronRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  )}
+                </SheetContent>
+              </Sheet>
+
+              {/* Mobile Menu */}
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/20 hover:text-white">
+                    <Menu className="w-6 h-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px]">
+                  <Link href="/" className="mb-8 block" onClick={() => setIsMobileMenuOpen(false)}>
+                    <img src={logo} alt="All Window Door Parts" className="h-10 w-auto" />
+                  </Link>
+                  <nav className="flex flex-col gap-4 text-lg font-medium">
+                    <Link href="/" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+                    <Link href="/shop" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Shop Parts</Link>
+                    <Link href="/categories" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Categories</Link>
+                    <Link href="/parts-identification" className="py-2 border-b text-accent font-bold flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                      <PackageSearch className="w-5 h-5" /> Free Parts ID
+                    </Link>
+                    <Link href="/about" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                    <Link href="/contact" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+          
+          {/* Mobile Search - visible only below md */}
+          <div className="md:hidden mt-3">
+            <form onSubmit={handleSearch} className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
+              <Input
+                type="search"
+                placeholder="Search by SKU, brand..."
+                className="w-full pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1">
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-950 text-slate-300 py-16 mt-auto">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="space-y-4">
+              <img src={logo} alt="All Window Door Parts" className="h-16 w-auto bg-white/10 p-2 rounded-md object-contain" />
+              <p className="text-sm leading-relaxed mt-4 text-slate-400">
+                Your trusted source for replacement window and door hardware. Veteran owned and operated with over 40 years of industry experience.
+              </p>
+              <div className="flex items-center gap-2 text-white font-bold text-sm bg-accent/20 text-accent p-3 rounded-md w-fit mt-4">
+                <CheckCircle2 className="w-4 h-4" /> Veteran Owned Business
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Quick Links</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/shop" className="hover:text-white transition-colors">Shop All Parts</Link></li>
+                <li><Link href="/categories" className="hover:text-white transition-colors">Browse by Category</Link></li>
+                <li><Link href="/parts-identification" className="text-accent hover:text-white transition-colors font-medium">Free Parts Identification</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Customer Service</h4>
+              <ul className="space-y-3 text-sm">
+                <li><span className="hover:text-white transition-colors cursor-pointer">Shipping Policy</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Returns & Exchanges</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">FAQ</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Contact Us</h4>
+              <ul className="space-y-4 text-sm">
+                <li className="flex items-start gap-3">
+                  <Phone className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <div>
+                    <a href="tel:785-533-0244" className="text-white font-medium hover:text-accent transition-colors block">785-533-0244</a>
+                    <span className="text-slate-500 text-xs">Mon-Fri 8am-5pm CST</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 text-accent">@</div>
+                  <a href="mailto:Info@allwindowdoorparts.com" className="hover:text-white transition-colors break-all">Info@allwindowdoorparts.com</a>
+                </li>
+              </ul>
+              
+              <div className="mt-8">
+                <h5 className="text-white text-xs font-bold uppercase tracking-wider mb-3">Secure Checkout</h5>
+                <div className="flex gap-2 flex-wrap">
+                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">VISA</div>
+                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">MC</div>
+                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">AMEX</div>
+                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">DISC</div>
+                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">PAYPAL</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>&copy; {new Date().getFullYear()} All Window Door Parts. All rights reserved.</p>
+            <p className="text-xs">Export to WordPress/WooCommerce Ready</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -5,7 +5,16 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "seed-awdp": "tsx ./src/seed-awdp.ts",
+    "scrape-and-seed": "tsx ./src/scrape-and-seed.ts",
+    "continue-oldach": "tsx ./src/continue-oldach-scrape.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "cheerio": "^1.2.0",
+    "drizzle-orm": "catalog:",
+    "node-html-parser": "^7.1.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

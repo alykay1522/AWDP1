@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: All Window Door Parts API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: products
+    description: Product catalog operations
+  - name: categories
+    description: Product categories
+  - name: parts-id
+    description: Parts identification submissions
+  - name: contact
+    description: Contact form
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +30,159 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /products:
+    get:
+      operationId: getProducts
+      tags: [products]
+      summary: List products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Products list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductsResponse"
+  /products/featured:
+    get:
+      operationId: getFeaturedProducts
+      tags: [products]
+      summary: Get featured products
+      responses:
+        "200":
+          description: Featured products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+  /products/search-suggestions:
+    get:
+      operationId: getSearchSuggestions
+      tags: [products]
+      summary: Get search suggestions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /products/{sku}:
+    get:
+      operationId: getProductBySku
+      tags: [products]
+      summary: Get product by SKU
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /categories:
+    get:
+      operationId: getCategories
+      tags: [categories]
+      summary: List categories with product counts
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+  /parts-identification:
+    post:
+      operationId: submitPartsId
+      tags: [parts-id]
+      summary: Submit a parts identification request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartsIdRequest"
+      responses:
+        "200":
+          description: Submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartsIdResponse"
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactRequest"
+      responses:
+        "200":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+  /catalog/stats:
+    get:
+      operationId: getCatalogStats
+      tags: [products]
+      summary: Get catalog stats (counts by supplier, total products)
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogStats"
 components:
   schemas:
     HealthStatus:
@@ -31,6 +190,165 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        sku:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        originalPrice:
+          type: number
+        category:
+          type: string
+        subcategory:
+          type: string
+        supplier:
+          type: string
+        inStock:
+          type: boolean
+        imageUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+        compatibleBrands:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, sku, name, price, category, supplier, inStock]
+    ProductsResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      required: [products, total, page, limit, totalPages]
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        productCount:
+          type: integer
+        imageUrl:
+          type: string
+      required: [id, name, slug, productCount]
+    PartsIdRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        description:
+          type: string
+        windowDoorBrand:
+          type: string
+        windowDoorAge:
+          type: string
+        imageBase64:
+          type: string
+        imageFileName:
+          type: string
+      required: [name, email, description]
+    PartsIdResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        ticketId:
+          type: string
+        message:
+          type: string
+      required: [success, message]
+    ContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+      required: [name, email, message]
+    ContactResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+    CatalogStats:
+      type: object
+      properties:
+        totalProducts:
+          type: integer
+        totalCategories:
+          type: integer
+        supplierBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              supplier:
+                type: string
+              count:
+                type: integer
+            required: [supplier, count]
+        topCategories:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              count:
+                type: integer
+            required: [category, count]
+      required: [totalProducts, totalCategories, supplierBreakdown, topCategories]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error, message]
