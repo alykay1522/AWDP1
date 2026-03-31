@@ -31,7 +31,7 @@ export default function Shop() {
     }
   }, [location]);
 
-  const { data: productsData, isLoading } = useGetProducts({
+  const { data: productsData, isLoading, isError, error } = useGetProducts({
     search: search || undefined,
     category: category || undefined,
     page,
@@ -46,7 +46,7 @@ export default function Shop() {
         limit: 12,
         sort,
       }),
-      keepPreviousData: true,
+      retry: 3,
     }
   });
 
@@ -193,6 +193,13 @@ export default function Shop() {
                   <Skeleton className="h-6 w-1/3 mt-auto" />
                 </div>
               ))}
+            </div>
+          ) : isError ? (
+            <div className="text-center py-24 bg-white rounded-xl border border-dashed">
+              <h3 className="text-xl font-bold text-foreground mb-2">Unable to load products</h3>
+              <p className="text-muted-foreground mb-2">There was a problem connecting to our catalog.</p>
+              <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
+              <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
           ) : productsData?.products.length ? (
             <>
