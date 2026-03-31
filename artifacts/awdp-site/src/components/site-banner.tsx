@@ -20,9 +20,6 @@ export function SiteBanner() {
             <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider whitespace-nowrap">
               Veteran Owned and Operated
             </span>
-            <span className="text-2xl md:text-3xl leading-none" role="img" aria-label="American Flag">
-              🇺🇸
-            </span>
           </div>
 
           {/* Center: Brand name */}
