@@ -3,7 +3,7 @@ import { db } from "@workspace/db";
 import { ordersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const router = Router();
 
