@@ -8,6 +8,7 @@ import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
 const app: Express = express();
+app.disable("etag");
 
 // Stripe webhook MUST be registered before express.json() — needs raw Buffer body
 app.post(
@@ -51,6 +52,12 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Disable HTTP caching on all API responses so browsers never serve stale data
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 
 app.use("/api", router);
 app.use("/api", paypalRouter);
