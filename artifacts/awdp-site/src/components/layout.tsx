@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import logo from "@assets/CopilotHEADER_1774977472463.png";
+import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
@@ -147,11 +148,12 @@ export function Layout({ children }: { children: ReactNode }) {
                         {items.map((item) => (
                           <div key={item.id} className="flex gap-4 border-b pb-4">
                             <div className="w-20 h-20 bg-muted rounded-md overflow-hidden shrink-0 flex items-center justify-center">
-                              {item.imageUrl ? (
-                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <Wrench className="w-8 h-8 text-muted-foreground opacity-50" />
-                              )}
+                              <ProductImage
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                placeholderClassName="w-full h-full flex items-center justify-center"
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium text-sm leading-tight truncate">{item.name}</h4>

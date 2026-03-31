@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronRight, Home, ShoppingCart, Truck, ShieldCheck, Wrench, AlertCircle, PackageCheck } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { ProductImage } from "@/components/product-image";
 
 export default function ProductDetail() {
   const params = useParams();
@@ -96,18 +97,12 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Image Gallery (Simplified for now) */}
             <div className="relative rounded-xl border bg-white aspect-square flex items-center justify-center overflow-hidden p-8">
-              {product.imageUrl ? (
-                <img 
-                  src={product.imageUrl} 
-                  alt={product.name} 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="text-center text-muted-foreground opacity-50">
-                  <Wrench className="w-24 h-24 mx-auto mb-4" />
-                  <p className="font-bold uppercase tracking-wider">No Image Available</p>
-                </div>
-              )}
+              <ProductImage
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-contain"
+                placeholderClassName="w-full h-full flex flex-col items-center justify-center text-center text-muted-foreground opacity-50"
+              />
               {isSale && (
                 <div className="absolute top-6 left-6 bg-accent text-accent-foreground px-4 py-1.5 rounded text-sm font-bold shadow-md">
                   Sale - Save ${savings.toFixed(2)}

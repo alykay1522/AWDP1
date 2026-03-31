@@ -1,8 +1,9 @@
 import { useCart } from "@/lib/cart";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, Wrench, PackageCheck } from "lucide-react";
+import { ShoppingCart, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/product-image";
 
 interface ProductCardProps {
   product: Product;
@@ -32,18 +33,11 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       <Link href={`/product/${product.sku}`} className="block relative aspect-square bg-white border-b overflow-hidden">
-        {product.imageUrl ? (
-          <img 
-            src={product.imageUrl} 
-            alt={product.name} 
-            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-slate-50">
-            <Wrench className="w-12 h-12 mb-2 opacity-20" />
-            <span className="text-xs uppercase tracking-widest opacity-50 font-bold">No Image</span>
-          </div>
-        )}
+        <ProductImage
+          src={product.imageUrl}
+          alt={product.name}
+          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+        />
       </Link>
 
       <div className="p-4 md:p-5 flex flex-col flex-1">
