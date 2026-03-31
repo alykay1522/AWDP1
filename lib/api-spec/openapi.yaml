@@ -17,6 +17,8 @@ tags:
     description: Parts identification submissions
   - name: contact
     description: Contact form
+  - name: storage
+    description: Object storage upload and serving endpoints
 paths:
   /healthz:
     get:
@@ -97,6 +99,66 @@ paths:
                 type: array
                 items:
                   type: string
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /products/{sku}/image:
+    patch:
+      operationId: updateProductImage
+      tags: [products]
+      summary: Assign an uploaded image to a product
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductImageRequest'
+      responses:
+        '200':
+          description: Image assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProductImageResponse'
+        '400':
+          description: Missing objectPath
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /products/{sku}:
     get:
       operationId: getProductBySku
@@ -352,3 +414,46 @@ components:
         message:
           type: string
       required: [error, message]
+    UploadUrlRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+        contentType:
+          type: string
+      required: [name, size, contentType]
+    UploadUrlResponse:
+      type: object
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+        metadata:
+          type: object
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            contentType:
+              type: string
+          required: [name, size, contentType]
+      required: [uploadURL, objectPath, metadata]
+    UpdateProductImageRequest:
+      type: object
+      properties:
+        objectPath:
+          type: string
+          description: The objectPath returned by the upload endpoint
+      required: [objectPath]
+    UpdateProductImageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        imageUrl:
+          type: string
+      required: [success, imageUrl]

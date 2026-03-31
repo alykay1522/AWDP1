@@ -98,6 +98,34 @@ export interface ErrorResponse {
   message: string;
 }
 
+export interface UploadUrlRequest {
+  name: string;
+  size: number;
+  contentType: string;
+}
+
+export type UploadUrlResponseMetadata = {
+  name: string;
+  size: number;
+  contentType: string;
+};
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata: UploadUrlResponseMetadata;
+}
+
+export interface UpdateProductImageRequest {
+  /** The objectPath returned by the upload endpoint */
+  objectPath: string;
+}
+
+export interface UpdateProductImageResponse {
+  success: boolean;
+  imageUrl: string;
+}
+
 export type GetProductsParams = {
   category?: string;
   search?: string;

@@ -21,3 +21,8 @@ export * from "./partsIdResponse";
 export * from "./product";
 export * from "./productSpecifications";
 export * from "./productsResponse";
+export * from "./updateProductImageRequest";
+export * from "./updateProductImageResponse";
+export * from "./uploadUrlRequest";
+export * from "./uploadUrlResponse";
+export * from "./uploadUrlResponseMetadata";

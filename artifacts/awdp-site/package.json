@@ -75,6 +75,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@paypal/react-paypal-js": "^9.1.0"
+    "@paypal/react-paypal-js": "^9.1.0",
+    "@workspace/object-storage-web": "workspace:*"
   }
 }

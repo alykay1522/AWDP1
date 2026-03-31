@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
 import { eq, ilike, and, or, sql, count } from "drizzle-orm";
+import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
 
@@ -156,6 +157,41 @@ router.get("/catalog/stats", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fetching catalog stats");
     res.status(500).json({ error: "internal_error", message: "Failed to fetch stats" });
+  }
+});
+
+const objectStorageService = new ObjectStorageService();
+
+router.patch("/products/:sku/image", async (req, res) => {
+  const { sku } = req.params;
+  const { objectPath } = req.body as { objectPath?: string };
+
+  if (!objectPath) {
+    res.status(400).json({ error: "bad_request", message: "objectPath is required" });
+    return;
+  }
+
+  try {
+    const existing = await db.select({ id: productsTable.id })
+      .from(productsTable)
+      .where(eq(productsTable.sku, sku))
+      .limit(1);
+
+    if (existing.length === 0) {
+      res.status(404).json({ error: "not_found", message: "Product not found" });
+      return;
+    }
+
+    const imageUrl = `/api/storage${objectPath}`;
+
+    await db.update(productsTable)
+      .set({ imageUrl })
+      .where(eq(productsTable.sku, sku));
+
+    res.json({ success: true, imageUrl });
+  } catch (err) {
+    req.log.error({ err }, "Error updating product image");
+    res.status(500).json({ error: "internal_error", message: "Failed to update product image" });
   }
 });
 

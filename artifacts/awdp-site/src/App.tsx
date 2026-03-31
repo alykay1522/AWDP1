@@ -16,6 +16,7 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
 import AdminPrices from "@/pages/admin-prices";
+import AdminImages from "@/pages/admin-images";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/checkout/success" component={CheckoutSuccess} />
       <Route path="/admin/prices" component={AdminPrices} />
+      <Route path="/admin/images" component={AdminImages} />
       <Route component={NotFound} />
     </Switch>
   );
