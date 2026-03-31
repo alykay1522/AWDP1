@@ -7,7 +7,6 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { ScrollArea } from "@/components/ui/scroll-area";
 import logo from "@assets/CopilotHEADER_1774977472463.png";
 import { ProductImage } from "@/components/product-image";
-import { SiteBanner } from "@/components/site-banner";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
@@ -68,7 +67,12 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col font-sans">
       {/* Full-Width Logo Banner */}
       <Link href="/" className="block w-full">
-        <SiteBanner />
+        <img
+          src={logo}
+          alt="All Window Door Parts"
+          className="w-full h-auto"
+          style={{ display: "block" }}
+        />
       </Link>
 
       {/* Sticky Navigation Bar */}

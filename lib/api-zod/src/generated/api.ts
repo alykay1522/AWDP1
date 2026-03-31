@@ -88,43 +88,6 @@ export const GetSearchSuggestionsResponse = zod.array(
 );
 
 /**
- * @summary Request a presigned URL for file upload
- */
-export const RequestUploadUrlBody = zod.object({
-  name: zod.string(),
-  size: zod.number(),
-  contentType: zod.string(),
-});
-
-export const RequestUploadUrlResponse = zod.object({
-  uploadURL: zod.string(),
-  objectPath: zod.string(),
-  metadata: zod.object({
-    name: zod.string(),
-    size: zod.number(),
-    contentType: zod.string(),
-  }),
-});
-
-/**
- * @summary Assign an uploaded image to a product
- */
-export const UpdateProductImageParams = zod.object({
-  sku: zod.coerce.string(),
-});
-
-export const UpdateProductImageBody = zod.object({
-  objectPath: zod
-    .string()
-    .describe("The objectPath returned by the upload endpoint"),
-});
-
-export const UpdateProductImageResponse = zod.object({
-  success: zod.boolean(),
-  imageUrl: zod.string(),
-});
-
-/**
  * @summary Get product by SKU
  */
 export const GetProductBySkuParams = zod.object({
