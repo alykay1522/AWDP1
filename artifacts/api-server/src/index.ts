@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { pool } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,10 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  pool.query("SELECT 1").then(() => {
+    logger.info("Database connection pool warmed up");
+  }).catch((e) => {
+    logger.warn({ err: e }, "Database warmup query failed");
+  });
 });
