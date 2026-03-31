@@ -1,4 +1,4 @@
-import { pgTable, text, serial, decimal, boolean, timestamp, integer, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, decimal, boolean, timestamp, integer, json, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -74,6 +74,30 @@ export const contactSubmissionsTable = pgTable("contact_submissions", {
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// ─── Distributor Price Tracking ───────────────────────────────────────────────
+export const distributorPricesTable = pgTable("distributor_prices", {
+  id: serial("id").primaryKey(),
+  productSku: text("product_sku").notNull(),          // our AWDP SKU
+  distributor: text("distributor").notNull(),          // 'Alcosupply' | 'Strybuc'
+  distributorSku: text("distributor_sku"),             // their part number
+  distributorUrl: text("distributor_url"),             // link to their product page
+  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),   // their listed price
+  ourPrice: decimal("our_price", { precision: 10, scale: 2 }).notNull(),  // our sell price at check time
+  markupRatio: decimal("markup_ratio", { precision: 10, scale: 4 }),       // ourPrice / costPrice
+  targetMarkup: decimal("target_markup", { precision: 10, scale: 4 }).notNull().default("2.50"),
+  // 'ok' | 'needs_update' | 'cost_up' | 'cost_down' | 'no_price' | 'manual'
+  status: text("status").notNull().default("ok"),
+  notes: text("notes"),
+  checkedAt: timestamp("checked_at").defaultNow(),
+}, (t) => [
+  index("distributor_prices_sku_idx").on(t.productSku),
+  index("distributor_prices_distributor_idx").on(t.distributor),
+  index("distributor_prices_checked_idx").on(t.checkedAt),
+]);
+
+export type DistributorPrice = typeof distributorPricesTable.$inferSelect;
+export type InsertDistributorPrice = typeof distributorPricesTable.$inferInsert;
 
 export const insertProductSchema = createInsertSchema(productsTable).omit({ id: true, createdAt: true });
 export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true });

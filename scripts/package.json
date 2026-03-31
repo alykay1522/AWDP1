@@ -12,6 +12,7 @@
     "export-woocommerce": "tsx ./src/export-woocommerce-csv.ts",
     "import-alcosupply": "tsx ./src/import-alcosupply.ts",
     "recode-skus": "tsx ./src/recode-skus.ts",
+    "check-prices": "tsx ./src/check-distributor-prices.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

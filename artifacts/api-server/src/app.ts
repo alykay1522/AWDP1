@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import paypalRouter from "./routes/paypal";
+import priceMonitorRouter from "./routes/priceMonitor";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
@@ -53,5 +54,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 app.use("/api", paypalRouter);
+app.use("/api", priceMonitorRouter);
 
 export default app;
