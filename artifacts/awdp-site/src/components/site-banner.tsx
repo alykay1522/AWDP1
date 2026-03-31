@@ -18,14 +18,10 @@ export function SiteBanner() {
           {/* Left: Veteran badge */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider whitespace-nowrap">
-              Veteran Owned
+              Veteran Owned and Operated
             </span>
-            {/* American flag between the two phrases */}
             <span className="text-2xl md:text-3xl leading-none" role="img" aria-label="American Flag">
               🇺🇸
-            </span>
-            <span className="text-white font-bold text-sm md:text-base uppercase tracking-wider whitespace-nowrap">
-              and Operated
             </span>
           </div>
 
