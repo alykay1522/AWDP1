@@ -42,6 +42,29 @@ export const partsIdRequestsTable = pgTable("parts_id_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const ordersTable = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  orderId: text("order_id").notNull().unique(),
+  stripeSessionId: text("stripe_session_id").unique(),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  shippingAddress: json("shipping_address").$type<{
+    line1: string; line2?: string; city: string; state: string; postal_code: string; country: string;
+  }>(),
+  lineItems: json("line_items").$type<Array<{
+    sku: string; name: string; price: number; quantity: number; imageUrl?: string;
+  }>>().notNull(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 }).notNull().default("0"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const contactSubmissionsTable = pgTable("contact_submissions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -56,6 +79,7 @@ export const insertProductSchema = createInsertSchema(productsTable).omit({ id: 
 export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true });
 export const insertPartsIdSchema = createInsertSchema(partsIdRequestsTable).omit({ id: true, createdAt: true });
 export const insertContactSchema = createInsertSchema(contactSubmissionsTable).omit({ id: true, createdAt: true });
+export const insertOrderSchema = createInsertSchema(ordersTable).omit({ id: true, createdAt: true, updatedAt: true });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof productsTable.$inferSelect;
@@ -65,3 +89,5 @@ export type InsertPartsId = z.infer<typeof insertPartsIdSchema>;
 export type PartsIdRequest = typeof partsIdRequestsTable.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type ContactSubmission = typeof contactSubmissionsTable.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof ordersTable.$inferSelect;

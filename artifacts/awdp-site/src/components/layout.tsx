@@ -1,19 +1,58 @@
 import { Link, useLocation } from "wouter";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Menu, X, Phone, Search, ChevronRight, CheckCircle2, Shield, Wrench, PackageSearch } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import logo from "@assets/CopilotHEADER_1774977472463.png";
-import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
+    setCheckoutLoading(true);
+    try {
+      const payload = {
+        items: items.map((item) => ({
+          sku: item.sku,
+          name: item.name,
+          price: Number(item.price),
+          quantity: item.quantity,
+          imageUrl: item.imageUrl ?? undefined,
+        })),
+      };
+      const res = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Checkout failed. Please try again.");
+      }
+      const data = await res.json();
+      if (data.url) {
+        setIsCartOpen(false);
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({
+        title: "Checkout Error",
+        description: err.message || "Unable to start checkout. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,14 +172,26 @@ export function Layout({ children }: { children: ReactNode }) {
                     )}
                   </ScrollArea>
                   {items.length > 0 && (
-                    <div className="border-t pt-4 mt-auto">
-                      <div className="flex justify-between items-center mb-4 text-lg font-bold">
+                    <div className="border-t pt-4 mt-auto space-y-3">
+                      <div className="flex justify-between items-center text-lg font-bold">
                         <span>Subtotal</span>
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
-                      <Button className="w-full text-lg h-12 gap-2">
-                        Secure Checkout <ChevronRight className="w-5 h-5" />
+                      <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                      <Button
+                        className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={handleCheckout}
+                        disabled={checkoutLoading}
+                      >
+                        {checkoutLoading ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
+                        ) : (
+                          <><Lock className="w-4 h-4" /> Secure Checkout — ${totalPrice.toFixed(2)}</>
+                        )}
                       </Button>
+                      <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
+                        <Lock className="w-3 h-3" /> SSL encrypted · Visa · MC · Amex · Discover
+                      </p>
                     </div>
                   )}
                 </SheetContent>

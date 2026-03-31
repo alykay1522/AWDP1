@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "4jPYu7r1wAovPEVOrOHfY"
+uri = "file://scripts/woocommerce-import.csv"
+type = "table"
+title = "WooCommerce Product Import (387 products)"
