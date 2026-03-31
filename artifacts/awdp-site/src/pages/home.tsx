@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import heroBg from "@assets/hero_hardware_bg.png";
+import ctaBg from "@assets/cta_hardware_bg.png";
 
 export default function Home() {
   const { data: featuredProducts, isLoading } = useGetFeaturedProducts({
@@ -16,7 +18,7 @@ export default function Home() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative bg-[#0f172a] text-white overflow-hidden py-20 lg:py-32">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay" style={{ backgroundImage: `url(${heroBg})` }}></div>
         <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/90 to-transparent"></div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -100,7 +102,7 @@ export default function Home() {
               </Button>
             </div>
             <div className="md:w-2/5 bg-slate-800 relative hidden md:block">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581141849291-1125c7b692b5?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-60 mix-blend-overlay"></div>
+              <div className="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-overlay" style={{ backgroundImage: `url(${ctaBg})` }}></div>
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-transparent w-32"></div>
             </div>
           </div>

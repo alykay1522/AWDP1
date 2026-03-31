@@ -69,8 +69,8 @@ export function Layout({ children }: { children: ReactNode }) {
         <img
           src={logo}
           alt="All Window Door Parts"
-          className="w-full object-cover object-center"
-          style={{ display: "block", maxHeight: "220px" }}
+          className="w-full h-auto"
+          style={{ display: "block" }}
         />
       </Link>
 

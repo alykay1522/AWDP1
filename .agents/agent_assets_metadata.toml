@@ -1,5 +1,16 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "dJ1E8ebmjZ5Zt5vkH-Ztq"
+uri = "file://attached_assets/hero_hardware_bg.png"
+type = "image"
+title = "window door hardware hero background"
+
+[[generated]]
+id = "DqqXImxGGNOO14LE3YmQ9"
+uri = "file://attached_assets/cta_hardware_bg.png"
+type = "image"
+title = "window door hardware cta panel"
 
 [[outputs]]
 id = "4jPYu7r1wAovPEVOrOHfY"
