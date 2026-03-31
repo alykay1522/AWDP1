@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import logo from "@assets/CopilotHEADER_1774977472463.png";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
 
 export function Layout({ children }: { children: ReactNode }) {
   const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
@@ -186,11 +187,26 @@ export function Layout({ children }: { children: ReactNode }) {
                         {checkoutLoading ? (
                           <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
                         ) : (
-                          <><Lock className="w-4 h-4" /> Secure Checkout — ${totalPrice.toFixed(2)}</>
+                          <><Lock className="w-4 h-4" /> Pay with Card — ${totalPrice.toFixed(2)}</>
                         )}
                       </Button>
+                      <div className="relative flex items-center gap-2">
+                        <div className="flex-1 border-t" />
+                        <span className="text-xs text-muted-foreground">or</span>
+                        <div className="flex-1 border-t" />
+                      </div>
+                      <PayPalCheckoutButton
+                        items={items}
+                        totalPrice={totalPrice}
+                        disabled={checkoutLoading}
+                        onSuccess={(orderId) => {
+                          clearCart();
+                          setIsCartOpen(false);
+                          setLocation(`/checkout/success?order_id=${orderId}`);
+                        }}
+                      />
                       <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-                        <Lock className="w-3 h-3" /> SSL encrypted · Visa · MC · Amex · Discover
+                        <Lock className="w-3 h-3" /> SSL encrypted · Visa · MC · Amex · PayPal
                       </p>
                     </div>
                   )}

@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import paypalRouter from "./routes/paypal";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
@@ -51,5 +52,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+app.use("/api", paypalRouter);
 
 export default app;

@@ -10,6 +10,7 @@
     "continue-oldach": "tsx ./src/continue-oldach-scrape.ts",
     "import-awdp-live": "tsx ./src/import-awdp-live.ts",
     "export-woocommerce": "tsx ./src/export-woocommerce-csv.ts",
+    "import-alcosupply": "tsx ./src/import-alcosupply.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
