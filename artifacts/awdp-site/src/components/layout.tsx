@@ -87,6 +87,11 @@ export function Layout({ children }: { children: ReactNode }) {
         />
       </Link>
 
+      {/* Site-wide Order Minimum Banner */}
+      <div className="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-2 px-4 leading-tight">
+        $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+      </div>
+
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
         <div className="container mx-auto px-4 py-3">
@@ -321,6 +326,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></li>
                 <li><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></li>
               </ul>
+              <div className="mt-6 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs font-semibold leading-snug">
+                $50 minimum on all orders.<br />Anything below $50 will be cancelled.
+              </div>
             </div>
 
             <div>

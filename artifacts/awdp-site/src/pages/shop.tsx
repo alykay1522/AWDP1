@@ -122,6 +122,12 @@ export default function Shop() {
         path="/shop"
         description="Browse 454 window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Fast shipping."
       />
+      {/* Order minimum notice */}
+      <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">
+        <span className="text-amber-600 text-base leading-none">!</span>
+        $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+      </div>
+
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b pb-6">
         <div>
