@@ -7,6 +7,7 @@ import priceMonitorRouter from "./routes/priceMonitor";
 import adminOrdersRouter from "./routes/adminOrders";
 import adminProductsRouter from "./routes/adminProducts";
 import adminSettingsRouter from "./routes/adminSettings";
+import adminImagesRouter from "./routes/adminImages";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
@@ -68,5 +69,6 @@ app.use("/api", priceMonitorRouter);
 app.use("/api", adminOrdersRouter);
 app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);
+app.use("/api", adminImagesRouter);
 
 export default app;

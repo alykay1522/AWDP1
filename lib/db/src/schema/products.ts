@@ -121,3 +121,11 @@ export const siteSettingsTable = pgTable("site_settings", {
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const productImagesTable = pgTable("product_images", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  objectName: text("object_name").notNull(),
+  url: text("url").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+});

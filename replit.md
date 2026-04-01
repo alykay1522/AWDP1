@@ -62,6 +62,19 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 - `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
 - Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
 
+### Object Storage (Product Images)
+
+Image uploads use Replit App Storage (GCS-backed). The flow is:
+1. Browser POSTs `{name, contentType}` to `POST /api/admin/images/request-upload` → gets `{uploadURL, objectName}`
+2. Browser PUTs the file directly to the GCS presigned `uploadURL`
+3. Browser POSTs `{filename, objectName}` to `POST /api/admin/images` → metadata saved to `product_images` DB table; returns `{image}` with 5-year signed read URL
+4. Admin copies the URL and pastes it into the product image URL field
+
+Routes: `artifacts/api-server/src/routes/adminImages.ts`
+DB table: `product_images` (`id`, `filename`, `object_name`, `url`, `uploaded_at`)
+Object storage lib: `artifacts/api-server/src/lib/objectStorage.ts` (GCS client, Replit sidecar auth)
+Env vars set: `DEFAULT_OBJECT_STORAGE_BUCKET_ID`, `PRIVATE_OBJECT_DIR`, `PUBLIC_OBJECT_SEARCH_PATHS`
+
 ### `lib/db` (`@workspace/db`)
 
 Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
