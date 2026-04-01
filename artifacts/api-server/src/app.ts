@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import paypalRouter from "./routes/paypal";
 import priceMonitorRouter from "./routes/priceMonitor";
+import adminOrdersRouter from "./routes/adminOrders";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
@@ -62,5 +63,6 @@ app.use("/api", (_req, res, next) => {
 app.use("/api", router);
 app.use("/api", paypalRouter);
 app.use("/api", priceMonitorRouter);
+app.use("/api", adminOrdersRouter);
 
 export default app;
