@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { PageSeo } from "@/components/page-seo";
 import { useGetProducts, getGetProductsQueryKey, useGetCategories, getGetCategoriesQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -116,6 +117,11 @@ export default function Shop() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
+      <PageSeo
+        title="Shop Window & Door Parts"
+        path="/shop"
+        description="Browse 454 window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Fast shipping."
+      />
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b pb-6">
         <div>

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitPartsId } from "@workspace/api-client-react";
+import { PageSeo } from "@/components/page-seo";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -166,6 +167,11 @@ export default function PartsIdentification() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
+      <PageSeo
+        title="Free Parts Identification — Can't Find Your Part?"
+        path="/parts-identification"
+        description="Can't identify your window or door part? Submit photos and a description — our experts with 40+ years of experience will identify it for you. Free service from All Window Door Parts."
+      />
       {/* Hero Section */}
       <section className="bg-primary text-white py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1994&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>

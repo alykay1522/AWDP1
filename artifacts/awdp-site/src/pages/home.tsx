@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote } from "lucide-react";
+import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
@@ -16,6 +17,10 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
+      <PageSeo
+        path="/"
+        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 454 window and door parts: operators, balances, locks, rollers, glazing seals, and more. Call 785-533-0244."
+      />
       {/* Hero Section */}
       <section className="relative bg-[#0f172a] text-white overflow-hidden py-20 lg:py-32">
         <div className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay" style={{ backgroundImage: `url(${heroBg})` }}></div>

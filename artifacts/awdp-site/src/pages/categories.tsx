@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useGetCategories, getGetCategoriesQueryKey } from "@workspace/api-client-react";
+import { PageSeo } from "@/components/page-seo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PackageSearch, FolderTree, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,11 @@ export default function Categories() {
 
   return (
     <div className="bg-slate-50 min-h-screen py-12 md:py-20">
+      <PageSeo
+        title="Product Categories"
+        path="/categories"
+        description="Browse window and door parts by category: operators, balances, locks, rollers, glazing seals, screens, hardware, and more. All Window Door Parts — veteran owned."
+      />
       <div className="container mx-auto px-4">
         
         <div className="max-w-3xl mx-auto text-center mb-16">

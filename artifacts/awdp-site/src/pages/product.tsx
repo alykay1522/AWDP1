@@ -1,5 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useGetProductBySku, getGetProductBySkuQueryKey, useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
+import { PageSeo } from "@/components/page-seo";
 import { useCart } from "@/lib/cart";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,30 @@ export default function ProductDetail() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
+      <PageSeo
+        title={`${product.name} — SKU ${product.sku}`}
+        path={`/product/${product.sku}`}
+        description={`${product.name} (SKU: ${product.sku}). ${product.description ? product.description.slice(0, 120) + "…" : "Window and door replacement part from All Window Door Parts. Veteran-owned, 40+ years experience."}`}
+        image={product.imageUrl ?? undefined}
+        type="product"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          sku: product.sku,
+          description: product.description ?? `${product.name} — window or door replacement part`,
+          image: product.imageUrl ?? undefined,
+          brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
+          offers: {
+            "@type": "Offer",
+            price: Number(product.price).toFixed(2),
+            priceCurrency: "USD",
+            availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+            seller: { "@type": "Organization", name: "All Window Door Parts" }
+          }
+        }}
+      />
       {/* Breadcrumbs */}
       <div className="bg-white border-b py-3 text-sm">
         <div className="container mx-auto px-4 flex items-center text-muted-foreground whitespace-nowrap overflow-x-auto hide-scrollbar">

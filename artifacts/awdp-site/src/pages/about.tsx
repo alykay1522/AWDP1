@@ -1,4 +1,5 @@
 import { Shield, Award, CheckCircle2, Factory, Wrench, Users, Download } from "lucide-react";
+import { PageSeo } from "@/components/page-seo";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
@@ -12,6 +13,11 @@ export default function About() {
 
   return (
     <div className="flex flex-col">
+      <PageSeo
+        title="About Us — 40+ Years of Window & Door Expertise"
+        path="/about"
+        description="All Window Door Parts is a veteran-owned business with over 40 years of experience supplying window and door replacement parts to homeowners, contractors, and businesses across the USA."
+      />
       {/* Hero Section */}
       <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2071&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
