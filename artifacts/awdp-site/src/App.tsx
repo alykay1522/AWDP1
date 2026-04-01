@@ -18,6 +18,7 @@ import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
 import AdminPrices from "@/pages/admin-prices";
 import AdminOrders from "@/pages/admin-orders";
+import AdminNewProduct from "@/pages/admin-new-product";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/checkout/success" component={CheckoutSuccess} />
       <Route path="/admin/prices" component={AdminPrices} />
       <Route path="/admin/orders" component={AdminOrders} />
+      <Route path="/admin/products/new" component={AdminNewProduct} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -5,6 +5,7 @@ import router from "./routes";
 import paypalRouter from "./routes/paypal";
 import priceMonitorRouter from "./routes/priceMonitor";
 import adminOrdersRouter from "./routes/adminOrders";
+import adminProductsRouter from "./routes/adminProducts";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 
@@ -64,5 +65,6 @@ app.use("/api", router);
 app.use("/api", paypalRouter);
 app.use("/api", priceMonitorRouter);
 app.use("/api", adminOrdersRouter);
+app.use("/api", adminProductsRouter);
 
 export default app;
