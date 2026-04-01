@@ -1,1 +1,32 @@
-[{"name":"Window Operators & Cranks","slug":"window-operators","description":"Casement, awning, and jalousie operators, cranks, crank handles, and roto-gear mechanisms for all major window brands.","imageUrl":"https://www.strybuc.com/images/categories/operators.jpg"},{"name":"Window Locks & Latches","slug":"window-locks","description":"Sash locks, cam locks, tilt latches, and keeper sets for single-hung, double-hung, and casement windows.","imageUrl":"https://www.strybuc.com/images/categories/locks.jpg"},{"name":"Window Balances","slug":"window-balances","description":"Spiral, block-and-tackle, channel, and coil spring balances for proper single and double-hung window operation.","imageUrl":"https://www.strybuc.com/images/categories/balances.jpg"},{"name":"Window Screens & Frames","slug":"window-screens","description":"Screen frames, spline, mesh, corner hardware, and KD screen kits.","imageUrl":"https://www.strybuc.com/images/categories/screens.jpg"},{"name":"Door Hardware","slug":"door-hardware","description":"Entry, patio, storm, and sliding door hardware including handles, escutcheons, and closers.","imageUrl":"https://www.strybuc.com/images/categories/door-hardware.jpg"},{"name":"Door Locks & Multipoint","slug":"door-locks","description":"Mortise locks, multi-point locking systems, sliding door security hardware, and strike plates.","imageUrl":"https://www.strybuc.com/images/categories/door-locks.jpg"},{"name":"Weatherstripping & Seals","slug":"weatherstripping","description":"Q-Lon, foam, felt, silicone, pile, and kerf-type weatherstripping for windows and doors.","imageUrl":"https://www.strybuc.com/images/categories/weatherstrip.jpg"},{"name":"Hinges & Pivots","slug":"hinges","description":"Butt hinges, continuous hinges, casement arms, and pivot hardware for doors and windows.","imageUrl":"https://www.strybuc.com/images/categories/hinges.jpg"},{"name":"Rollers & Guides","slug":"rollers","description":"Patio door rollers, sliding window rollers, tandem assemblies, and guide hardware.","imageUrl":"https://www.strybuc.com/images/categories/rollers.jpg"},{"name":"Sash & Frame Parts","slug":"sash-parts","description":"Replacement sash kits, corner keys, frame joiners, sash lifts, tilt latches, and window frame components.","imageUrl":"https://www.strybuc.com/images/categories/sash.jpg"},{"name":"Glazing & Seals","slug":"glazing","description":"Snap-in glazing beads, metal glazing bead, glazing tape, setting blocks, and wood grille kits.","imageUrl":null},{"name":"Deer Blind Windows","slug":"deer-blind","description":"Aluminum-framed slider, awning, and fixed windows for hunting blinds and shooting houses.","imageUrl":null},{"name":"Skylights","slug":"skylights","description":"Skylights parts and hardware","imageUrl":null},{"name":"Rollers & Screens","slug":"rollers-screens","description":"Rollers & Screens parts and hardware","imageUrl":null},{"name":"Window & Door Hardware","slug":"window-door-hardware","description":"Window & Door Hardware parts and hardware","imageUrl":null},{"name":"Locks & Handles","slug":"locks-handles","description":"Locks & Handles parts and hardware","imageUrl":null},{"name":"Tracks & Channels","slug":"tracks-channels","description":"Tracks & Channels parts and hardware","imageUrl":null}]
+[
+  {
+    "name": "Window Hardware",
+    "slug": "window-hardware",
+    "description": "Operators, cranks, locks, latches, sash hardware, and window frame parts"
+  },
+  {
+    "name": "Door Hardware",
+    "slug": "door-hardware",
+    "description": "Door locks, hinges, rollers, guides, and door frame hardware"
+  },
+  {
+    "name": "Window Balances and Accessories",
+    "slug": "window-balances-and-accessories",
+    "description": "Spiral balances, block and tackle balances, and balance accessories"
+  },
+  {
+    "name": "Window Glazing and Weatherstrip",
+    "slug": "window-glazing-and-weatherstrip",
+    "description": "Glazing seals, weatherstrip, and insulating components"
+  },
+  {
+    "name": "Screen Hardware and Accessories",
+    "slug": "screen-hardware-and-accessories",
+    "description": "Screen frames, corners, spline, clips, and screen accessories"
+  },
+  {
+    "name": "Other Hardware",
+    "slug": "other-hardware",
+    "description": "Skylights, deer blind windows, and specialty hardware"
+  }
+]
