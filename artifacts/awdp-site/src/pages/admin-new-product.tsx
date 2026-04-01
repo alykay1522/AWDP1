@@ -1,52 +1,61 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Plus, Sparkles, Tag, Package, DollarSign, Layers,
-  Truck, CheckCircle2, ArrowLeft, Info, X, Loader2,
+  CheckCircle2, ArrowLeft, Info, X, Loader2, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { PageSeo } from "@/components/page-seo";
 
-// PROFITABLE cipher — P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
-const DIGIT_TO_LETTER: Record<string, string> = {
+// ── PROFITABLE Cipher ──────────────────────────────────────────────────────────
+// P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
+// Digit → PROFITABLE letter, PROFITABLE letter → digit, everything else passes through
+const NUM_TO_LETTER: Record<string, string> = {
   "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
   "5": "I", "6": "T", "7": "A", "8": "B", "9": "L",
 };
-function encodeSku(catIdx: number, seq: number): string {
-  const cat = catIdx.toString().padStart(2, "0").split("").map((d) => DIGIT_TO_LETTER[d]).join("");
-  const s = seq.toString().padStart(4, "0").split("").map((d) => DIGIT_TO_LETTER[d]).join("");
-  return `AWDP-${cat}-${s}`;
+const LETTER_TO_NUM: Record<string, string> = {
+  "P": "1", "R": "2", "O": "3", "F": "4", "I": "5",
+  "T": "6", "A": "7", "B": "8", "L": "9", "E": "0",
+};
+
+function applyCipher(input: string): string {
+  return input
+    .toUpperCase()
+    .split("")
+    .map((ch) => {
+      if (NUM_TO_LETTER[ch] !== undefined) return NUM_TO_LETTER[ch];
+      if (LETTER_TO_NUM[ch] !== undefined) return LETTER_TO_NUM[ch];
+      return ch;
+    })
+    .join("");
 }
 
+function buildAwdpSku(originalSku: string): string {
+  const trimmed = originalSku.trim();
+  if (!trimmed) return "";
+  return "AWDP-" + applyCipher(trimmed);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CATEGORIES = [
-  { name: "Window Operators & Cranks",   slug: "window-operators",     idx: 0 },
-  { name: "Window Locks & Latches",      slug: "window-locks",         idx: 1 },
-  { name: "Window Balances",             slug: "window-balances",      idx: 2 },
-  { name: "Window Screens & Frames",     slug: "window-screens",       idx: 3 },
-  { name: "Door Hardware",               slug: "door-hardware",        idx: 4 },
-  { name: "Door Locks & Multipoint",     slug: "door-locks",           idx: 5 },
-  { name: "Weatherstripping & Seals",    slug: "weatherstripping",     idx: 6 },
-  { name: "Hinges & Pivots",             slug: "hinges",               idx: 7 },
-  { name: "Rollers & Guides",            slug: "rollers",              idx: 8 },
-  { name: "Sash & Frame Parts",          slug: "sash-parts",           idx: 9 },
-  { name: "Glazing & Seals",             slug: "glazing",              idx: 10 },
-  { name: "Deer Blind Windows",          slug: "deer-blind",           idx: 11 },
-  { name: "Skylights",                   slug: "skylights",            idx: 12 },
-  { name: "Rollers & Screens",           slug: "rollers-screens",      idx: 13 },
-  { name: "Window & Door Hardware",      slug: "window-door-hardware", idx: 14 },
-  { name: "Locks & Handles",             slug: "locks-handles",        idx: 15 },
-  { name: "Tracks & Channels",           slug: "tracks-channels",      idx: 16 },
+  "Window Operators & Cranks", "Window Locks & Latches", "Window Balances",
+  "Window Screens & Frames", "Door Hardware", "Door Locks & Multipoint",
+  "Weatherstripping & Seals", "Hinges & Pivots", "Rollers & Guides",
+  "Sash & Frame Parts", "Glazing & Seals", "Deer Blind Windows", "Skylights",
+  "Rollers & Screens", "Window & Door Hardware", "Locks & Handles", "Tracks & Channels",
 ];
 
 const schema = z.object({
+  originalSku: z.string().min(1, "Supplier part number is required"),
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
   price: z.string().refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Enter a valid price"),
@@ -54,7 +63,7 @@ const schema = z.object({
     (v) => !v || (!isNaN(Number(v)) && Number(v) > 0),
     "Enter a valid original price"
   ),
-  categoryIdx: z.string(),
+  category: z.string().min(1),
   supplier: z.string().optional(),
   inStock: z.boolean().default(true),
   tagsRaw: z.string().optional(),
@@ -67,20 +76,19 @@ type FormValues = z.infer<typeof schema>;
 
 export default function AdminNewProduct() {
   const [, setLocation] = useLocation();
-  const [previewSku, setPreviewSku] = useState<string | null>(null);
-  const [loadingSku, setLoadingSku] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [specs, setSpecs] = useState<Record<string, string>>({});
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      originalSku: "",
       name: "",
       description: "",
       price: "",
       originalPrice: "",
-      categoryIdx: "0",
-      supplier: "Marvin",
+      category: CATEGORIES[0],
+      supplier: "",
       inStock: true,
       tagsRaw: "",
       brandsRaw: "",
@@ -89,24 +97,8 @@ export default function AdminNewProduct() {
     },
   });
 
-  const categoryIdx = form.watch("categoryIdx");
-
-  const fetchSkuPreview = useCallback(async (idx: string) => {
-    setLoadingSku(true);
-    try {
-      const res = await fetch(`/api/admin/products/preview-sku?categoryIndex=${idx}`);
-      const data = await res.json();
-      setPreviewSku(data.sku ?? null);
-    } catch {
-      setPreviewSku(encodeSku(Number(idx), 999));
-    } finally {
-      setLoadingSku(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchSkuPreview(categoryIdx);
-  }, [categoryIdx, fetchSkuPreview]);
+  const originalSkuWatch = form.watch("originalSku");
+  const previewSku = buildAwdpSku(originalSkuWatch);
 
   const addSpec = () => {
     const key = form.getValues("specKey")?.trim();
@@ -128,7 +120,6 @@ export default function AdminNewProduct() {
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     try {
-      const catObj = CATEGORIES[Number(values.categoryIdx)];
       const tags = values.tagsRaw
         ? values.tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
         : [];
@@ -137,12 +128,12 @@ export default function AdminNewProduct() {
         : [];
 
       const payload = {
+        originalSku: values.originalSku.trim(),
         name: values.name,
         description: values.description ?? "",
         price: Number(values.price),
         originalPrice: values.originalPrice ? Number(values.originalPrice) : undefined,
-        category: catObj?.name ?? "Window & Door Hardware",
-        categoryIndex: Number(values.categoryIdx),
+        category: values.category,
         supplier: values.supplier ?? "",
         inStock: values.inStock,
         tags,
@@ -170,7 +161,6 @@ export default function AdminNewProduct() {
 
       form.reset();
       setSpecs({});
-      fetchSkuPreview(form.getValues("categoryIdx"));
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -178,68 +168,91 @@ export default function AdminNewProduct() {
     }
   };
 
-  const selectedCat = CATEGORIES[Number(categoryIdx)];
-
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <PageSeo title="Admin — Add New Product" path="/admin/products/new" noIndex />
 
       {/* Header */}
-      <div className="bg-slate-900 text-white py-6">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-700 gap-1.5"
-              onClick={() => setLocation("/admin/orders")}
-            >
-              <ArrowLeft className="w-4 h-4" /> Orders
-            </Button>
-            <div className="h-5 w-px bg-slate-600" />
-            <div>
-              <h1 className="text-xl font-bold">Add New Product</h1>
-              <p className="text-slate-400 text-xs mt-0.5">SKU auto-generated using PROFITABLE cipher</p>
-            </div>
+      <div className="bg-slate-900 text-white py-6 px-6">
+        <div className="flex items-center gap-4 max-w-4xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-slate-300 hover:text-white hover:bg-slate-700 gap-1.5"
+            onClick={() => setLocation("/admin/products")}
+          >
+            <ArrowLeft className="w-4 h-4" /> Products
+          </Button>
+          <div className="h-5 w-px bg-slate-600" />
+          <div>
+            <h1 className="text-xl font-bold">Add New Product</h1>
+            <p className="text-slate-400 text-xs mt-0.5">
+              AWDP SKU is encoded from the supplier's original part number using the PROFITABLE cipher
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-4xl py-8">
+      <div className="px-6 max-w-4xl py-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-            {/* SKU Preview card */}
-            <div className="bg-white border-2 border-dashed border-primary/30 rounded-xl p-5 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  Auto-generated AWDP SKU
-                </div>
-                {loadingSku ? (
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Generating…
-                  </div>
-                ) : (
-                  <span className="font-mono text-2xl font-bold text-primary tracking-widest">
-                    {previewSku ?? "…"}
-                  </span>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Category: <span className="font-medium">{selectedCat?.name ?? "—"}</span>
-                </p>
+            {/* SKU Encoding card */}
+            <div className="bg-white border-2 border-dashed border-primary/30 rounded-xl p-5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-4">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                SKU Encoding — Supplier Part No. → AWDP SKU
               </div>
-              <div className="text-right hidden sm:block">
-                <div className="text-xs text-muted-foreground mb-2 font-medium">PROFITABLE Key</div>
-                <div className="grid grid-cols-5 gap-1 text-xs font-mono">
+
+              <FormField control={form.control} name="originalSku" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">Supplier / Original Part Number <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g. 35-1234, TRUTH-35-1234, 9021032"
+                      className="font-mono text-base tracking-wide"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    The manufacturer's or distributor's original part number — this is what gets encoded
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* Live preview */}
+              {originalSkuWatch.trim() && (
+                <div className="mt-4 flex items-center gap-3 flex-wrap">
+                  <div className="bg-slate-100 rounded-lg px-3 py-2 font-mono text-sm text-slate-600">
+                    {originalSkuWatch.trim().toUpperCase()}
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="font-mono text-xl font-bold text-primary tracking-widest bg-primary/5 rounded-lg px-4 py-2 border border-primary/20">
+                    {previewSku}
+                  </div>
+                </div>
+              )}
+
+              {!originalSkuWatch.trim() && (
+                <div className="mt-4 text-sm text-muted-foreground italic">
+                  Enter the supplier part number above to see the encoded AWDP SKU
+                </div>
+              )}
+
+              {/* Cipher key reference */}
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-xs text-muted-foreground font-medium mb-2">PROFITABLE key (bidirectional):</p>
+                <div className="flex flex-wrap gap-1.5">
                   {["P=1","R=2","O=3","F=4","I=5","T=6","A=7","B=8","L=9","E=0"].map((k) => (
-                    <span key={k} className="bg-slate-100 rounded px-1.5 py-0.5 text-slate-600">{k}</span>
+                    <span key={k} className="bg-slate-100 rounded px-2 py-0.5 text-xs font-mono text-slate-600">{k}</span>
                   ))}
+                  <span className="text-xs text-muted-foreground self-center ml-1">· all other characters pass through</span>
                 </div>
               </div>
             </div>
 
-            {/* Core info */}
+            {/* Product Info */}
             <div className="bg-white rounded-xl border shadow-sm p-6 space-y-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 pb-2 border-b">
                 <Package className="w-4 h-4 text-primary" /> Product Information
@@ -266,7 +279,7 @@ export default function AdminNewProduct() {
               )} />
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <FormField control={form.control} name="categoryIdx" render={({ field }) => (
+                <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
@@ -275,7 +288,7 @@ export default function AdminNewProduct() {
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         {CATEGORIES.map((cat) => (
-                          <option key={cat.idx} value={String(cat.idx)}>{cat.name}</option>
+                          <option key={cat} value={cat}>{cat}</option>
                         ))}
                       </select>
                     </FormControl>
@@ -287,7 +300,7 @@ export default function AdminNewProduct() {
                   <FormItem>
                     <FormLabel>Supplier / Brand</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Marvin, Andersen, Pella…" />
+                      <Input {...field} placeholder="Marvin, Alcosupply, Strybuc…" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -317,13 +330,14 @@ export default function AdminNewProduct() {
 
                 <FormField control={form.control} name="originalPrice" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Original / MSRP Price <span className="text-xs text-muted-foreground">(optional — shows strikethrough)</span></FormLabel>
+                    <FormLabel>Original / MSRP <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
                     <FormControl>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
                         <Input {...field} type="number" step="0.01" min="0.01" placeholder="0.00" className="pl-7" />
                       </div>
                     </FormControl>
+                    <FormDescription>Shows as strikethrough "sale" price on product page</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -381,7 +395,8 @@ export default function AdminNewProduct() {
             {/* Specifications */}
             <div className="bg-white rounded-xl border shadow-sm p-6 space-y-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 pb-2 border-b">
-                <Layers className="w-4 h-4 text-primary" /> Specifications <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
+                <Layers className="w-4 h-4 text-primary" /> Specifications
+                <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
               </div>
 
               <div className="flex gap-2">
@@ -429,13 +444,16 @@ export default function AdminNewProduct() {
             <div className="flex items-center justify-between gap-4 pt-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="w-4 h-4 shrink-0" />
-                <span>SKU <span className="font-mono font-semibold text-slate-700">{previewSku ?? "…"}</span> will be assigned on save</span>
+                {previewSku
+                  ? <span>Will be saved as <span className="font-mono font-semibold text-slate-700">{previewSku}</span></span>
+                  : <span>Enter the supplier part number to see your AWDP SKU</span>
+                }
               </div>
               <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => { form.reset(); setSpecs({}); fetchSkuPreview(form.getValues("categoryIdx")); }}
+                  onClick={() => { form.reset(); setSpecs({}); }}
                 >
                   Clear
                 </Button>

@@ -6,52 +6,70 @@ import { z } from "zod";
 
 const router = Router();
 
-// PROFITABLE cipher: P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
-const DIGIT_TO_LETTER: Record<string, string> = {
+// ── PROFITABLE Cipher ──────────────────────────────────────────────────────────
+// P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
+// Each digit → its PROFITABLE letter, each PROFITABLE letter → its digit
+// Every other character passes through unchanged
+
+const NUM_TO_LETTER: Record<string, string> = {
   "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
   "5": "I", "6": "T", "7": "A", "8": "B", "9": "L",
 };
+const LETTER_TO_NUM: Record<string, string> = {
+  "P": "1", "R": "2", "O": "3", "F": "4", "I": "5",
+  "T": "6", "A": "7", "B": "8", "L": "9", "E": "0",
+};
 
-function encodeNumber(n: number, padLen: number): string {
-  return n
-    .toString()
-    .padStart(padLen, "0")
+function applyCipher(input: string): string {
+  return input
+    .toUpperCase()
     .split("")
-    .map((d) => DIGIT_TO_LETTER[d] ?? "E")
+    .map((ch) => {
+      if (NUM_TO_LETTER[ch] !== undefined) return NUM_TO_LETTER[ch];
+      if (LETTER_TO_NUM[ch] !== undefined) return LETTER_TO_NUM[ch];
+      return ch;
+    })
     .join("");
 }
 
-async function generateSku(categoryIndex: number): Promise<string> {
-  const [{ total }] = await db
-    .select({ total: sql<number>`count(*)` })
-    .from(productsTable);
+function buildSku(originalSku: string): string {
+  return "AWDP-" + applyCipher(originalSku.trim());
+}
 
-  const seq = Number(total) + 1;
-  const catPart = encodeNumber(categoryIndex, 2);
-  const seqPart = encodeNumber(seq, 4);
-  const candidate = `AWDP-${catPart}-${seqPart}`;
+async function generateUniqueSku(originalSku: string): Promise<string> {
+  const base = buildSku(originalSku);
 
-  // Ensure uniqueness — if collision, increment until free
   const [existing] = await db
     .select({ sku: productsTable.sku })
     .from(productsTable)
-    .where(eq(productsTable.sku, candidate))
+    .where(eq(productsTable.sku, base))
     .limit(1);
 
-  if (!existing) return candidate;
+  if (!existing) return base;
 
-  // Fallback: use seq + salt
-  const altSeq = seq + 1000 + Math.floor(Math.random() * 99);
-  return `AWDP-${catPart}-${encodeNumber(altSeq, 4)}`;
+  // Collision: append numeric suffix until we find a free slot
+  for (let i = 2; i <= 99; i++) {
+    const candidate = `${base}-${i}`;
+    const [ex2] = await db
+      .select({ sku: productsTable.sku })
+      .from(productsTable)
+      .where(eq(productsTable.sku, candidate))
+      .limit(1);
+    if (!ex2) return candidate;
+  }
+
+  throw new Error(`Cannot generate a unique SKU for original part number "${originalSku}"`);
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 const CreateProductSchema = z.object({
   name: z.string().min(2).max(200),
   description: z.string().default(""),
+  originalSku: z.string().min(1, "Supplier part number is required"),
   price: z.number().positive(),
   originalPrice: z.number().positive().optional(),
   category: z.string().min(1),
-  categoryIndex: z.number().int().min(0).max(99),
   supplier: z.string().default(""),
   inStock: z.boolean().default(true),
   tags: z.array(z.string()).default([]),
@@ -60,25 +78,29 @@ const CreateProductSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-// GET /api/admin/products/preview-sku — preview a SKU before creating
+// GET /api/admin/products/preview-sku?originalSku=35-1234
+// Returns the AWDP SKU that would be generated for the given supplier part number
 router.get("/admin/products/preview-sku", async (req, res) => {
   try {
-    const categoryIndex = Number(req.query.categoryIndex ?? 0);
-    const sku = await generateSku(categoryIndex);
-    res.json({ sku });
+    const originalSku = String(req.query.originalSku ?? "").trim();
+    if (!originalSku) {
+      return res.status(400).json({ error: "originalSku query param is required" });
+    }
+    const sku = buildSku(originalSku);
+    res.json({ sku, originalSku });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // GET /api/admin/products — list all products (admin, all fields)
-router.get("/admin/products", async (req, res) => {
+router.get("/admin/products", async (_req, res) => {
   try {
     const products = await db
       .select()
       .from(productsTable)
       .orderBy(sql`${productsTable.createdAt} desc`)
-      .limit(200);
+      .limit(500);
     res.json({ products });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -94,7 +116,13 @@ router.post("/admin/products", async (req, res) => {
     }
 
     const data = parsed.data;
-    const sku = await generateSku(data.categoryIndex);
+    const sku = await generateUniqueSku(data.originalSku);
+
+    // Store original supplier part number in specifications
+    const specifications = {
+      ...data.specifications,
+      "Supplier Part No.": data.originalSku,
+    };
 
     const [product] = await db
       .insert(productsTable)
@@ -109,7 +137,7 @@ router.post("/admin/products", async (req, res) => {
         inStock: data.inStock,
         tags: data.tags,
         compatibleBrands: data.compatibleBrands,
-        specifications: data.specifications,
+        specifications,
         imageUrl: data.imageUrl ?? null,
       })
       .returning();
@@ -117,7 +145,7 @@ router.post("/admin/products", async (req, res) => {
     res.status(201).json({ product, sku });
   } catch (err: any) {
     if (err.code === "23505") {
-      return res.status(409).json({ error: "A product with this SKU already exists. Please try again." });
+      return res.status(409).json({ error: "A product with this SKU already exists. Try a different part number." });
     }
     res.status(500).json({ error: err.message });
   }
