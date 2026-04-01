@@ -41,6 +41,14 @@ router.post("/checkout/session", async (req, res) => {
 
     const { items, customerEmail, successUrl, cancelUrl } = parsed.data;
 
+    const ORDER_MINIMUM = 50;
+    const subtotalCheck = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (subtotalCheck < ORDER_MINIMUM) {
+      return res.status(400).json({
+        error: `Order minimum is $${ORDER_MINIMUM.toFixed(2)}. Your cart total is $${subtotalCheck.toFixed(2)}.`,
+      });
+    }
+
     const stripe = await getUncachableStripeClient();
 
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

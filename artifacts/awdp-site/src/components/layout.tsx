@@ -18,8 +18,20 @@ export function Layout({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  const ORDER_MINIMUM = 50;
+  const belowMinimum = totalPrice < ORDER_MINIMUM && items.length > 0;
+  const remaining = Math.max(0, ORDER_MINIMUM - totalPrice);
+
   const handleCheckout = async () => {
     if (items.length === 0) return;
+    if (belowMinimum) {
+      toast({
+        title: "Minimum Order Not Met",
+        description: `Add $${remaining.toFixed(2)} more to reach the $${ORDER_MINIMUM} order minimum.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setCheckoutLoading(true);
     try {
       const payload = {
@@ -180,11 +192,24 @@ export function Layout({ children }: { children: ReactNode }) {
                         <span>Subtotal</span>
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                      {belowMinimum ? (
+                        <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 space-y-1.5">
+                          <p className="text-xs font-semibold text-amber-800">$50.00 order minimum required</p>
+                          <div className="w-full bg-amber-100 rounded-full h-2">
+                            <div
+                              className="bg-amber-500 h-2 rounded-full transition-all"
+                              style={{ width: `${Math.min(100, (totalPrice / ORDER_MINIMUM) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-amber-700">Add <span className="font-bold">${remaining.toFixed(2)}</span> more to checkout</p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                      )}
                       <Button
-                        className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white"
+                        className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                         onClick={handleCheckout}
-                        disabled={checkoutLoading}
+                        disabled={checkoutLoading || belowMinimum}
                       >
                         {checkoutLoading ? (
                           <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
@@ -200,7 +225,7 @@ export function Layout({ children }: { children: ReactNode }) {
                       <PayPalCheckoutButton
                         items={items}
                         totalPrice={totalPrice}
-                        disabled={checkoutLoading}
+                        disabled={checkoutLoading || belowMinimum}
                         onSuccess={(orderId) => {
                           clearCart();
                           setIsCartOpen(false);
