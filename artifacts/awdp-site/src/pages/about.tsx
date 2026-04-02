@@ -1,16 +1,9 @@
-import { Shield, Award, CheckCircle2, Factory, Wrench, Users, Download } from "lucide-react";
+import { Shield, Award, Factory, Wrench } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
 
 export default function About() {
-  const { data: stats } = useGetCatalogStats({
-    query: {
-      queryKey: getGetCatalogStatsQueryKey(),
-    }
-  });
-
   return (
     <div className="flex flex-col">
       <PageSeo
@@ -42,13 +35,13 @@ export default function About() {
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">Our Story</h2>
               <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
                 <p>
-                  All Window Door Parts didn't start in a boardroom. It started in the field. Founded by veterans with deep roots in the construction and fenestration industry, we've spent over four decades dealing with broken balances, stripped locks, and obsolete hinges.
+                  Our AllWindowDoorParts GROUP USA was built by industry veterans&mdash;not executives in a boardroom. With over 40 years of hands-on experience in construction, remodeling and fenestration, we've dealt with every kind of window and door hardware challenge.
                 </p>
                 <p>
-                  We realized that homeowners and contractors were wasting countless hours trying to find replacement parts for older windows and doors. Manufacturers go out of business, designs change, and what used to be a simple trip to the hardware store turns into a wild goose chase.
+                  We have helped D.I.Y. homeowners, contractors big and small wasting precious time searching for parts that were discontinued, redesigned, or impossible to find in hardware stores and big box stores. So, we created a company dedicated to solving that problem.
                 </p>
                 <p>
-                  We built this company to be the ultimate solution. If a part exists, we have it or can get it. If it doesn't exist anymore, we know the exact modern equivalent that will work.
+                  If a part exists, we can get it. If it doesn't, we know the right modern replacement&mdash;or can confirm and save you time wasted when something is truly no longer available.
                 </p>
               </div>
             </div>
@@ -73,7 +66,7 @@ export default function About() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Unmatched Expertise</h3>
               <p className="text-slate-600">
-                Our team has over 40 years of hands-on experience. We know Biltbest, Truth Hardware, Oldach, and Strybuc inside and out.
+                Our team has over 40 years of hands-on experience. We know Casement, Awning, Single/Double Hung and slider windows inside and out.
               </p>
             </div>
             
@@ -100,43 +93,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Catalog Stats Section */}
-      {stats && (
-        <section className="py-16 bg-white border-b">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="bg-slate-900 rounded-xl p-8 shadow-inner text-white border border-slate-800">
-              <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-6">
-                <div>
-                  <h3 className="text-2xl font-serif font-bold text-white mb-2">Catalog Database Statistics</h3>
-                  <p className="text-slate-400">Live summary of our current hardware inventory.</p>
-                </div>
-                <div className="mt-4 md:mt-0 flex items-center gap-2 bg-blue-500/10 text-blue-300 px-4 py-2 rounded-lg text-sm font-medium border border-blue-500/20">
-                  <Download className="w-4 h-4" /> Export to WordPress/WooCommerce Ready
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div className="p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-400 mb-1">{stats.totalProducts}</div>
-                  <div className="text-sm text-slate-400 uppercase tracking-wide">Total Products</div>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-400 mb-1">{stats.totalCategories}</div>
-                  <div className="text-sm text-slate-400 uppercase tracking-wide">Categories</div>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-400 mb-1">{stats.supplierBreakdown.length}</div>
-                  <div className="text-sm text-slate-400 uppercase tracking-wide">Suppliers</div>
-                </div>
-                <div className="p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-400 mb-1">{stats.topCategories.length > 0 ? stats.topCategories[0].count : 0}</div>
-                  <div className="text-sm text-slate-400 uppercase tracking-wide">Top Category</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* CTA */}
       <section className="py-24 bg-white text-center">

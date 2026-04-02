@@ -80,7 +80,7 @@ export default function Categories() {
             <PackageSearch className="w-16 h-16 text-accent mx-auto mb-6" />
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">Still can't find what you're looking for?</h2>
             <p className="text-blue-100 text-lg mb-8 leading-relaxed">
-              Window and door hardware can be notoriously difficult to identify. Many parts look similar but have microscopic differences. Let our experts with 40+ years of experience find the exact match for you—for free.
+              Don't waste time guessing which window or door part you need. Many look alike but have tiny, critical differences. Our seasoned experts (40+ years in the field) will do the hard work and find your exact match or upgrade&mdash;for free.
             </p>
             <Button size="lg" className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white shadow-lg" asChild>
               <Link href="/parts-identification">

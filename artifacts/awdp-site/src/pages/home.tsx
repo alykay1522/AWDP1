@@ -34,11 +34,11 @@ export default function Home() {
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight mb-6 text-white shadow-sm">
               The Right Part.<br />
-              <span className="text-blue-400">Every Single Time.</span>
+              <span className="text-blue-400">Right The First Time.</span>
             </h1>
             
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl leading-relaxed">
-              With over 40 years of industry experience, we are America's trusted source for replacement window and door hardware. If they made it, we can find it.
+              With over 40 Years of industry experience, we are America's trusted source for replacement window and door hardware. If they made it, we can find it &ndash; if we can't you probably never will.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
@@ -47,7 +47,7 @@ export default function Home() {
                   Shop Catalog <ChevronRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm" asChild>
+              <Button size="lg" className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 border-0 text-white" asChild>
                 <Link href="/parts-identification">
                   <PackageSearch className="mr-2 w-5 h-5" /> Free Parts ID
                 </Link>
@@ -95,14 +95,14 @@ export default function Home() {
               </div>
               <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-white">Not Sure What Part You Need?</h2>
               <p className="text-blue-100 text-lg mb-8 max-w-xl leading-relaxed">
-                Send us a picture of your broken part. Our experts with decades of experience will identify it and send you a link to buy the exact replacement—completely free.
+                Send us pictures of your needed parts. Our team with decades of industry experience will identify it and send you a link to buy the exact replacement parts or upgrade &ndash; completely free.
               </p>
               <ul className="space-y-3 mb-8 text-blue-100 font-medium">
-                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> No obligation to buy</li>
-                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> Fast response time</li>
-                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> Expert identification of obsolete parts</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> Enjoy a risk-free preview.</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> Timely responses you can count on.</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" /> Expert identification of obsolete parts.</li>
               </ul>
-              <Button size="lg" className="w-fit bg-accent hover:bg-accent/90 text-white h-12 px-8 text-base shadow-lg" asChild>
+              <Button size="lg" className="w-fit bg-red-600 hover:bg-red-700 text-white h-12 px-8 text-base shadow-lg border-0" asChild>
                 <Link href="/parts-identification">Upload a Photo Now</Link>
               </Button>
             </div>
@@ -120,7 +120,7 @@ export default function Home() {
           <div className="flex justify-between items-end mb-10">
             <div>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-2">Featured Hardware</h2>
-              <p className="text-slate-500 font-medium">Top-rated replacement parts trusted by contractors.</p>
+              <p className="text-slate-500 font-medium">High-quality replacement parts trusted by industry professionals.</p>
             </div>
             <Button variant="outline" className="hidden sm:flex" asChild>
               <Link href="/shop">View All Parts <ChevronRight className="ml-2 w-4 h-4" /></Link>
@@ -161,7 +161,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Browse by Category</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Find the exact replacement part you need from our extensive catalog of hardware.</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Quality parts proven and preferred by industry specialists.</p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

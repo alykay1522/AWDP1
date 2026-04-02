@@ -186,7 +186,7 @@ export default function PartsIdentification() {
             We'll Help You Figure It Out — FREE!
           </p>
           <p className="text-lg text-blue-200 mt-6 max-w-2xl mx-auto">
-            Hardware is tricky. Send us a few photos and details, and our experts with 40+ years of experience will find the exact replacement part for you.
+            Send us pictures of your needed parts. Our team with decades of industry experience will identify it and send you a link to buy the exact replacement parts or upgrade &ndash; completely free.
           </p>
         </div>
       </section>

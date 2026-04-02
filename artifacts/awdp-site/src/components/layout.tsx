@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import logo from "@assets/CopilotHEADER_1774977472463.png";
+import paypalImg from "@assets/paypal_1775073666311.png";
 import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,11 @@ export function Layout({ children }: { children: ReactNode }) {
           style={{ display: "block" }}
         />
       </Link>
+      <div className="bg-white text-center py-1.5">
+        <a href="mailto:Info@AllWindowDoorParts.com" className="text-[#1e3a8a] font-semibold text-sm hover:underline">
+          Info@AllWindowDoorParts.com
+        </a>
+      </div>
 
       {/* Site-wide Order Minimum Banner */}
       <div className="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-2 px-4 leading-tight">
@@ -348,21 +354,13 @@ export function Layout({ children }: { children: ReactNode }) {
               </ul>
               
               <div className="mt-8">
-                <h5 className="text-white text-xs font-bold uppercase tracking-wider mb-3">Secure Checkout</h5>
-                <div className="flex gap-2 flex-wrap">
-                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">VISA</div>
-                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">MC</div>
-                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">AMEX</div>
-                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">DISC</div>
-                  <div className="w-10 h-6 bg-white rounded flex items-center justify-center text-[10px] text-black font-bold">PAYPAL</div>
-                </div>
+                <img src={paypalImg} alt="Secure Payments by PayPal — Visa, Mastercard, Discover, American Express, No PayPal Account Needed" className="w-full max-w-[220px] rounded-md" />
               </div>
             </div>
           </div>
           
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm text-slate-500">
             <p>&copy; {new Date().getFullYear()} All Window Door Parts. All rights reserved.</p>
-            <p className="text-xs">Export to WordPress/WooCommerce Ready</p>
           </div>
         </div>
       </footer>
