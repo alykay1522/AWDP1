@@ -5,7 +5,7 @@ import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import logo from "@assets/CopilotHEADER_1774977472463.png";
+import logo from "@assets/Copilot_20260402_114745_1775148479858.png";
 import paypalImg from "@assets/paypal_1775073666311.png";
 import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
@@ -78,21 +78,14 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      {/* Full-Width Logo Banner */}
-      <Link href="/" className="block w-full">
+      {/* Full-Width Logo Banner — crop the empty top portion of the image */}
+      <Link href="/" className="block w-full" style={{ position: "relative", overflow: "hidden", paddingTop: "45%" }}>
         <img
           src={logo}
           alt="All Window Door Parts"
-          className="w-full h-auto"
-          style={{ display: "block" }}
+          style={{ position: "absolute", bottom: 0, left: 0, width: "100%", display: "block" }}
         />
       </Link>
-      <div className="bg-white text-center py-1.5">
-        <a href="mailto:Info@AllWindowDoorParts.com" className="text-[#1e3a8a] font-semibold text-sm hover:underline">
-          Info@AllWindowDoorParts.com
-        </a>
-      </div>
-
       {/* Site-wide Order Minimum Banner */}
       <div className="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-2 px-4 leading-tight">
         $50 minimum on all orders &mdash; Anything below $50 will be cancelled
