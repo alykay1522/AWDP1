@@ -4,6 +4,7 @@ import { ordersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { getUncachableStripeClient } from "../stripeClient";
 import { z } from "zod";
+import { sendOrderNotification } from "../emailNotifier";
 
 const router = Router();
 
@@ -143,27 +144,59 @@ router.post("/checkout/fulfill", async (req, res) => {
 
     if (session.payment_status === "paid") {
       const shipping = session.shipping_details?.address;
+      const customerName = session.customer_details?.name || "";
+      const customerEmail = session.customer_details?.email || "";
+      const customerPhone = session.customer_details?.phone || "";
+      const shippingAddress = shipping
+        ? {
+            line1: shipping.line1 || "",
+            line2: shipping.line2 || undefined,
+            city: shipping.city || "",
+            state: shipping.state || "",
+            postal_code: shipping.postal_code || "",
+            country: shipping.country || "",
+          }
+        : undefined;
+
       await db
         .update(ordersTable)
         .set({
           status: "paid",
           stripePaymentIntentId: String(session.payment_intent ?? ""),
-          customerName: session.customer_details?.name || "",
-          customerEmail: session.customer_details?.email || "",
-          customerPhone: session.customer_details?.phone || "",
-          shippingAddress: shipping
-            ? {
-                line1: shipping.line1 || "",
-                line2: shipping.line2 || undefined,
-                city: shipping.city || "",
-                state: shipping.state || "",
-                postal_code: shipping.postal_code || "",
-                country: shipping.country || "",
-              }
-            : undefined,
+          customerName,
+          customerEmail,
+          customerPhone,
+          shippingAddress,
           updatedAt: new Date(),
         })
         .where(eq(ordersTable.stripeSessionId, sessionId));
+
+      // Fetch the full order for email
+      const [order] = await db
+        .select()
+        .from(ordersTable)
+        .where(eq(ordersTable.stripeSessionId, sessionId))
+        .limit(1);
+
+      if (order) {
+        const lineItems = Array.isArray(order.lineItems) ? order.lineItems as any[] : [];
+        sendOrderNotification({
+          orderId: order.orderId,
+          customerName,
+          customerEmail,
+          customerPhone: customerPhone || undefined,
+          shippingAddress,
+          items: lineItems.map((i: any) => ({
+            name: i.name,
+            sku: i.sku,
+            price: Number(i.price),
+            quantity: Number(i.quantity),
+          })),
+          subtotal: order.subtotal,
+          total: order.total,
+          paymentMethod: "stripe",
+        }).catch((err) => console.error("[email] sendOrderNotification error:", err));
+      }
     }
 
     res.json({ success: true });

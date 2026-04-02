@@ -4,6 +4,7 @@ import { ordersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
+import { sendOrderNotification } from "../emailNotifier";
 
 const router = Router();
 
@@ -86,28 +87,58 @@ router.post("/paypal/capture-order", async (req, res) => {
       const shipping = pu?.shipping;
       const captureId = pu?.payments?.captures?.[0]?.id;
 
+      const customerEmail = payer?.email_address || "";
+      const customerName =
+        shipping?.name?.full_name ||
+        `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
+        "Customer";
+      const shippingAddress = shipping?.address
+        ? {
+            line1: shipping.address.address_line_1 || "",
+            line2: shipping.address.address_line_2,
+            city: shipping.address.admin_area_2 || "",
+            state: shipping.address.admin_area_1 || "",
+            postal_code: shipping.address.postal_code || "",
+            country: shipping.address.country_code || "US",
+          }
+        : undefined;
+
       await db
         .update(ordersTable)
         .set({
           status: "paid",
-          customerEmail: payer?.email_address || "",
-          customerName:
-            shipping?.name?.full_name ||
-            `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
-            "Customer",
-          shippingAddress: shipping?.address
-            ? {
-                line1: shipping.address.address_line_1 || "",
-                line2: shipping.address.address_line_2,
-                city: shipping.address.admin_area_2 || "",
-                state: shipping.address.admin_area_1 || "",
-                postal_code: shipping.address.postal_code || "",
-                country: shipping.address.country_code || "US",
-              }
-            : undefined,
+          customerEmail,
+          customerName,
+          shippingAddress,
           updatedAt: new Date(),
         })
         .where(eq(ordersTable.orderId, orderId));
+
+      // Fetch order for email
+      const [order] = await db
+        .select()
+        .from(ordersTable)
+        .where(eq(ordersTable.orderId, orderId))
+        .limit(1);
+
+      if (order) {
+        const lineItems = Array.isArray(order.lineItems) ? order.lineItems as any[] : [];
+        sendOrderNotification({
+          orderId: order.orderId,
+          customerName,
+          customerEmail,
+          shippingAddress,
+          items: lineItems.map((i: any) => ({
+            name: i.name,
+            sku: i.sku,
+            price: Number(i.price),
+            quantity: Number(i.quantity),
+          })),
+          subtotal: order.subtotal,
+          total: order.total,
+          paymentMethod: "paypal",
+        }).catch((err) => console.error("[email] sendOrderNotification error:", err));
+      }
 
       res.json({ success: true, orderId, captureId });
     } else {
