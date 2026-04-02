@@ -82,7 +82,7 @@ export default function Categories() {
             <p className="text-blue-100 text-lg mb-8 leading-relaxed">
               Don't waste time guessing which window or door part you need. Many look alike but have tiny, critical differences. Our seasoned experts (40+ years in the field) will do the hard work and find your exact match or upgrade&mdash;for free.
             </p>
-            <Button size="lg" className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white shadow-lg" asChild>
+            <Button size="lg" className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 text-white shadow-lg border-0" asChild>
               <Link href="/parts-identification">
                 Use Free Parts Identification Service <ChevronRight className="ml-2 w-5 h-5" />
               </Link>

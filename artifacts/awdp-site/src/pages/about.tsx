@@ -106,7 +106,7 @@ export default function About() {
             <Button size="lg" className="h-14 px-8 text-lg font-bold" asChild>
               <Link href="/shop">Shop All Parts</Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold border-2" asChild>
+            <Button size="lg" className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 text-white border-0" asChild>
               <Link href="/parts-identification">Free Parts ID Service</Link>
             </Button>
           </div>

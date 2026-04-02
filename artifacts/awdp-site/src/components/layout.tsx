@@ -109,7 +109,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <Link href="/" className="hover:text-accent transition-colors">Home</Link>
                 <Link href="/shop" className="hover:text-accent transition-colors">Shop Parts</Link>
                 <Link href="/categories" className="hover:text-accent transition-colors">Categories</Link>
-                <Link href="/parts-identification" className="text-accent hover:text-accent/80 transition-colors flex items-center gap-1 font-bold uppercase tracking-wide text-sm">
+                <Link href="/parts-identification" className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 font-bold uppercase tracking-wide text-sm transition-colors">
                   <PackageSearch className="w-4 h-4" /> Free Parts ID
                 </Link>
                 <Link href="/about" className="hover:text-accent transition-colors">About</Link>
@@ -266,7 +266,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     <Link href="/" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
                     <Link href="/shop" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Shop Parts</Link>
                     <Link href="/categories" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Categories</Link>
-                    <Link href="/parts-identification" className="py-2 border-b text-accent font-bold flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link href="/parts-identification" className="py-2 border-b text-red-600 font-bold flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                       <PackageSearch className="w-5 h-5" /> Free Parts ID
                     </Link>
                     <Link href="/about" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>

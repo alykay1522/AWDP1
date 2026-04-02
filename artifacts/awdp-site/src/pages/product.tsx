@@ -65,7 +65,7 @@ export default function ProductDetail() {
         <p className="text-muted-foreground mb-8">We couldn't find a part matching the SKU "{sku}". The item may have been discontinued or replaced.</p>
         <div className="flex flex-col gap-4">
           <Button asChild size="lg"><Link href="/shop">Browse Catalog</Link></Button>
-          <Button asChild variant="outline" size="lg"><Link href="/parts-identification">Use Free Parts ID Service</Link></Button>
+          <Button asChild size="lg" className="bg-red-600 hover:bg-red-700 text-white border-0"><Link href="/parts-identification">Use Free Parts ID Service</Link></Button>
         </div>
       </div>
     );
