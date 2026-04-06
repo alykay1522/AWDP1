@@ -1,4 +1,4 @@
-import { Shield, Truck, RefreshCcw, Lock } from "lucide-react";
+import { Shield, Truck, RefreshCcw, Lock, Clock, Zap, PackageCheck, AlertTriangle } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Link } from "wouter";
 
@@ -31,17 +31,71 @@ export default function Policies() {
 
           {/* Shipping Policy */}
           <section id="shipping" className="bg-white rounded-2xl border shadow-sm p-8 scroll-mt-24">
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-3 mb-6">
               <div className="bg-primary/10 text-primary p-2.5 rounded-xl">
                 <Truck className="w-6 h-6" />
               </div>
               <h2 className="text-2xl font-serif font-bold text-slate-900">Shipping Policy</h2>
             </div>
-            <p className="text-slate-700 leading-relaxed">
-              This website incorporates UPS, FedEx and / or USPS quick estimates for shipping calculators.
-              This means shipping costs are automatically calculated with approximate shipping charges based
-              on your &ldquo;ship to&rdquo; address for smaller items, small packages, and other types of
-              ground shipments.
+
+            {/* Same-day cutoff callout */}
+            <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-start gap-3 mb-6">
+              <Clock className="w-5 h-5 text-green-700 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-green-800 text-sm">Same-Day Shipping Available</p>
+                <p className="text-green-700 text-sm mt-0.5">
+                  In-stock items typically ship the <strong>same business day</strong> if ordered before
+                  <strong> 2:00 PM Central Time</strong>, Monday through Friday.
+                </p>
+              </div>
+            </div>
+
+            {/* Shipping options */}
+            <h3 className="font-bold text-slate-800 mb-3">Shipping Options</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="border rounded-xl p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <PackageCheck className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-sm">Standard Shipping</span>
+                </div>
+                <p className="text-slate-600 text-sm">3&ndash;5 business days</p>
+                <p className="text-xs text-slate-400">UPS / FedEx / USPS</p>
+              </div>
+              <div className="border rounded-xl p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <Zap className="w-5 h-5 text-amber-500" />
+                  <span className="font-semibold text-sm">Expedited Shipping</span>
+                </div>
+                <p className="text-slate-600 text-sm">2&ndash;3 business days</p>
+                <p className="text-xs text-slate-400">UPS / FedEx</p>
+              </div>
+              <div className="border rounded-xl p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <Truck className="w-5 h-5 text-blue-500" />
+                  <span className="font-semibold text-sm">Next Day Air</span>
+                </div>
+                <p className="text-slate-600 text-sm">Next business day</p>
+                <p className="text-xs text-slate-400">Available at checkout</p>
+              </div>
+            </div>
+
+            {/* Obsolete parts notice */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-start gap-3 mb-6">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-amber-800 text-sm">Hard-to-Find &amp; Obsolete Parts</p>
+                <p className="text-amber-700 text-sm mt-0.5">
+                  We specialize in hard-to-find and obsolete window and door parts. Shipping times for
+                  these items may vary and could take longer than standard estimates. We will contact you
+                  if your order requires additional lead time.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-600 text-sm leading-relaxed">
+              Shipping costs are automatically calculated during checkout based on your delivery address,
+              package weight, and dimensions. We ship via UPS, FedEx, and/or USPS.
+              You do not need to complete a purchase to view shipping charges &mdash; they are shown before you pay.
             </p>
           </section>
 

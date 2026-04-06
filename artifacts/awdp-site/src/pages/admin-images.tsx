@@ -13,6 +13,7 @@ interface ProductImage {
 
 interface ZipResult {
   foldersInZip: number;
+  foldersWithNoImage: number;
   candidateSkus: number;
   dbMatched: number;
   alreadyHadImage: number;
@@ -20,7 +21,9 @@ interface ZipResult {
   failed: number;
   skipped: number;
   errors: string[];
+  sampleEntries: string[];
   sampleFolders: string[];
+  sampleFolderFiles: Record<string, string[]>;
 }
 
 interface CsvResult {
@@ -42,6 +45,7 @@ export default function AdminImages() {
   const [zipUploading, setZipUploading] = useState(false);
   const [zipResult, setZipResult] = useState<ZipResult | null>(null);
   const [zipError, setZipError] = useState<string | null>(null);
+  const [forceOverwrite, setForceOverwrite] = useState(false);
 
   const [csvUploading, setCsvUploading] = useState(false);
   const [csvResult, setCsvResult] = useState<CsvResult | null>(null);
@@ -114,7 +118,8 @@ export default function AdminImages() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/products/upload-images-zip", { method: "POST", body: form });
+      const url = `/api/admin/products/upload-images-zip${forceOverwrite ? "?forceOverwrite=true" : ""}`;
+      const res = await fetch(url, { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Upload failed");
       setZipResult(data);
@@ -193,9 +198,13 @@ export default function AdminImages() {
             <FileArchive className="w-5 h-5 text-blue-600" />
             <h2 className="font-bold text-slate-800">Bulk Import from ZIP</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-3">
             Upload a ZIP where each <strong>subfolder is named by part number</strong> (e.g. <code>10-452SS</code>). Images are matched to products automatically and uploaded to the catalog.
           </p>
+          <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
+            <input type="checkbox" checked={forceOverwrite} onChange={(e) => setForceOverwrite(e.target.checked)} className="w-4 h-4 accent-blue-600" />
+            <span className="text-sm text-slate-700">Force overwrite existing images</span>
+          </label>
           <label className="cursor-pointer block">
             <input ref={zipInputRef} type="file" accept=".zip" className="hidden" onChange={handleZipUpload} disabled={zipUploading} />
             <span className={`inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-medium border-2 border-dashed transition-colors select-none ${zipUploading ? "opacity-60 cursor-not-allowed border-slate-200 text-slate-400" : "cursor-pointer border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"}`}>

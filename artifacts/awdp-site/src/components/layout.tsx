@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState } from "react";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -208,7 +208,12 @@ export function Layout({ children }: { children: ReactNode }) {
                           <p className="text-xs text-amber-700">Add <span className="font-bold">${remaining.toFixed(2)}</span> more to checkout</p>
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                          <p className="text-xs text-green-700 flex items-center gap-1 font-medium">
+                            <Truck className="w-3 h-3" /> In-stock orders before 2 PM CT ship same day
+                          </p>
+                        </div>
                       )}
                       <Button
                         className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
@@ -325,7 +330,11 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li><Link href="/policies#guarantee" className="hover:text-white transition-colors">Secure Shopping Guarantee</Link></li>
                 <li><Link href="/policies" className="hover:text-white transition-colors">All Policies</Link></li>
               </ul>
-              <div className="mt-6 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs leading-snug">
+              <div className="mt-6 bg-green-900/30 border border-green-700/40 rounded-md px-3 py-2.5 text-green-300 text-xs leading-snug flex items-start gap-2">
+                <Truck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>In-stock orders placed before 2:00 PM CT ship same day. Standard (3-5 days), Expedited (2-3 days), Next Day Air available.</span>
+              </div>
+              <div className="mt-3 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs leading-snug">
                 Orders under $50 may require additional shipping. We'll contact you before processing.
               </div>
             </div>

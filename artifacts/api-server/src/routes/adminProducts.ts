@@ -442,15 +442,28 @@ router.delete("/admin/products/:sku", async (req, res) => {
 // ── Bulk image import helpers ─────────────────────────────────────────────────
 
 function pickMainImage(filenames: string[]): string | null {
+  const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
   const candidates = filenames.filter((f) => {
     const lower = f.toLowerCase();
     if (lower.includes("amesbury")) return false;
-    if (lower.endsWith(".gif")) return false;
-    const dots = f.split(".").length - 1;
-    return dots === 1; // main images: "39545.jpg" — only one dot
+    if (!IMAGE_EXTS.some((ext) => lower.endsWith(ext))) return false;
+    // Skip obvious thumbnails / small variants
+    if (lower.includes("thumb") || lower.includes("_sm") || lower.includes("-sm") || lower.includes("_small")) return false;
+    return true;
   });
   if (candidates.length === 0) return null;
-  return candidates.find((f) => f.toLowerCase().endsWith(".jpg")) ?? candidates[0];
+  // Prefer JPG, then JPEG, then PNG, then anything; pick shortest name as tiebreaker (main image)
+  const ordered = [...candidates].sort((a, b) => {
+    const extRank = (f: string) => {
+      const l = f.toLowerCase();
+      if (l.endsWith(".jpg")) return 0;
+      if (l.endsWith(".jpeg")) return 1;
+      if (l.endsWith(".png")) return 2;
+      return 3;
+    };
+    return extRank(a) - extRank(b) || a.length - b.length;
+  });
+  return ordered[0];
 }
 
 function imgContentType(filename: string): string {
@@ -578,6 +591,9 @@ router.post(
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
 
+    // forceOverwrite=true replaces existing GCS images too
+    const forceOverwrite = req.query.forceOverwrite === "true" || req.body?.forceOverwrite === true;
+
     try {
       const zip = new AdmZip(file.path);
 
@@ -591,6 +607,13 @@ router.post(
         const folder = parts[parts.length - 2];
         if (!byFolder.has(folder)) byFolder.set(folder, []);
         byFolder.get(folder)!.push(entry);
+      }
+
+      // Collect diagnostic: first few raw ZIP entries and files-per-folder
+      const sampleEntries = zip.getEntries().slice(0, 5).map((e) => e.entryName);
+      const sampleFolderFiles: Record<string, string[]> = {};
+      for (const [folder, entries] of [...byFolder.entries()].slice(0, 3)) {
+        sampleFolderFiles[folder] = entries.map((e) => e.entryName.split("/").pop()!).slice(0, 5);
       }
 
       // Normalize folder name: strip Windows " (N)" suffix
@@ -611,11 +634,15 @@ router.post(
 
       // Build map: candidate SKU → { folder, filename, buffer }
       const skuMap = new Map<string, { folder: string; filename: string; buffer: Buffer }>();
+      let noImageFile = 0;
       for (const [folder, entries] of byFolder) {
         const filenames = entries.map((e) => e.entryName.split("/").pop()!);
         const chosen = pickMainImage(filenames);
-        if (!chosen) continue;
-        const entry = entries.find((e) => e.entryName.endsWith(`/${chosen}`));
+        if (!chosen) { noImageFile++; continue; }
+        const entry = entries.find((e) => {
+          const name = e.entryName.split("/").pop();
+          return name === chosen;
+        });
         if (!entry) continue;
         for (const sku of candidateSkus(folder)) {
           if (!skuMap.has(sku)) {
@@ -636,8 +663,13 @@ router.post(
         found.push(...rows);
       }
 
-      // Only update products that have no GCS image yet
-      const toUpdate = found.filter((r) => !r.imageUrl || r.imageUrl.startsWith("http"));
+      // Skip products that already have a GCS image (unless forceOverwrite)
+      const toUpdate = found.filter((r) => {
+        if (!r.imageUrl) return true;           // no image → always update
+        if (r.imageUrl.startsWith("http")) return true; // external URL → replace with GCS
+        if (forceOverwrite) return true;         // force mode → replace everything
+        return false;                            // has GCS image and no force → skip
+      });
 
       let uploaded = 0, failed = 0, skipped = 0;
       const errors: string[] = [];
@@ -660,6 +692,7 @@ router.post(
 
       res.json({
         foldersInZip: byFolder.size,
+        foldersWithNoImage: noImageFile,
         candidateSkus: allCandidates.length,
         dbMatched: found.length,
         alreadyHadImage: found.length - toUpdate.length,
@@ -667,8 +700,10 @@ router.post(
         failed,
         skipped,
         errors: errors.slice(0, 20),
-        // First 10 folder names seen — helps diagnose structure issues
+        // Diagnostics to help understand ZIP structure
+        sampleEntries,
         sampleFolders: [...byFolder.keys()].slice(0, 10),
+        sampleFolderFiles,
       });
     } catch (err: any) {
       fs.unlink(file.path, () => {});
