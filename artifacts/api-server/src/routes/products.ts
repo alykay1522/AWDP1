@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, ilike, and, or, sql, count } from "drizzle-orm";
+import { eq, ilike, and, or, sql, count, isNotNull } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -15,7 +15,10 @@ router.get("/products/featured", async (req, res) => {
     const featured = await db
       .select()
       .from(productsTable)
-      .where(eq(productsTable.inStock, true))
+      .where(and(
+        eq(productsTable.inStock, true),
+        isNotNull(productsTable.imageUrl)
+      ))
       .orderBy(sql`RANDOM()`)
       .limit(8);
     res.json(featured);

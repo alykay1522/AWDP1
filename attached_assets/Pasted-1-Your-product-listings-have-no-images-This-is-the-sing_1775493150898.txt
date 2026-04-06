@@ -1,0 +1,220 @@
+1. Your product listings have no images
+This is the single biggest conversion killer on your homepage.
+
+Your “Featured Hardware” section shows multiple products with:
+
+“No Image”  
+AWDP‑EE‑LOLE
+AWDP‑EE‑BLIO
+AWDP‑EE‑IITL
+AWDP‑EE‑OBLO
+AWDP‑EE‑LPOO
+AWDP‑EE‑LBBP
+
+Customers will not buy hardware they cannot see.
+This alone can drop conversions by 90%+.
+
+Fix:
+Upload product images ASAP
+
+Or temporarily hide products with no images
+
+Or replace with placeholder diagrams until real images are ready
+
+This is priority #1.
+
+⭐ 2. Your homepage has no clear CTA (Call to Action)
+Right now the hero says:
+
+“The Right Part. Right The First Time.”
+
+…but there is no button telling the visitor what to do next.
+
+Fix:
+Add two buttons under the hero:
+
+Shop All Parts
+
+Free Parts ID (Most Popular)
+
+This will immediately increase engagement.
+
+⭐ 3. Your strongest offer (Free Parts ID) is buried
+Your Free Parts ID service is GOLD — it’s the #1 reason people choose you.
+
+But on the homepage, it’s halfway down the page and not emphasized.
+
+Fix:
+Move Free Parts ID into the hero section with a big button:
+
+“Upload Photos — We Identify Your Part Free”
+
+This will dramatically increase leads.
+
+⭐ 4. Your product grid is confusing and not shoppable
+The homepage shows:
+
+SKU codes
+
+No images
+
+No descriptions
+
+No “Add to Cart”
+
+No “View Product”
+
+This looks like an internal inventory system, not a retail store.
+
+Fix:
+Each product card should show:
+
+Image
+
+Product name (not SKU)
+
+Price
+
+“View Details” button
+
+⭐ 5. Your navigation is missing key shopping paths
+Your top nav shows:
+
+Home · Shop Parts · Categories · Free Parts ID · About · Contact
+
+But “Shop Parts” and “Categories” both lead to the same experience.
+
+Fix:
+Replace with:
+
+Shop All Parts
+
+Browse by Category
+
+Free Parts ID
+
+Track Order
+
+Contact
+
+⭐ 6. Your homepage lacks trust badges above the fold
+You mention:
+
+Veteran Owned
+
+40+ Years Experience
+
+Fast Shipping
+
+Expert Matching
+
+…but these are buried.
+
+Fix:
+Add a trust strip under the hero:
+
+⭐ 40+ Years Experience
+
+🇺🇸 Veteran Owned
+
+🚚 Fast Shipping
+
+🔍 Free Parts ID
+
+🛠 Expert Matching
+
+This instantly builds credibility.
+
+⭐ 7. Your product names are unreadable
+Example:
+
+AWDP‑EE‑LOLE Snap‑In Metal Glazing Bead | AWDP‑TI‑499
+
+Customers don’t know what this means.
+
+Fix:
+Rewrite product titles to be human‑friendly:
+
+Before:  
+AWDP‑EE‑LOLE Snap‑In Metal Glazing Bead | AWDP‑TI‑499
+
+After:  
+Snap‑In Metal Glazing Bead — Fits Truth, Pella, Andersen (Model 499)
+
+⭐ 8. Your homepage needs a “Shop by Problem” section
+Most customers don’t know the part name — they know the symptom.
+
+Add a section:
+
+Shop by Problem
+Window won’t stay up
+
+Crank operator broken
+
+Patio door hard to slide
+
+Weatherstripping worn out
+
+Lock won’t latch
+
+This will massively improve conversions.
+
+⭐ 9. Your testimonials are strong — but too far down
+Your testimonials are excellent:
+
+“They identified my part in 2 hours…”
+“As a contractor, time is money…”
+
+But they’re buried near the bottom.
+
+Fix:
+Move 1–2 testimonials higher on the page.
+
+⭐ 10. Add a “Why Choose Us” section
+You have the content, but it’s not structured.
+
+Use a simple grid:
+
+Why Homeowners & Contractors Choose Us
+40+ Years Experience
+
+Veteran Owned
+
+Free Parts ID
+
+Fast Shipping
+
+Hard‑to‑Find Parts Experts
+
+Nationwide Delivery
+
+⭐ 11. Add a footer CTA
+Your footer currently ends with:
+
+© 2026 All Window Door Parts
+
+Add a final CTA:
+
+Need help finding a part? Upload photos — we’ll identify it free.
+
+⭐ 12. Your $50 minimum order warning is too aggressive
+Right now it says:
+
+“$50 minimum on all orders — Anything below $50 will be cancelled.”
+
+This scares customers.
+
+Fix:
+Rewrite to:
+
+“Orders under $50 may require additional shipping. We’ll contact you before processing.”
+
+⭐ Summary — What to Fix First (Highest ROI)
+If you do nothing else, fix these:
+
+1. Add product images
+2. Add hero CTAs
+3. Move Free Parts ID to the top
+4. Rewrite product titles
+5. Add trust badges
+These 5 changes alone will increase conversions dramatically.

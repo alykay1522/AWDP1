@@ -88,7 +88,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </Link>
       {/* Site-wide Order Minimum Banner */}
       <div className="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-2 px-4 leading-tight">
-        $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+        Orders under $50 may require additional shipping charges &mdash; we will contact you before processing.
       </div>
 
       {/* Sticky Navigation Bar */}
@@ -325,8 +325,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li><Link href="/policies#guarantee" className="hover:text-white transition-colors">Secure Shopping Guarantee</Link></li>
                 <li><Link href="/policies" className="hover:text-white transition-colors">All Policies</Link></li>
               </ul>
-              <div className="mt-6 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs font-semibold leading-snug">
-                $50 minimum on all orders.<br />Anything below $50 will be cancelled.
+              <div className="mt-6 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs leading-snug">
+                Orders under $50 may require additional shipping. We'll contact you before processing.
               </div>
             </div>
 
@@ -352,7 +352,16 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
           
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm text-slate-500">
+          {/* Footer CTA */}
+          <div className="border-t border-slate-700 mt-12 pt-10 pb-4 text-center">
+            <h3 className="text-white font-serif text-2xl font-bold mb-3">Can't Find Your Part?</h3>
+            <p className="text-slate-400 mb-6 max-w-xl mx-auto">Upload a photo and our experts will identify your exact replacement — completely free. Obsolete parts welcome.</p>
+            <Link href="/parts-identification" className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-md transition-colors text-sm uppercase tracking-wide">
+              Upload Photos &mdash; We Identify Free
+            </Link>
+          </div>
+
+          <div className="border-t border-slate-800 mt-10 pt-8 text-center text-sm text-slate-500">
             <p>&copy; {new Date().getFullYear()} All Window Door Parts. All rights reserved.</p>
           </div>
         </div>

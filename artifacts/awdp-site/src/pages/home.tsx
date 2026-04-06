@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote } from "lucide-react";
+import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
@@ -156,6 +156,51 @@ export default function Home() {
         </div>
       </section>
       
+      {/* Shop by Problem */}
+      <section className="py-16 md:py-24 bg-slate-900 text-white border-t border-slate-800">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Shop by Problem</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg">Don't know the part name? That's okay — tell us the problem and we'll point you to the fix.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: ArrowUp,     label: "Window Won't Stay Up",       desc: "Broken sash balance or spring",        href: "/shop?q=sash+balance" },
+              { icon: Wrench,      label: "Crank Operator Broken",       desc: "Casement or awning won't open/close",  href: "/shop?q=casement+operator" },
+              { icon: Move,        label: "Patio Door Hard to Slide",    desc: "Worn rollers or track damage",          href: "/shop?q=patio+door+roller" },
+              { icon: Wind,        label: "Weatherstripping Worn Out",   desc: "Drafts, leaks, or worn seals",          href: "/shop?q=weatherstripping" },
+              { icon: Lock,        label: "Lock Won't Latch",            desc: "Broken or misaligned lock hardware",   href: "/shop?q=window+lock" },
+              { icon: LayoutGrid,  label: "Screen Door Damaged",         desc: "Torn screen, bent frame, or hardware", href: "/shop?q=screen+door" },
+              { icon: Key,         label: "Handle Broken or Loose",      desc: "Door or window handle replacement",    href: "/shop?q=handle" },
+              { icon: Droplets,    label: "Window Leaks Air or Water",   desc: "Glazing, seals, or frame repair",      href: "/parts-identification" },
+            ].map(({ icon: Icon, label, desc, href }) => (
+              <Link key={label} href={href} className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all flex flex-col gap-3">
+                <div className="w-11 h-11 rounded-lg bg-blue-600/20 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Icon className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm leading-snug mb-1">{label}</h3>
+                  <p className="text-slate-400 text-xs leading-relaxed">{desc}</p>
+                </div>
+                <span className="text-blue-400 text-xs font-semibold group-hover:text-white transition-colors mt-auto">
+                  Find the fix &rarr;
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-slate-400 mb-5">Not sure what's wrong? Our experts will diagnose it for free.</p>
+            <Button size="lg" className="bg-red-600 hover:bg-red-700 border-0 text-white h-12 px-8" asChild>
+              <Link href="/parts-identification">
+                <PackageSearch className="mr-2 w-5 h-5" /> Upload a Photo — Free Parts ID
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Popular Categories Grid */}
       <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200">
         <div className="container mx-auto px-4">
