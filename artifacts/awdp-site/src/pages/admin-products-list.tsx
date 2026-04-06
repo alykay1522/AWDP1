@@ -189,12 +189,19 @@ export default function AdminProductsList() {
       if (!res.ok) throw new Error(result.error ?? "Import failed");
 
       qc.invalidateQueries({ queryKey: ["admin-products-list"] });
+      const parts = [
+        result.inserted && `${result.inserted} added`,
+        result.updated && `${result.updated} updated`,
+        result.skipped && `${result.skipped} blank rows skipped`,
+        result.errored && `${result.errored} errors`,
+      ].filter(Boolean).join(" · ");
       toast({
-        title: `Import complete`,
-        description: `${result.inserted} added · ${result.updated} updated · ${result.errored} errors`,
+        title: result.errored > 0 ? "Import finished with errors" : "Import complete",
+        description: parts || "No changes",
+        variant: result.errored > 0 && result.inserted === 0 && result.updated === 0 ? "destructive" : "default",
       });
       if (result.errors?.length > 0) {
-        console.warn("Import errors:", result.errors);
+        console.warn("Import errors (first 50):", result.errors);
       }
     } catch (e: any) {
       toast({ title: "Import failed", description: e.message, variant: "destructive" });

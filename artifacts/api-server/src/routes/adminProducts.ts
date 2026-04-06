@@ -118,12 +118,6 @@ router.post("/admin/products", async (req, res) => {
     const data = parsed.data;
     const sku = await generateUniqueSku(data.originalSku);
 
-    // Store original supplier part number in specifications
-    const specifications = {
-      ...data.specifications,
-      "Supplier Part No.": data.originalSku,
-    };
-
     const [product] = await db
       .insert(productsTable)
       .values({
@@ -137,7 +131,7 @@ router.post("/admin/products", async (req, res) => {
         inStock: data.inStock,
         tags: data.tags,
         compatibleBrands: data.compatibleBrands,
-        specifications,
+        specifications: data.specifications,
         imageUrl: data.imageUrl ?? null,
       })
       .returning();
@@ -223,7 +217,59 @@ router.get("/admin/products/export", async (_req, res) => {
   }
 });
 
+// ── Column-name normaliser for flexible CSV import ────────────────────────────
+// Strips spaces/punctuation, lowercases, then maps common aliases to our field names.
+function normalizeRow(raw: Record<string, string>): Record<string, string> {
+  // Build a compact-lowercase keyed copy for fast alias lookup
+  const lc: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const key = k.toLowerCase().replace(/[\s\-_.]+/g, "");
+    lc[key] = v;
+  }
+
+  function pick(...aliases: string[]): string {
+    for (const a of aliases) {
+      const v = lc[a];
+      if (v !== undefined && v.trim() !== "") return v.trim();
+    }
+    return "";
+  }
+
+  // Strip currency symbols and commas from numeric strings
+  function cleanNum(s: string): string {
+    return s.replace(/[$,\s]/g, "");
+  }
+
+  const rawPrice = pick("price", "sellingprice", "ourprice", "retailprice", "unitprice",
+                         "listprice", "saleprice", "suggestedprice", "baseprice", "msrp");
+  const rawOrig  = pick("originalprice", "msrp", "listprice", "suggestedretail",
+                         "suggestedprice", "regularprice", "baseprice");
+
+  return {
+    sku:            pick("sku", "awdpsku", "awdp", "partnumber", "partno", "partnum",
+                         "itemnumber", "itemno", "catalogno", "catalognumber", "code", "id",
+                         "number", "part", "item"),
+    name:           pick("name", "productname", "itemname", "title", "product",
+                         "shortdescription", "shortdesc"),
+    description:    pick("description", "longdescription", "productdescription",
+                         "itemdescription", "details", "desc"),
+    price:          cleanNum(rawPrice),
+    originalPrice:  cleanNum(rawOrig),
+    category:       pick("category", "producttype", "type", "dept", "department",
+                         "productcategory", "group"),
+    supplier:       pick("supplier", "vendor", "brand", "manufacturer", "source"),
+    inStock:        pick("instock", "stock", "available", "availability", "qty",
+                         "quantity", "qtyavailable", "qoh"),
+    imageUrl:       pick("imageurl", "image", "imagelink", "photo", "thumbnail", "img"),
+    tags:           pick("tags", "keywords", "tag", "keyword"),
+    compatibleBrands: pick("compatiblebrands", "compatbrand", "brands", "fits",
+                            "compatible", "fitment"),
+    specifications: pick("specifications", "specs", "attributes", "attrs"),
+  };
+}
+
 // POST /api/admin/products/import — upsert products from CSV rows (parsed client-side)
+// Accepts both AWDP-format SKUs (update) and raw supplier part numbers (insert as new).
 router.post("/admin/products/import", async (req, res) => {
   try {
     const { rows } = req.body as { rows: Record<string, string>[] };
@@ -231,33 +277,56 @@ router.post("/admin/products/import", async (req, res) => {
       return res.status(400).json({ error: "No rows provided" });
     }
 
-    let inserted = 0, updated = 0, errored = 0;
+    let inserted = 0, updated = 0, errored = 0, skipped = 0;
     const errors: string[] = [];
 
-    for (const row of rows) {
+    for (const rawRow of rows) {
+      const row = normalizeRow(rawRow);
+      const rawSku = row.sku;
+
       try {
-        const sku = row.sku?.trim();
-        if (!sku) {
+        if (!rawSku) {
+          skipped++;
+          continue; // silently skip completely blank rows
+        }
+
+        // Resolve the AWDP SKU:
+        // • If it already starts with AWDP- → use it as-is
+        // • Otherwise run it through the cipher to generate one
+        let sku: string;
+        if (rawSku.toUpperCase().startsWith("AWDP-")) {
+          sku = rawSku.toUpperCase();
+        } else {
+          sku = await generateUniqueSku(rawSku);
+        }
+
+        // Price: required. If missing AND this is a new product, skip with error.
+        const priceStr = row.price;
+        const price = parseFloat(priceStr);
+        const priceValid = !isNaN(price) && price > 0;
+
+        // For existing products a missing price just means "don't change price"
+        const [existing] = await db
+          .select({ sku: productsTable.sku, price: productsTable.price })
+          .from(productsTable)
+          .where(eq(productsTable.sku, sku))
+          .limit(1);
+
+        if (!priceValid && !existing) {
           errored++;
-          errors.push(`Skipped row with missing SKU`);
+          errors.push(`${rawSku}: no valid price — row skipped`);
           continue;
         }
 
-        const price = parseFloat(row.price);
-        if (isNaN(price) || price <= 0) {
-          errored++;
-          errors.push(`${sku}: invalid price "${row.price}"`);
-          continue;
-        }
-
-        const v = row.inStock?.toLowerCase();
-        const inStock = v === "true" || v === "1" || v === "yes";
+        const inStockRaw = row.inStock.toLowerCase();
+        const inStock = inStockRaw === "" || inStockRaw === "true" || inStockRaw === "1"
+          || inStockRaw === "yes" || inStockRaw === "y" || inStockRaw === "in stock";
 
         const tags = row.tags
-          ? row.tags.split(";").map((t) => t.trim()).filter(Boolean)
+          ? row.tags.split(/[;|,]/).map((t) => t.trim()).filter(Boolean)
           : [];
         const compatibleBrands = row.compatibleBrands
-          ? row.compatibleBrands.split(";").map((b) => b.trim()).filter(Boolean)
+          ? row.compatibleBrands.split(/[;|,]/).map((b) => b.trim()).filter(Boolean)
           : [];
 
         let specifications: Record<string, string> = {};
@@ -265,42 +334,46 @@ router.post("/admin/products/import", async (req, res) => {
           try { specifications = JSON.parse(row.specifications); } catch {}
         }
 
-        const values = {
-          name: row.name ?? "",
-          description: row.description ?? "",
-          price: price.toFixed(2),
-          originalPrice: row.originalPrice && row.originalPrice.trim()
-            ? parseFloat(row.originalPrice).toFixed(2)
-            : null,
-          category: row.category ?? "",
-          supplier: row.supplier ?? "All Window Door Parts",
+        const values: Record<string, unknown> = {
+          name:           row.name || (existing ? undefined : rawSku),
+          description:    row.description || "",
+          category:       row.category || "",
+          supplier:       row.supplier || "All Window Door Parts",
           inStock,
-          imageUrl: row.imageUrl?.trim() || null,
+          imageUrl:       row.imageUrl || null,
           tags,
           compatibleBrands,
           specifications,
         };
 
-        const [existing] = await db
-          .select({ sku: productsTable.sku })
-          .from(productsTable)
-          .where(eq(productsTable.sku, sku))
-          .limit(1);
+        if (priceValid) {
+          values.price = price.toFixed(2);
+        }
+
+        const origPrice = parseFloat(row.originalPrice);
+        if (!isNaN(origPrice) && origPrice > 0) {
+          values.originalPrice = origPrice.toFixed(2);
+        }
+
+        // Remove undefined values so we don't overwrite existing data accidentally
+        for (const k of Object.keys(values)) {
+          if (values[k] === undefined) delete values[k];
+        }
 
         if (existing) {
           await db.update(productsTable).set(values).where(eq(productsTable.sku, sku));
           updated++;
         } else {
-          await db.insert(productsTable).values({ sku, ...values });
+          await db.insert(productsTable).values({ sku, ...(values as any) });
           inserted++;
         }
       } catch (e: any) {
         errored++;
-        errors.push(`${row.sku ?? "unknown"}: ${e.message}`);
+        if (errors.length < 50) errors.push(`${rawSku || "?"}: ${e.message}`);
       }
     }
 
-    res.json({ inserted, updated, errored, errors });
+    res.json({ inserted, updated, errored, skipped, errors });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
