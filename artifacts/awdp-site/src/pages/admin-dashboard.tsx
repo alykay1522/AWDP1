@@ -1,11 +1,79 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useRef } from "react";
 import { Link } from "wouter";
 import {
   Package, ShoppingBag, DollarSign, Clock, Wrench, MessageSquare,
   TrendingUp, PlusCircle, Settings, FolderTree, ChevronRight,
+  ImageIcon, Tag, Loader2, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
+
+type JobStatus = "idle" | "running" | "done" | "error";
+interface JobState {
+  status: JobStatus;
+  log: string[];
+  uploaded: number;
+  failed: number;
+  total: number;
+}
+
+function useSSEJob(endpoint: string) {
+  const [state, setState] = useState<JobState>({ status: "idle", log: [], uploaded: 0, failed: 0, total: 0 });
+  const esRef = useRef<EventSource | null>(null);
+
+  function start(limit: number) {
+    if (state.status === "running") return;
+    setState({ status: "running", log: [], uploaded: 0, failed: 0, total: 0 });
+
+    const url = `${endpoint}?limit=${limit}`;
+    fetch(url, { method: "POST" }).then((res) => {
+      if (!res.body) return;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+
+      function pump() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            setState((s) => ({ ...s, status: s.status === "running" ? "done" : s.status }));
+            return;
+          }
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() ?? "";
+          for (const line of lines) {
+            if (!line.startsWith("data:")) continue;
+            try {
+              const ev = JSON.parse(line.slice(5).trim());
+              setState((s) => {
+                const entry = ev.type === "progress"
+                  ? `${ev.status === "ok" ? "✓" : "!"} ${ev.sku}: ${ev.name}${ev.price ? ` → $${ev.price}` : ""}${ev.error ? ` (${ev.error})` : ""}`
+                  : ev.type === "start" ? `Starting — ${ev.total} products`
+                  : ev.type === "done" ? `Done — ${ev.uploaded ?? ev.updated ?? 0} updated, ${ev.failed} skipped`
+                  : ev.type === "error" ? `ERROR: ${ev.error}`
+                  : null;
+                return {
+                  status: ev.type === "done" ? "done" : ev.type === "error" ? "error" : "running",
+                  log: entry ? [...s.log.slice(-49), entry] : s.log,
+                  uploaded: ev.uploaded ?? ev.updated ?? s.uploaded,
+                  failed: ev.failed ?? s.failed,
+                  total: ev.total ?? s.total,
+                };
+              });
+            } catch {}
+          }
+          pump();
+        });
+      }
+      pump();
+    }).catch((err) => {
+      setState((s) => ({ ...s, status: "error", log: [...s.log, `Error: ${err.message}`] }));
+    });
+  }
+
+  return { state, start };
+}
 
 interface AdminOrdersResponse {
   orders: any[];
@@ -19,6 +87,11 @@ function fmtDate(iso: string) {
 }
 
 export default function AdminDashboard() {
+  const imageJob = useSSEJob("/api/admin/products/generate-images");
+  const priceJob = useSSEJob("/api/admin/products/generate-prices");
+  const [imageLimit, setImageLimit] = useState(50);
+  const [priceLimit, setPriceLimit] = useState(100);
+
   const { data: catalogStats } = useGetCatalogStats({
     query: { queryKey: getGetCatalogStatsQueryKey() },
   });
@@ -117,6 +190,98 @@ export default function AdminDashboard() {
                 {a.icon} {a.label}
               </Link>
             ))}
+          </div>
+        </div>
+
+        {/* AI Generation Tools */}
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">AI Catalog Tools</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Image Generator */}
+            <div className="bg-white rounded-xl border shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <ImageIcon className="w-5 h-5 text-violet-500" />
+                <h3 className="font-semibold text-slate-800">Generate Product Images</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">AI-generates images for products without photos using gpt-image-1.</p>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-xs text-slate-500 whitespace-nowrap">Batch size:</label>
+                <select
+                  value={imageLimit}
+                  onChange={(e) => setImageLimit(Number(e.target.value))}
+                  disabled={imageJob.state.status === "running"}
+                  className="border rounded px-2 py-1 text-sm bg-white"
+                >
+                  {[10, 25, 50, 100, 200].map((n) => <option key={n} value={n}>{n} products</option>)}
+                </select>
+              </div>
+              <Button
+                onClick={() => imageJob.start(imageLimit)}
+                disabled={imageJob.state.status === "running"}
+                className="w-full mb-3"
+                variant={imageJob.state.status === "done" ? "outline" : "default"}
+              >
+                {imageJob.state.status === "running" ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Generating ({imageJob.state.uploaded}/{imageJob.state.total})...</>
+                ) : imageJob.state.status === "done" ? (
+                  <><CheckCircle2 className="w-4 h-4 mr-2 text-green-600" /> Done — Run Again</>
+                ) : imageJob.state.status === "error" ? (
+                  <><AlertCircle className="w-4 h-4 mr-2 text-red-500" /> Error — Retry</>
+                ) : (
+                  <><ImageIcon className="w-4 h-4 mr-2" /> Start Image Generation</>
+                )}
+              </Button>
+              {imageJob.state.log.length > 0 && (
+                <div className="bg-slate-900 rounded p-3 h-32 overflow-y-auto">
+                  {imageJob.state.log.map((line, i) => (
+                    <p key={i} className={`text-xs font-mono ${line.startsWith("✓") ? "text-green-400" : line.startsWith("!") ? "text-yellow-400" : line.startsWith("Done") ? "text-blue-300 font-bold" : line.startsWith("ERROR") ? "text-red-400" : "text-slate-300"}`}>{line}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Price Generator */}
+            <div className="bg-white rounded-xl border shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <Tag className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-semibold text-slate-800">Generate Product Prices</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">AI estimates retail prices for products currently priced at $0.</p>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-xs text-slate-500 whitespace-nowrap">Batch size:</label>
+                <select
+                  value={priceLimit}
+                  onChange={(e) => setPriceLimit(Number(e.target.value))}
+                  disabled={priceJob.state.status === "running"}
+                  className="border rounded px-2 py-1 text-sm bg-white"
+                >
+                  {[50, 100, 200, 500].map((n) => <option key={n} value={n}>{n} products</option>)}
+                </select>
+              </div>
+              <Button
+                onClick={() => priceJob.start(priceLimit)}
+                disabled={priceJob.state.status === "running"}
+                className="w-full mb-3"
+                variant={priceJob.state.status === "done" ? "outline" : "default"}
+              >
+                {priceJob.state.status === "running" ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Pricing ({priceJob.state.uploaded}/{priceJob.state.total})...</>
+                ) : priceJob.state.status === "done" ? (
+                  <><CheckCircle2 className="w-4 h-4 mr-2 text-green-600" /> Done — Run Again</>
+                ) : priceJob.state.status === "error" ? (
+                  <><AlertCircle className="w-4 h-4 mr-2 text-red-500" /> Error — Retry</>
+                ) : (
+                  <><Tag className="w-4 h-4 mr-2" /> Start Price Generation</>
+                )}
+              </Button>
+              {priceJob.state.log.length > 0 && (
+                <div className="bg-slate-900 rounded p-3 h-32 overflow-y-auto">
+                  {priceJob.state.log.map((line, i) => (
+                    <p key={i} className={`text-xs font-mono ${line.startsWith("✓") ? "text-green-400" : line.startsWith("!") ? "text-yellow-400" : line.startsWith("Done") ? "text-blue-300 font-bold" : line.startsWith("ERROR") ? "text-red-400" : "text-slate-300"}`}>{line}</p>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
