@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ImageIcon, Upload, Loader2, RefreshCw, Copy, Check, Trash2,
-  FileArchive, FileText, CheckCircle2, AlertCircle,
+  FileArchive, FileText, CheckCircle2, AlertCircle, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -50,6 +50,11 @@ export default function AdminImages() {
   const [csvUploading, setCsvUploading] = useState(false);
   const [csvResult, setCsvResult] = useState<CsvResult | null>(null);
   const [csvError, setCsvError] = useState<string | null>(null);
+
+  const diagInputRef = useRef<HTMLInputElement>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagResult, setDiagResult] = useState<any | null>(null);
+  const [diagError, setDiagError] = useState<string | null>(null);
 
   const { data, isLoading, refetch } = useQuery<{ images: ProductImage[] }>({
     queryKey: ["admin-images"],
@@ -153,6 +158,27 @@ export default function AdminImages() {
     } finally {
       setCsvUploading(false);
       if (csvInputRef.current) csvInputRef.current.value = "";
+    }
+  };
+
+  const handleDiagnose = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setDiagLoading(true);
+    setDiagResult(null);
+    setDiagError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/admin/products/diagnose-zip", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Diagnose failed");
+      setDiagResult(data);
+    } catch (err: any) {
+      setDiagError(err.message);
+    } finally {
+      setDiagLoading(false);
+      if (diagInputRef.current) diagInputRef.current.value = "";
     }
   };
 
@@ -281,6 +307,87 @@ export default function AdminImages() {
           {csvError && (
             <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {csvError}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Diagnose ZIP */}
+      <div className="px-6 pt-4 max-w-4xl">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Search className="w-5 h-5 text-amber-600" />
+            <h2 className="font-bold text-slate-800">Diagnose ZIP (no upload)</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            Upload your ZIP here to see exactly how each folder is matched — without uploading anything. Shows which folders are found in the DB, what images would be chosen, and why folders are skipped.
+          </p>
+          <label className="cursor-pointer block">
+            <input ref={diagInputRef} type="file" accept=".zip" className="hidden" onChange={handleDiagnose} disabled={diagLoading} />
+            <span className={`inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-medium border-2 border-dashed transition-colors select-none ${diagLoading ? "opacity-60 cursor-not-allowed border-slate-200 text-slate-400" : "cursor-pointer border-amber-400 text-amber-700 hover:bg-amber-100 hover:border-amber-500"}`}>
+              {diagLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Analysing…</> : <><Search className="w-4 h-4" /> Choose ZIP to Diagnose</>}
+            </span>
+          </label>
+
+          {diagError && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {diagError}
+            </div>
+          )}
+
+          {diagResult && (
+            <div className="mt-4 space-y-3">
+              {/* Summary */}
+              <div className="bg-white border rounded-lg p-3 text-sm">
+                <p className="font-bold text-slate-700 mb-2">Summary (first 50 folders)</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-slate-600">
+                  <span>Total entries in ZIP:</span><span className="font-mono font-bold">{diagResult.totalEntries}</span>
+                  <span>Folders detected:</span><span className="font-mono font-bold">{diagResult.foldersFound}</span>
+                  <span className="text-green-700">Would upload:</span><span className="font-mono font-bold text-green-700">{diagResult.summary.wouldUpload}</span>
+                  <span className="text-blue-700">DB matched:</span><span className="font-mono font-bold text-blue-700">{diagResult.summary.dbMatched}</span>
+                  <span className="text-amber-600">Already has GCS image:</span><span className="font-mono font-bold text-amber-600">{diagResult.summary.alreadyHasImage}</span>
+                  <span className="text-red-600">No DB match:</span><span className="font-mono font-bold text-red-600">{diagResult.summary.noDbMatch}</span>
+                  <span className="text-red-600">No image file chosen:</span><span className="font-mono font-bold text-red-600">{diagResult.summary.noImageFile}</span>
+                </div>
+              </div>
+
+              {/* Raw ZIP entries sample */}
+              {diagResult.rawEntries?.length > 0 && (
+                <div className="bg-white border rounded-lg p-3 text-sm">
+                  <p className="font-bold text-slate-700 mb-1 text-xs uppercase tracking-wide">Raw ZIP entries (first 10)</p>
+                  <div className="font-mono text-xs text-slate-500 space-y-0.5">
+                    {diagResult.rawEntries.map((e: string, i: number) => <div key={i}>{e}</div>)}
+                  </div>
+                </div>
+              )}
+
+              {/* Per-folder table */}
+              <div className="bg-white border rounded-lg overflow-hidden text-xs">
+                <div className="grid grid-cols-[1fr_1fr_80px_80px] font-semibold text-slate-500 uppercase tracking-wide px-3 py-2 bg-slate-50 border-b">
+                  <span>Folder</span><span>Candidate SKUs</span><span>DB Match?</span><span>Upload?</span>
+                </div>
+                <div className="divide-y max-h-96 overflow-y-auto">
+                  {diagResult.rows.map((row: any, i: number) => (
+                    <div key={i} className={`grid grid-cols-[1fr_1fr_80px_80px] px-3 py-2 gap-2 ${row.wouldUpload ? "bg-green-50" : row.dbMatch ? "bg-amber-50" : "bg-red-50/40"}`}>
+                      <div>
+                        <div className="font-mono text-slate-700 truncate" title={row.folder}>{row.folder}</div>
+                        {row.chosenImage ? <div className="text-slate-400 truncate" title={row.chosenImage}>img: {row.chosenImage}</div>
+                          : <div className="text-red-500">no image file</div>}
+                      </div>
+                      <div className="font-mono text-slate-500 space-y-0.5">
+                        {row.candidateSkus.map((s: string, j: number) => <div key={j} className="truncate" title={s}>{s}</div>)}
+                      </div>
+                      <div className={row.dbMatch ? "text-blue-700 font-bold" : "text-red-500"}>
+                        {row.dbMatch ? "YES" : "no"}
+                        {row.existingImage && <div className="text-amber-600 font-normal">{(row.existingImage as string).startsWith("http") ? "ext url" : "has GCS"}</div>}
+                      </div>
+                      <div className={row.wouldUpload ? "text-green-700 font-bold" : "text-slate-400"}>
+                        {row.wouldUpload ? "YES" : "skip"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>

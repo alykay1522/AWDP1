@@ -712,6 +712,92 @@ router.post(
   }
 );
 
+// ── POST /api/admin/products/diagnose-zip ─────────────────────────────────
+// Dry-run analysis: shows exactly what would happen for each folder without uploading.
+router.post(
+  "/admin/products/diagnose-zip",
+  upload.single("file"),
+  async (req, res) => {
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "No file uploaded" });
+
+    try {
+      const zip = new AdmZip(file.path);
+      const allEntries = zip.getEntries();
+
+      // Raw ZIP structure sample
+      const rawEntries = allEntries.slice(0, 10).map((e) => e.entryName);
+
+      // Group by immediate parent folder
+      const byFolder = new Map<string, AdmZip.IZipEntry[]>();
+      for (const entry of allEntries) {
+        if (entry.isDirectory) continue;
+        const parts = entry.entryName.split("/");
+        if (parts.length < 2) continue;
+        const folder = parts[parts.length - 2];
+        if (!byFolder.has(folder)) byFolder.set(folder, []);
+        byFolder.get(folder)!.push(entry);
+      }
+
+      function normalizeFolder(f: string) { return f.replace(/\s*\(\d+\)\s*$/, "").trim(); }
+      function candidateSkus(raw: string): string[] {
+        const norm = normalizeFolder(raw);
+        const direct = norm.toUpperCase().startsWith("AWDP-") ? norm.toUpperCase() : null;
+        const ciphered = buildSku(norm);
+        const out: string[] = [];
+        if (direct) out.push(direct);
+        if (ciphered !== direct) out.push(ciphered);
+        return out;
+      }
+
+      // Analyse up to 50 folders
+      const folderList = [...byFolder.entries()].slice(0, 50);
+      const allSkus = folderList.flatMap(([f]) => candidateSkus(f));
+      const dbRows = allSkus.length > 0
+        ? await db.select({ sku: productsTable.sku, imageUrl: productsTable.imageUrl })
+            .from(productsTable).where(inArray(productsTable.sku, allSkus))
+        : [];
+      const dbMap = new Map(dbRows.map((r) => [r.sku, r.imageUrl]));
+
+      const rows = folderList.map(([folder, entries]) => {
+        const filenames = entries.map((e) => e.entryName.split("/").pop()!);
+        const chosen = pickMainImage(filenames);
+        const skus = candidateSkus(folder);
+        const matchedSku = skus.find((s) => dbMap.has(s)) ?? null;
+        const existingImage = matchedSku ? dbMap.get(matchedSku) : undefined;
+        return {
+          folder,
+          normalized: normalizeFolder(folder),
+          files: filenames.slice(0, 5),
+          chosenImage: chosen,
+          candidateSkus: skus,
+          dbMatch: matchedSku,
+          existingImage: existingImage ?? null,
+          wouldUpload: matchedSku !== null && (existingImage === null || existingImage === undefined || (existingImage as string).startsWith("http")),
+        };
+      });
+
+      fs.unlink(file.path, () => {});
+      res.json({
+        totalEntries: allEntries.length,
+        foldersFound: byFolder.size,
+        rawEntries,
+        rows,
+        summary: {
+          wouldUpload: rows.filter((r) => r.wouldUpload).length,
+          dbMatched: rows.filter((r) => r.dbMatch).length,
+          alreadyHasImage: rows.filter((r) => r.dbMatch && r.existingImage && !(r.existingImage as string).startsWith("http")).length,
+          noDbMatch: rows.filter((r) => !r.dbMatch).length,
+          noImageFile: rows.filter((r) => !r.chosenImage).length,
+        },
+      });
+    } catch (err: any) {
+      fs.unlink(file.path, () => {});
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 // ── POST /api/admin/products/import-image-urls ─────────────────────────────
 // Accepts a CSV file with columns: sku,imageUrl  (header row required)
 // Updates imageUrl on matched products (overwrites existing).
