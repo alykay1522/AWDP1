@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { z } from "zod";
+import AdmZip from "adm-zip";
+import * as fs from "fs";
+import * as path from "path";
+import { objectStorageClient } from "../lib/objectStorage";
 
 const router = Router();
 
@@ -419,6 +423,130 @@ router.delete("/admin/products/:sku", async (req, res) => {
 
     if (!deleted) return res.status(404).json({ error: "Product not found" });
     res.json({ deleted: true, sku });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Bulk image import helpers ─────────────────────────────────────────────────
+
+function pickMainImage(filenames: string[]): string | null {
+  const candidates = filenames.filter((f) => {
+    const lower = f.toLowerCase();
+    if (lower.includes("amesbury")) return false;
+    if (lower.endsWith(".gif")) return false;
+    const dots = f.split(".").length - 1;
+    return dots === 1; // main images: "39545.jpg" — only one dot
+  });
+  if (candidates.length === 0) return null;
+  return candidates.find((f) => f.toLowerCase().endsWith(".jpg")) ?? candidates[0];
+}
+
+function imgContentType(filename: string): string {
+  const ext = (filename.split(".").pop() ?? "").toLowerCase();
+  return ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" } as Record<string, string>)[ext] ?? "image/jpeg";
+}
+
+async function uploadBufToGCS(buf: Buffer, filename: string, contentType: string): Promise<string> {
+  const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+  if (!bucketId) throw new Error("DEFAULT_OBJECT_STORAGE_BUCKET_ID not set");
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const objectName = `product-images/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${sanitized}`;
+  const bucket = objectStorageClient.bucket(bucketId);
+  await bucket.file(objectName).save(buf, { metadata: { contentType }, resumable: false });
+  return `/api/admin/images/serve/${objectName}`;
+}
+
+// POST /api/admin/products/bulk-import-images
+// Reads .zip files from attached_assets/, matches folders by AWDP cipher to SKUs,
+// uploads main product images to GCS, and updates imageUrl on matched products.
+router.post("/admin/products/bulk-import-images", async (req, res) => {
+  try {
+    const candidates = [
+      path.resolve(process.cwd(), "attached_assets"),
+      path.resolve(process.cwd(), "../../attached_assets"),
+      "/home/runner/workspace/attached_assets",
+    ];
+    const zipDir = candidates.find((d) => fs.existsSync(d));
+    if (!zipDir) {
+      return res.status(400).json({ error: `attached_assets dir not found. Tried: ${candidates.join(", ")}` });
+    }
+    const zipFiles = fs.readdirSync(zipDir).filter((f) => f.endsWith(".zip")).map((f) => path.join(zipDir, f));
+    if (zipFiles.length === 0) {
+      return res.status(400).json({ error: "No .zip files found in attached_assets/" });
+    }
+
+    // Collect main image per supplier part number across all zips
+    const imageMap = new Map<string, { filename: string; buffer: Buffer }>();
+    for (const zipPath of zipFiles) {
+      const zip = new AdmZip(zipPath);
+      const byFolder = new Map<string, AdmZip.IZipEntry[]>();
+      for (const entry of zip.getEntries()) {
+        if (entry.isDirectory) continue;
+        const parts = entry.entryName.split("/");
+        if (parts.length < 2) continue;
+        const folder = parts[0];
+        if (!byFolder.has(folder)) byFolder.set(folder, []);
+        byFolder.get(folder)!.push(entry);
+      }
+      for (const [folder, entries] of byFolder) {
+        if (imageMap.has(folder)) continue;
+        const filenames = entries.map((e) => e.entryName.split("/").pop()!);
+        const chosen = pickMainImage(filenames);
+        if (!chosen) continue;
+        const entry = entries.find((e) => e.entryName.endsWith(`/${chosen}`));
+        if (!entry) continue;
+        imageMap.set(folder, { filename: chosen, buffer: entry.getData() });
+      }
+    }
+
+    // Map supplier part numbers → expected AWDP SKUs
+    const skuToFolder = new Map<string, string>();
+    for (const [folder] of imageMap) {
+      skuToFolder.set(buildSku(folder), folder);
+    }
+
+    // Batch-fetch all matching products
+    const allSkus = [...skuToFolder.keys()];
+    const found: { sku: string; id: number; imageUrl: string | null }[] = [];
+    const CHUNK = 500;
+    for (let i = 0; i < allSkus.length; i += CHUNK) {
+      const rows = await db
+        .select({ sku: productsTable.sku, id: productsTable.id, imageUrl: productsTable.imageUrl })
+        .from(productsTable)
+        .where(inArray(productsTable.sku, allSkus.slice(i, i + CHUNK)));
+      found.push(...rows);
+    }
+
+    // Only update products that have no local image yet
+    const toUpdate = found.filter((r) => !r.imageUrl || r.imageUrl.startsWith("http"));
+
+    let uploaded = 0, failed = 0;
+    const errors: string[] = [];
+
+    for (const product of toUpdate) {
+      const folder = skuToFolder.get(product.sku)!;
+      const img = imageMap.get(folder)!;
+      try {
+        const url = await uploadBufToGCS(img.buffer, img.filename, imgContentType(img.filename));
+        await db.update(productsTable).set({ imageUrl: url }).where(eq(productsTable.id, product.id));
+        uploaded++;
+      } catch (err: any) {
+        failed++;
+        errors.push(`${product.sku}: ${err.message}`);
+      }
+    }
+
+    res.json({
+      zipsProcessed: zipFiles.length,
+      uniqueFolders: imageMap.size,
+      dbMatched: found.length,
+      alreadyHadImage: found.length - toUpdate.length,
+      uploaded,
+      failed,
+      unmatched: allSkus.length - found.length,
+      errors: errors.slice(0, 20),
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
