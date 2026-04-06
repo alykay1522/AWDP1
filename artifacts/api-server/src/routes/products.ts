@@ -38,7 +38,7 @@ router.get("/products/search-suggestions", async (req, res) => {
     const results = await db
       .select({ name: productsTable.name })
       .from(productsTable)
-      .where(ilike(productsTable.name, `%${q}%`))
+      .where(and(isNotNull(productsTable.imageUrl), ilike(productsTable.name, `%${q}%`)))
       .limit(8);
     res.json(results.map((r) => r.name));
   } catch (err) {
@@ -73,7 +73,8 @@ router.get("/products", async (req, res) => {
     const limit = Math.min(toNumber(limitStr, 24), 100);
     const offset = (page - 1) * limit;
 
-    const conditions = [];
+    // Always require an image — products without images are hidden from the shop
+    const conditions = [isNotNull(productsTable.imageUrl)];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {
       conditions.push(
@@ -85,7 +86,7 @@ router.get("/products", async (req, res) => {
       );
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = and(...conditions);
 
     const [products, totalResult] = await Promise.all([
       db.select().from(productsTable).where(whereClause).limit(limit).offset(offset),
@@ -113,6 +114,7 @@ router.get("/categories", async (req, res) => {
     const counts = await db
       .select({ category: productsTable.category, count: count() })
       .from(productsTable)
+      .where(isNotNull(productsTable.imageUrl))
       .groupBy(productsTable.category);
 
     const countMap = new Map(counts.map((c) => [c.category, Number(c.count)]));
