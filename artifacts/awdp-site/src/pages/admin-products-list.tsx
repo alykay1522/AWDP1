@@ -1,14 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, PlusCircle, Edit2, Trash2, Check, X, ChevronLeft, ChevronRight as ChevronRightIcon,
   Filter, Package, ExternalLink, RefreshCw, ToggleLeft, ToggleRight,
+  Download, Upload, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+
+// ── Simple CSV parser (no external dependency) ────────────────────────────────
+function parseCsv(text: string): Record<string, string>[] {
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  if (lines.length < 2) return [];
+
+  function splitLine(line: string): string[] {
+    const fields: string[] = [];
+    let cur = "", inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ',') { fields.push(cur); cur = ""; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  const headers = splitLine(lines[0]);
+  return lines.slice(1)
+    .filter((l) => l.trim())
+    .map((l) => {
+      const vals = splitLine(l);
+      const row: Record<string, string> = {};
+      headers.forEach((h, i) => { row[h] = vals[i] ?? ""; });
+      return row;
+    });
+}
 
 interface Product {
   id: number; sku: string; name: string; description: string;
@@ -38,6 +74,9 @@ export default function AdminProductsList() {
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editSupplier, setEditSupplier] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = useQuery<{ products: Product[] }>({
     queryKey: ["admin-products-list"],
@@ -106,6 +145,64 @@ export default function AdminProductsList() {
     }});
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/admin/products/export");
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "awdp-products.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Export complete", description: "awdp-products.csv downloaded" });
+    } catch (e: any) {
+      toast({ title: "Export failed", description: e.message, variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = "";
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      if (rows.length === 0) {
+        toast({ title: "Empty file", description: "No rows found in the CSV", variant: "destructive" });
+        return;
+      }
+
+      const res = await fetch("/api/admin/products/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error ?? "Import failed");
+
+      qc.invalidateQueries({ queryKey: ["admin-products-list"] });
+      toast({
+        title: `Import complete`,
+        description: `${result.inserted} added · ${result.updated} updated · ${result.errored} errors`,
+      });
+      if (result.errors?.length > 0) {
+        console.warn("Import errors:", result.errors);
+      }
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message, variant: "destructive" });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <div className="bg-slate-900 text-white py-6 px-6 flex items-center justify-between">
@@ -113,10 +210,21 @@ export default function AdminProductsList() {
           <h1 className="text-xl font-bold">Products</h1>
           <p className="text-slate-400 text-sm">{all.length} total · {filtered.length} shown</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1" onClick={() => refetch()}>
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
+          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
+            onClick={handleExport} disabled={exporting}>
+            {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            Export CSV
+          </Button>
+          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
+            onClick={() => fileInputRef.current?.click()} disabled={importing}>
+            {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            Import CSV
+          </Button>
+          <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportFile} />
           <Link href="/admin/products/new">
             <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90"><PlusCircle className="w-4 h-4" /> Add Product</Button>
           </Link>

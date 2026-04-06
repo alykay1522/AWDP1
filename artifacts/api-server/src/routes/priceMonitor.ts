@@ -130,15 +130,39 @@ router.post("/admin/price-manual", async (req, res) => {
   }
 });
 
-// POST /api/admin/price-update-our — update our selling price and recalculate
+// POST /api/admin/price-update-our — update our selling price and mark alerts as resolved
 router.post("/admin/price-update-our", async (req, res) => {
   try {
     const { productSku, newPrice } = req.body as { productSku: string; newPrice: number };
     if (!productSku || !newPrice) return res.status(400).json({ error: "productSku and newPrice required" });
 
+    // Update the product selling price
     await db.update(productsTable)
       .set({ price: String(newPrice.toFixed(2)) })
       .where(eq(productsTable.sku, productSku));
+
+    // Fetch the latest distributor_prices entries for this product and recalculate
+    const latestEntries = await db.execute(sql`
+      SELECT DISTINCT ON (distributor) id, distributor, cost_price, target_markup
+      FROM distributor_prices
+      WHERE product_sku = ${productSku}
+      ORDER BY distributor, checked_at DESC
+    `);
+
+    for (const entry of latestEntries.rows as any[]) {
+      if (!entry.cost_price) continue;
+      const costPrice = parseFloat(entry.cost_price);
+      const targetMarkup = parseFloat(entry.target_markup);
+      const newMarkup = newPrice / costPrice;
+      const newStatus = newMarkup >= targetMarkup * 0.95 ? "ok" : "needs_update";
+
+      await db.execute(sql`
+        UPDATE distributor_prices
+        SET markup_ratio = ${newMarkup.toFixed(4)}, our_price = ${newPrice.toFixed(2)},
+            status = ${newStatus}, notes = ${`Price updated to $${newPrice.toFixed(2)} (${newMarkup.toFixed(2)}x markup)`}
+        WHERE id = ${entry.id}
+      `);
+    }
 
     res.json({ success: true, productSku, newPrice });
   } catch (err: any) {

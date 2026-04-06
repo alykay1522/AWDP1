@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const OWNER_EMAIL = "Info@AllWindowDoorParts.com";
+const OWNER_EMAILS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
 const FROM_EMAIL = "orders@allwindowdoorparts.com";
 
 function getResend(): Resend | null {
@@ -121,7 +121,7 @@ function buildOwnerHtml(o: OrderEmailPayload): string {
     </div>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">
-    All Window Door Parts &mdash; 785-533-0244 &mdash; ${OWNER_EMAIL}
+    All Window Door Parts &mdash; 785-533-0244 &mdash; Info@AllWindowDoorParts.com
   </div>
 </body>
 </html>`;
@@ -176,12 +176,12 @@ function buildCustomerHtml(o: OrderEmailPayload): string {
     <p style="margin-top:24px">Questions about your order? Contact us:</p>
     <ul style="margin:8px 0;padding-left:20px">
       <li><strong>Phone:</strong> <a href="tel:785-533-0244">785-533-0244</a> (Mon-Fri 8am-5pm CST)</li>
-      <li><strong>Email:</strong> <a href="mailto:${OWNER_EMAIL}">${OWNER_EMAIL}</a></li>
+      <li><strong>Email:</strong> <a href="mailto:Info@AllWindowDoorParts.com">Info@AllWindowDoorParts.com</a></li>
     </ul>
     <p>Thank you for choosing All Window Door Parts — veteran owned and operated with 40+ years of experience.</p>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">
-    All Window Door Parts &mdash; 785-533-0244 &mdash; ${OWNER_EMAIL}
+    All Window Door Parts &mdash; 785-533-0244 &mdash; Info@AllWindowDoorParts.com
   </div>
 </body>
 </html>`;
@@ -196,7 +196,7 @@ export async function sendOrderNotification(payload: OrderEmailPayload): Promise
   // Send owner notification
   const ownerResult = await resend.emails.send({
     from: `All Window Door Parts Orders <${FROM_EMAIL}>`,
-    to: [OWNER_EMAIL],
+    to: OWNER_EMAILS,
     subject,
     html: buildOwnerHtml(payload),
   });
