@@ -54,8 +54,8 @@ app.use(
   }),
 );
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Disable HTTP caching on all API responses so browsers never serve stale data
 app.use("/api", (_req, res, next) => {
