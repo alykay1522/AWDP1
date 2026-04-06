@@ -20,6 +20,7 @@ interface ZipResult {
   failed: number;
   skipped: number;
   errors: string[];
+  sampleFolders: string[];
 }
 
 interface CsvResult {
@@ -214,6 +215,14 @@ export default function AdminImages() {
                 <span>Images uploaded:</span><span className="font-mono font-bold text-green-800">{zipResult.uploaded}</span>
                 {zipResult.failed > 0 && <><span className="text-red-600">Failed:</span><span className="font-mono font-bold text-red-600">{zipResult.failed}</span></>}
               </div>
+              {zipResult.sampleFolders?.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-green-200">
+                  <p className="text-xs font-semibold text-green-700 mb-1">Sample folder names detected:</p>
+                  <div className="text-xs text-green-600 font-mono space-y-0.5">
+                    {zipResult.sampleFolders.map((f, i) => <div key={i}>{f}</div>)}
+                  </div>
+                </div>
+              )}
               {zipResult.errors.length > 0 && (
                 <div className="mt-2 text-xs text-red-600 space-y-0.5">
                   {zipResult.errors.slice(0, 5).map((e, i) => <div key={i}>{e}</div>)}

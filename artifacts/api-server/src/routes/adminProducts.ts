@@ -496,7 +496,9 @@ router.post("/admin/products/bulk-import-images", async (req, res) => {
         if (entry.isDirectory) continue;
         const parts = entry.entryName.split("/");
         if (parts.length < 2) continue;
-        const folder = parts[0];
+        // Use immediate parent folder so any ZIP nesting level works:
+        // "images/10-452SS/photo.jpg" → "10-452SS", not "images"
+        const folder = parts[parts.length - 2];
         if (!byFolder.has(folder)) byFolder.set(folder, []);
         byFolder.get(folder)!.push(entry);
       }
@@ -579,13 +581,14 @@ router.post(
     try {
       const zip = new AdmZip(file.path);
 
-      // Group entries by top-level folder name
+      // Group entries by immediate parent folder (works at any ZIP nesting depth).
+      // e.g. "images/10-452SS/photo.jpg" → key "10-452SS", not "images"
       const byFolder = new Map<string, AdmZip.IZipEntry[]>();
       for (const entry of zip.getEntries()) {
         if (entry.isDirectory) continue;
         const parts = entry.entryName.split("/");
         if (parts.length < 2) continue;
-        const folder = parts[0];
+        const folder = parts[parts.length - 2];
         if (!byFolder.has(folder)) byFolder.set(folder, []);
         byFolder.get(folder)!.push(entry);
       }
@@ -664,6 +667,8 @@ router.post(
         failed,
         skipped,
         errors: errors.slice(0, 20),
+        // First 10 folder names seen — helps diagnose structure issues
+        sampleFolders: [...byFolder.keys()].slice(0, 10),
       });
     } catch (err: any) {
       fs.unlink(file.path, () => {});
