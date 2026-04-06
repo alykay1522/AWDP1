@@ -241,9 +241,14 @@ function normalizeRow(raw: Record<string, string>): Record<string, string> {
   }
 
   const rawPrice = pick("price", "sellingprice", "ourprice", "retailprice", "unitprice",
-                         "listprice", "saleprice", "suggestedprice", "baseprice", "msrp");
+                         "listprice", "saleprice", "suggestedprice", "baseprice", "msrp",
+                         "net", "netprice", "yourprice", "yournet", "myprice");
   const rawOrig  = pick("originalprice", "msrp", "listprice", "suggestedretail",
                          "suggestedprice", "regularprice", "baseprice");
+  // Separate cost/dealer-price picker used for markup-based pricing when no sell price exists
+  const rawCost  = pick("cost", "dealercost", "dealerprice", "wholesale", "wholesalecost",
+                         "wholesaleprice", "distributorcost", "distributorprice", "mycost",
+                         "yourcost", "netcost", "purchaseprice");
 
   return {
     sku:            pick("sku", "awdpsku", "awdp", "partnumber", "partno", "partnum",
@@ -255,6 +260,7 @@ function normalizeRow(raw: Record<string, string>): Record<string, string> {
                          "itemdescription", "details", "desc"),
     price:          cleanNum(rawPrice),
     originalPrice:  cleanNum(rawOrig),
+    cost:           cleanNum(rawCost),
     category:       pick("category", "producttype", "type", "dept", "department",
                          "productcategory", "group"),
     supplier:       pick("supplier", "vendor", "brand", "manufacturer", "source"),
@@ -277,7 +283,7 @@ router.post("/admin/products/import", async (req, res) => {
       return res.status(400).json({ error: "No rows provided" });
     }
 
-    let inserted = 0, updated = 0, errored = 0, skipped = 0;
+    let inserted = 0, updated = 0, errored = 0, skipped = 0, needsPricing = 0;
     const errors: string[] = [];
 
     for (const rawRow of rows) {
@@ -300,11 +306,6 @@ router.post("/admin/products/import", async (req, res) => {
           sku = await generateUniqueSku(rawSku);
         }
 
-        // Price: required. If missing AND this is a new product, skip with error.
-        const priceStr = row.price;
-        const price = parseFloat(priceStr);
-        const priceValid = !isNaN(price) && price > 0;
-
         // For existing products a missing price just means "don't change price"
         const [existing] = await db
           .select({ sku: productsTable.sku, price: productsTable.price })
@@ -312,15 +313,33 @@ router.post("/admin/products/import", async (req, res) => {
           .where(eq(productsTable.sku, sku))
           .limit(1);
 
-        if (!priceValid && !existing) {
-          errored++;
-          errors.push(`${rawSku}: no valid price — row skipped`);
-          continue;
+        // Price resolution order:
+        // 1. Direct sell-price column (price, sellingprice, ourprice, etc.)
+        // 2. Cost column × supplier markup (Strybuc=1.45x, Alcosupply=2.5x, default=1.5x)
+        // 3. No price — import as placeholder (price=0, inStock=false) for later pricing
+        let price = parseFloat(row.price);
+        let priceValid = !isNaN(price) && price > 0;
+
+        if (!priceValid && row.cost) {
+          const cost = parseFloat(row.cost);
+          if (!isNaN(cost) && cost > 0) {
+            const supplierLower = (row.supplier || "").toLowerCase();
+            const markup = supplierLower.includes("strybuc") ? 1.45
+                         : supplierLower.includes("alco")    ? 2.5
+                         : 1.5;
+            price = Math.round(cost * markup * 100) / 100;
+            priceValid = true;
+          }
         }
 
+        // No valid price for a new product → import as unpublished placeholder
+        const needsPricingFlag = !priceValid && !existing;
+
         const inStockRaw = row.inStock.toLowerCase();
-        const inStock = inStockRaw === "" || inStockRaw === "true" || inStockRaw === "1"
+        const inStockFromCsv = inStockRaw === "true" || inStockRaw === "1"
           || inStockRaw === "yes" || inStockRaw === "y" || inStockRaw === "in stock";
+        // Products with no price must be out of stock so they can't be purchased
+        const inStock = needsPricingFlag ? false : (inStockRaw === "" || inStockFromCsv);
 
         const tags = row.tags
           ? row.tags.split(/[;|,]/).map((t) => t.trim()).filter(Boolean)
@@ -348,6 +367,8 @@ router.post("/admin/products/import", async (req, res) => {
 
         if (priceValid) {
           values.price = price.toFixed(2);
+        } else if (needsPricingFlag) {
+          values.price = "0.00";
         }
 
         const origPrice = parseFloat(row.originalPrice);
@@ -366,6 +387,7 @@ router.post("/admin/products/import", async (req, res) => {
         } else {
           await db.insert(productsTable).values({ sku, ...(values as any) });
           inserted++;
+          if (needsPricingFlag) needsPricing++;
         }
       } catch (e: any) {
         errored++;
@@ -373,7 +395,7 @@ router.post("/admin/products/import", async (req, res) => {
       }
     }
 
-    res.json({ inserted, updated, errored, skipped, errors });
+    res.json({ inserted, updated, errored, skipped, needsPricing, errors });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

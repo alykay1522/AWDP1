@@ -192,6 +192,7 @@ export default function AdminProductsList() {
       const parts = [
         result.inserted && `${result.inserted} added`,
         result.updated && `${result.updated} updated`,
+        result.needsPricing && `${result.needsPricing} need pricing (price set to $0, out of stock)`,
         result.skipped && `${result.skipped} blank rows skipped`,
         result.errored && `${result.errored} errors`,
       ].filter(Boolean).join(" · ");
