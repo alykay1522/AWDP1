@@ -78,12 +78,12 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      {/* Full-Width Logo Banner — crop the empty top portion of the image */}
-      <Link href="/" className="block w-full" style={{ position: "relative", overflow: "hidden", paddingTop: "45%" }}>
+      {/* Full-Width Logo Banner */}
+      <Link href="/" className="block w-full">
         <img
           src={logo}
           alt="All Window Door Parts"
-          style={{ position: "absolute", bottom: 0, left: 0, width: "100%", display: "block" }}
+          style={{ width: "100%", height: "160px", objectFit: "cover", objectPosition: "center 40%", display: "block" }}
         />
       </Link>
       {/* Site-wide Order Minimum Banner */}

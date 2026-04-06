@@ -1,11 +1,11 @@
 import { Shield, Truck, RefreshCcw, Lock } from "lucide-react";
-import PageSEO from "@/components/page-seo";
+import { PageSeo } from "@/components/page-seo";
 import { Link } from "wouter";
 
 export default function Policies() {
   return (
     <div className="bg-slate-50 min-h-screen">
-      <PageSEO
+      <PageSeo
         title="Store Policies — All Window Door Parts"
         description="Shipping policy, return policy, and security guarantee for All Window Door Parts. UPS, FedEx, and USPS shipping. SSL-secured checkout."
         path="/policies"
