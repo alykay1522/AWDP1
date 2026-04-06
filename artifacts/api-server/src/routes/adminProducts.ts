@@ -266,7 +266,10 @@ function normalizeRow(raw: Record<string, string>): Record<string, string> {
     supplier:       pick("supplier", "vendor", "brand", "manufacturer", "source"),
     inStock:        pick("instock", "stock", "available", "availability", "qty",
                          "quantity", "qtyavailable", "qoh"),
-    imageUrl:       pick("imageurl", "image", "imagelink", "photo", "thumbnail", "img"),
+    imageUrl:       pick("imageurl", "imagelink", "imagepath", "imagefile", "image",
+                         "photo", "photourl", "picture", "pictureurl", "thumbnail",
+                         "thumbnailurl", "img", "imgurl", "productimage", "productphoto",
+                         "productimageurl", "mainimage", "primaryimage"),
     tags:           pick("tags", "keywords", "tag", "keyword"),
     compatibleBrands: pick("compatiblebrands", "compatbrand", "brands", "fits",
                             "compatible", "fitment"),
@@ -359,7 +362,9 @@ router.post("/admin/products/import", async (req, res) => {
           category:       row.category || "",
           supplier:       row.supplier || "All Window Door Parts",
           inStock,
-          imageUrl:       row.imageUrl || null,
+          // Only set imageUrl if the CSV actually provides one;
+          // if blank on an existing product, keep whatever URL is already stored.
+          imageUrl:       row.imageUrl || (existing ? undefined : null),
           tags,
           compatibleBrands,
           specifications,

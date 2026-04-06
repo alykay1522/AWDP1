@@ -319,11 +319,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <div>
               <h4 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Customer Service</h4>
               <ul className="space-y-3 text-sm">
-                <li><span className="hover:text-white transition-colors cursor-pointer">Shipping Policy</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Returns & Exchanges</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">FAQ</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Terms of Service</span></li>
+                <li><Link href="/policies#shipping" className="hover:text-white transition-colors">Shipping Policy</Link></li>
+                <li><Link href="/policies#returns" className="hover:text-white transition-colors">Return Policy</Link></li>
+                <li><Link href="/policies#security" className="hover:text-white transition-colors">Security Notice</Link></li>
+                <li><Link href="/policies#guarantee" className="hover:text-white transition-colors">Secure Shopping Guarantee</Link></li>
+                <li><Link href="/policies" className="hover:text-white transition-colors">All Policies</Link></li>
               </ul>
               <div className="mt-6 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs font-semibold leading-snug">
                 $50 minimum on all orders.<br />Anything below $50 will be cancelled.

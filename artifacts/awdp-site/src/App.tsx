@@ -17,6 +17,7 @@ import PartsIdentification from "@/pages/parts-id";
 import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
+import Policies from "@/pages/policies";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -67,6 +68,7 @@ function AppContent() {
         <Route path="/contact" component={Contact} />
         <Route path="/about" component={About} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
+        <Route path="/policies" component={Policies} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
