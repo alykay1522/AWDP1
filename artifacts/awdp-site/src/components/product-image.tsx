@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Wrench } from "lucide-react";
 
 interface ProductImageProps {
   src: string | null | undefined;
@@ -12,12 +13,9 @@ export function ProductImage({ src, alt, className, placeholderClassName }: Prod
 
   if (!src || failed) {
     return (
-      <div className={placeholderClassName ?? "w-full h-full flex items-center justify-center bg-slate-50"}>
-        <img
-          src="/awdp-logo-placeholder.png"
-          alt="All Window Door Parts"
-          className="w-3/4 max-w-[200px] object-contain"
-        />
+      <div className={placeholderClassName ?? "w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-slate-50"}>
+        <Wrench className="w-12 h-12 mb-2 opacity-20" />
+        <span className="text-xs uppercase tracking-widest opacity-50 font-bold">No Image</span>
       </div>
     );
   }

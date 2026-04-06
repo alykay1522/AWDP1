@@ -1,9 +1,34 @@
 import { Router, Request, Response } from "express";
 import OpenAI from "openai";
+import sharp from "sharp";
+import path from "path";
 import { db } from "@workspace/db";
 import { productsTable } from "@workspace/db/schema";
 import { isNull, or, eq, sql } from "drizzle-orm";
 import { objectStorageClient } from "../lib/objectStorage";
+
+const LOGO_PATH = path.join(__dirname, "assets", "awdp-logo.png");
+
+async function applyLogoWatermark(imageBuffer: Buffer): Promise<Buffer> {
+  const image = sharp(imageBuffer);
+  const meta = await image.metadata();
+  const imageWidth = meta.width ?? 1024;
+
+  // Resize logo to ~22% of image width
+  const logoWidth = Math.round(imageWidth * 0.22);
+  const logoBuffer = await sharp(LOGO_PATH)
+    .resize(logoWidth, null, { fit: "inside" })
+    .toBuffer();
+
+  return image
+    .composite([{
+      input: logoBuffer,
+      gravity: "southeast",
+      blend: "over",
+    }])
+    .png()
+    .toBuffer();
+}
 
 const router = Router();
 
@@ -68,7 +93,10 @@ router.post("/admin/products/generate-images", async (req: Request, res: Respons
         const b64 = (response.data?.[0] as any)?.b64_json;
         if (!b64) throw new Error("No image data returned");
 
-        const buffer = Buffer.from(b64, "base64");
+        // Apply AWDP logo watermark to the generated image
+        const rawBuffer = Buffer.from(b64, "base64");
+        const buffer = await applyLogoWatermark(rawBuffer);
+
         const slug = product.sku.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
         const objectName = `product-images/${Date.now()}-${slug}.png`;
 

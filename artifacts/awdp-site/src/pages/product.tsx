@@ -126,7 +126,7 @@ export default function ProductDetail() {
                 src={product.imageUrl}
                 alt={product.name}
                 className="w-full h-full object-contain"
-                placeholderClassName="w-full h-full flex items-center justify-center bg-slate-50"
+                placeholderClassName="w-full h-full flex flex-col items-center justify-center text-center text-muted-foreground opacity-50"
               />
               {isSale && (
                 <div className="absolute top-6 left-6 bg-accent text-accent-foreground px-4 py-1.5 rounded text-sm font-bold shadow-md">
