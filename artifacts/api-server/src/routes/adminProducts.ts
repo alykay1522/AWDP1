@@ -1,4 +1,6 @@
 import { Router } from "express";
+import multer from "multer";
+import * as os from "os";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
 import { eq, sql, inArray } from "drizzle-orm";
@@ -7,6 +9,15 @@ import AdmZip from "adm-zip";
 import * as fs from "fs";
 import * as path from "path";
 import { objectStorageClient } from "../lib/objectStorage";
+
+// Multer: write uploads to OS temp dir, accept up to 2 GB
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: os.tmpdir(),
+    filename: (_req, file, cb) => cb(null, `awdp-upload-${Date.now()}-${file.originalname}`),
+  }),
+  limits: { fileSize: 2 * 1024 * 1024 * 1024 },
+});
 
 const router = Router();
 
@@ -551,5 +562,173 @@ router.post("/admin/products/bulk-import-images", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── POST /api/admin/products/upload-images-zip ─────────────────────────────
+// Accepts a multipart ZIP upload, matches image folders → AWDP SKUs, uploads to GCS.
+// Matching strategies (tried in order for each folder):
+//   1. Direct AWDP SKU (folder = "AWDP-XX-YY")
+//   2. AWDP cipher on folder name (supplier part# → cipher → AWDP SKU)
+//   3. Strip Windows " (N)" duplicate suffix, then retry both
+router.post(
+  "/admin/products/upload-images-zip",
+  upload.single("file"),
+  async (req, res) => {
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "No file uploaded" });
+
+    try {
+      const zip = new AdmZip(file.path);
+
+      // Group entries by top-level folder name
+      const byFolder = new Map<string, AdmZip.IZipEntry[]>();
+      for (const entry of zip.getEntries()) {
+        if (entry.isDirectory) continue;
+        const parts = entry.entryName.split("/");
+        if (parts.length < 2) continue;
+        const folder = parts[0];
+        if (!byFolder.has(folder)) byFolder.set(folder, []);
+        byFolder.get(folder)!.push(entry);
+      }
+
+      // Normalize folder name: strip Windows " (N)" suffix
+      function normalizeFolder(f: string): string {
+        return f.replace(/\s*\(\d+\)\s*$/, "").trim();
+      }
+
+      // Build candidate SKUs for a folder name (normalized)
+      function candidateSkus(raw: string): string[] {
+        const norm = normalizeFolder(raw);
+        const direct = norm.toUpperCase().startsWith("AWDP-") ? norm.toUpperCase() : null;
+        const ciphered = buildSku(norm);
+        const candidates: string[] = [];
+        if (direct) candidates.push(direct);
+        if (ciphered !== direct) candidates.push(ciphered);
+        return candidates;
+      }
+
+      // Build map: candidate SKU → { folder, filename, buffer }
+      const skuMap = new Map<string, { folder: string; filename: string; buffer: Buffer }>();
+      for (const [folder, entries] of byFolder) {
+        const filenames = entries.map((e) => e.entryName.split("/").pop()!);
+        const chosen = pickMainImage(filenames);
+        if (!chosen) continue;
+        const entry = entries.find((e) => e.entryName.endsWith(`/${chosen}`));
+        if (!entry) continue;
+        for (const sku of candidateSkus(folder)) {
+          if (!skuMap.has(sku)) {
+            skuMap.set(sku, { folder, filename: chosen, buffer: entry.getData() });
+          }
+        }
+      }
+
+      // Batch-fetch matching products from DB
+      const allCandidates = [...skuMap.keys()];
+      const found: { sku: string; id: number; imageUrl: string | null }[] = [];
+      const CHUNK = 500;
+      for (let i = 0; i < allCandidates.length; i += CHUNK) {
+        const rows = await db
+          .select({ sku: productsTable.sku, id: productsTable.id, imageUrl: productsTable.imageUrl })
+          .from(productsTable)
+          .where(inArray(productsTable.sku, allCandidates.slice(i, i + CHUNK)));
+        found.push(...rows);
+      }
+
+      // Only update products that have no GCS image yet
+      const toUpdate = found.filter((r) => !r.imageUrl || r.imageUrl.startsWith("http"));
+
+      let uploaded = 0, failed = 0, skipped = 0;
+      const errors: string[] = [];
+
+      for (const product of toUpdate) {
+        const img = skuMap.get(product.sku);
+        if (!img) { skipped++; continue; }
+        try {
+          const url = await uploadBufToGCS(img.buffer, img.filename, imgContentType(img.filename));
+          await db.update(productsTable).set({ imageUrl: url }).where(eq(productsTable.id, product.id));
+          uploaded++;
+        } catch (err: any) {
+          failed++;
+          errors.push(`${product.sku}: ${err.message}`);
+        }
+      }
+
+      // Clean up temp file
+      fs.unlink(file.path, () => {});
+
+      res.json({
+        foldersInZip: byFolder.size,
+        candidateSkus: allCandidates.length,
+        dbMatched: found.length,
+        alreadyHadImage: found.length - toUpdate.length,
+        uploaded,
+        failed,
+        skipped,
+        errors: errors.slice(0, 20),
+      });
+    } catch (err: any) {
+      fs.unlink(file.path, () => {});
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ── POST /api/admin/products/import-image-urls ─────────────────────────────
+// Accepts a CSV file with columns: sku,imageUrl  (header row required)
+// Updates imageUrl on matched products (overwrites existing).
+router.post(
+  "/admin/products/import-image-urls",
+  upload.single("file"),
+  async (req, res) => {
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "No file uploaded" });
+
+    try {
+      const text = fs.readFileSync(file.path, "utf-8");
+      fs.unlink(file.path, () => {});
+
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return res.status(400).json({ error: "CSV must have a header row and at least one data row" });
+
+      const header = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/^"(.*)"$/, "$1"));
+      const skuIdx = header.indexOf("sku");
+      const urlIdx = header.findIndex((h) => h === "imageurl" || h === "image_url" || h === "url");
+      if (skuIdx === -1 || urlIdx === -1) {
+        return res.status(400).json({ error: `CSV must have 'sku' and 'imageUrl' columns. Found: ${header.join(", ")}` });
+      }
+
+      const rows: { sku: string; imageUrl: string }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim().replace(/^"(.*)"$/, "$1"));
+        const sku = cols[skuIdx];
+        const imageUrl = cols[urlIdx];
+        if (sku && imageUrl) rows.push({ sku, imageUrl });
+      }
+
+      if (rows.length === 0) return res.status(400).json({ error: "No valid rows found in CSV" });
+
+      let updated = 0, notFound = 0;
+      const CHUNK = 200;
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        const chunk = rows.slice(i, i + CHUNK);
+        const skus = chunk.map((r) => r.sku);
+        const existing = await db
+          .select({ id: productsTable.id, sku: productsTable.sku })
+          .from(productsTable)
+          .where(inArray(productsTable.sku, skus));
+        const skuToId = new Map(existing.map((r) => [r.sku, r.id]));
+        for (const row of chunk) {
+          const id = skuToId.get(row.sku);
+          if (!id) { notFound++; continue; }
+          await db.update(productsTable).set({ imageUrl: row.imageUrl }).where(eq(productsTable.id, id));
+          updated++;
+        }
+      }
+
+      res.json({ totalRows: rows.length, updated, notFound });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
 
 export default router;
