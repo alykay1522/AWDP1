@@ -1,7 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
-import { seedIfEmpty } from "./seed";
+import { seedIfEmpty, fixProductCategories } from "./seed";
 
 const rawPort = process.env["PORT"];
 
@@ -28,7 +28,7 @@ app.listen(port, (err) => {
   pool.query("SELECT 1")
     .then(() => {
       logger.info("Database connection pool warmed up");
-      return seedIfEmpty();
+      return seedIfEmpty().then(() => fixProductCategories());
     })
     .catch((e) => {
       logger.warn({ err: e }, "Database startup failed");
