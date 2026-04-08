@@ -11,6 +11,7 @@ import adminImagesRouter from "./routes/adminImages";
 import adminGenerateRouter from "./routes/adminGenerate";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
+import sitemapRouter from "./routes/sitemap";
 
 const app: Express = express();
 app.disable("etag");
@@ -72,5 +73,8 @@ app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);
 app.use("/api", adminImagesRouter);
 app.use("/api", adminGenerateRouter);
+
+// Sitemap at root (not under /api so search engines can reach it)
+app.use(sitemapRouter);
 
 export default app;

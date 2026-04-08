@@ -84,23 +84,35 @@ export default function ProductDetail() {
         description={`${product.name} (SKU: ${product.sku}). ${product.description ? product.description.slice(0, 120) + "…" : "Window and door replacement part from All Window Door Parts. Veteran-owned, 40+ years experience."}`}
         image={product.imageUrl ?? undefined}
         type="product"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Product",
-          name: product.name,
-          sku: product.sku,
-          description: product.description ?? `${product.name} — window or door replacement part`,
-          image: product.imageUrl ?? undefined,
-          brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
-          offers: {
-            "@type": "Offer",
-            price: Number(product.price).toFixed(2),
-            priceCurrency: "USD",
-            availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
-            seller: { "@type": "Organization", name: "All Window Door Parts" }
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            sku: product.sku,
+            description: product.description ?? `${product.name} — window or door replacement part`,
+            image: product.imageUrl ?? undefined,
+            brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
+            offers: {
+              "@type": "Offer",
+              price: Number(product.price).toFixed(2),
+              priceCurrency: "USD",
+              availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+              seller: { "@type": "Organization", name: "All Window Door Parts" }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home",  item: "https://www.allwindowdoorparts.com/" },
+              { "@type": "ListItem", position: 2, name: "Shop",  item: "https://www.allwindowdoorparts.com/shop" },
+              { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com/shop?search=${encodeURIComponent(product.category)}` },
+              { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com/product/${product.sku}` },
+            ]
           }
-        }}
+        ] as unknown as object}
       />
       {/* Breadcrumbs */}
       <div className="bg-white border-b py-3 text-sm">

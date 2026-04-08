@@ -45,7 +45,7 @@ export function PageSeo({
 
       {structuredData && (
         <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
+          {JSON.stringify(Array.isArray(structuredData) ? structuredData : structuredData)}
         </script>
       )}
     </Helmet>
