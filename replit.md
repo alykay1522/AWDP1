@@ -104,6 +104,21 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+### `artifacts/awdp-site` (`@workspace/awdp-site`)
+
+React + Vite e-commerce frontend for All Window Door Parts (allwindowdoorparts.com). Veteran-owned business. 35,051 products, $50 order minimum.
+
+- Entry: `src/main.tsx` — mounts React app
+- Routing: Wouter (`src/App.tsx`) — pages live in `src/pages/`
+- Layout: `src/components/layout.tsx` — logo banner, nav, footer
+- Cart: `src/lib/cart.tsx` — context + localStorage persistence
+- API calls: uses `@workspace/api-client-react` generated hooks
+- Key pages: home, shop (with sort/filter/search), product detail, parts-identification, categories, about, contact, checkout, checkout-success
+- Sort values: `newest` (desc id), `price-asc`, `price-desc`, `name-asc`
+- URL params: `/shop?search=query&sort=newest&page=1`
+- Shop only shows products with a non-null imageUrl (5,868 of 35,051)
+- Contact: 785-533-0244, Info@allwindowdoorparts.com
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.

@@ -19,7 +19,7 @@ export default function Home() {
     <div className="flex flex-col">
       <PageSeo
         path="/"
-        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 454 window and door parts: operators, balances, locks, rollers, glazing seals, and more. Call 785-533-0244."
+        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 35,000+ window and door parts: operators, balances, locks, rollers, glazing seals, and more. Call 785-533-0244."
       />
       {/* Hero Section */}
       <section className="relative bg-[#0f172a] text-white overflow-hidden py-20 lg:py-32">
@@ -166,13 +166,13 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: ArrowUp,     label: "Window Won't Stay Up",       desc: "Broken sash balance or spring",        href: "/shop?q=sash+balance" },
-              { icon: Wrench,      label: "Crank Operator Broken",       desc: "Casement or awning won't open/close",  href: "/shop?q=casement+operator" },
-              { icon: Move,        label: "Patio Door Hard to Slide",    desc: "Worn rollers or track damage",          href: "/shop?q=patio+door+roller" },
-              { icon: Wind,        label: "Weatherstripping Worn Out",   desc: "Drafts, leaks, or worn seals",          href: "/shop?q=weatherstripping" },
-              { icon: Lock,        label: "Lock Won't Latch",            desc: "Broken or misaligned lock hardware",   href: "/shop?q=window+lock" },
-              { icon: LayoutGrid,  label: "Screen Door Damaged",         desc: "Torn screen, bent frame, or hardware", href: "/shop?q=screen+door" },
-              { icon: Key,         label: "Handle Broken or Loose",      desc: "Door or window handle replacement",    href: "/shop?q=handle" },
+              { icon: ArrowUp,     label: "Window Won't Stay Up",       desc: "Broken sash balance or spring",        href: "/shop?search=sash+balance" },
+              { icon: Wrench,      label: "Crank Operator Broken",       desc: "Casement or awning won't open/close",  href: "/shop?search=casement+operator" },
+              { icon: Move,        label: "Patio Door Hard to Slide",    desc: "Worn rollers or track damage",          href: "/shop?search=patio+door+roller" },
+              { icon: Wind,        label: "Weatherstripping Worn Out",   desc: "Drafts, leaks, or worn seals",          href: "/shop?search=weatherstripping" },
+              { icon: Lock,        label: "Lock Won't Latch",            desc: "Broken or misaligned lock hardware",   href: "/shop?search=window+lock" },
+              { icon: LayoutGrid,  label: "Screen Door Damaged",         desc: "Torn screen, bent frame, or hardware", href: "/shop?search=screen+door" },
+              { icon: Key,         label: "Handle Broken or Loose",      desc: "Door or window handle replacement",    href: "/shop?search=handle" },
               { icon: Droplets,    label: "Window Leaks Air or Water",   desc: "Glazing, seals, or frame repair",      href: "/parts-identification" },
             ].map(({ icon: Icon, label, desc, href }) => (
               <Link key={label} href={href} className="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all flex flex-col gap-3">

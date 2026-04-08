@@ -5,7 +5,8 @@ import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import logo from "@assets/logo_banner_trimmed.png";
+import logo from "@assets/logo-banner_1775621995520.png";
+import logoBanner from "@assets/logo_banner_trimmed.png";
 import paypalImg from "@assets/paypal_1775073666311.png";
 import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
@@ -81,7 +82,7 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Full-Width Logo Banner */}
       <Link href="/" className="block w-full">
         <img
-          src={logo}
+          src={logoBanner}
           alt="All Window Door Parts"
           style={{ width: "100%", height: "auto", display: "block" }}
         />

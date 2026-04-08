@@ -101,17 +101,6 @@ export default function Shop() {
         </div>
       </div>
 
-      <div>
-        <h3 className="font-serif font-bold text-lg mb-4 text-foreground">Availability</h3>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox id="instock" defaultChecked />
-            <label htmlFor="instock" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-              In Stock Only
-            </label>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
@@ -120,7 +109,7 @@ export default function Shop() {
       <PageSeo
         title="Shop Window & Door Parts"
         path="/shop"
-        description="Browse 454 window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Fast shipping."
+        description="Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Fast shipping."
       />
       {/* Order minimum notice */}
       <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">

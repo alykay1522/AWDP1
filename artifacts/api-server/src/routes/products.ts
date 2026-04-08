@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, ilike, and, or, sql, count, isNotNull } from "drizzle-orm";
+import { eq, ilike, and, or, sql, count, isNotNull, asc, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -68,7 +68,7 @@ router.get("/products/:sku", async (req, res) => {
 
 router.get("/products", async (req, res) => {
   try {
-    const { category, search, page: pageStr, limit: limitStr } = req.query as Record<string, string | undefined>;
+    const { category, search, page: pageStr, limit: limitStr, sort } = req.query as Record<string, string | undefined>;
     const page = toNumber(pageStr, 1);
     const limit = Math.min(toNumber(limitStr, 24), 100);
     const offset = (page - 1) * limit;
@@ -88,8 +88,14 @@ router.get("/products", async (req, res) => {
 
     const whereClause = and(...conditions);
 
+    // Determine sort order
+    const orderBy = sort === "price-asc"  ? asc(productsTable.price)
+                  : sort === "price-desc" ? desc(productsTable.price)
+                  : sort === "name-asc"   ? asc(productsTable.name)
+                  : desc(productsTable.id); // default: newest
+
     const [products, totalResult] = await Promise.all([
-      db.select().from(productsTable).where(whereClause).limit(limit).offset(offset),
+      db.select().from(productsTable).where(whereClause).orderBy(orderBy).limit(limit).offset(offset),
       db.select({ count: count() }).from(productsTable).where(whereClause),
     ]);
 
