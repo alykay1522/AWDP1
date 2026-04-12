@@ -1,21 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, PlusCircle, Edit2, Trash2, Check, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Filter, Package, ExternalLink, RefreshCw, ToggleLeft, ToggleRight,
-  Download, Upload, Loader2,
+  Search, PlusCircle, Edit2, Trash2, Check, X,
+  ChevronLeft, ChevronRight as ChevronRightIcon,
+  Package, ExternalLink, RefreshCw, Download, Upload, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 
-// ── Simple CSV parser (no external dependency) ────────────────────────────────
+// ── CSV parser ────────────────────────────────────────────────────────────────
 function parseCsv(text: string): Record<string, string>[] {
   const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   if (lines.length < 2) return [];
-
   function splitLine(line: string): string[] {
     const fields: string[] = [];
     let cur = "", inQuote = false;
@@ -34,16 +32,13 @@ function parseCsv(text: string): Record<string, string>[] {
     fields.push(cur);
     return fields;
   }
-
   const headers = splitLine(lines[0]);
-  return lines.slice(1)
-    .filter((l) => l.trim())
-    .map((l) => {
-      const vals = splitLine(l);
-      const row: Record<string, string> = {};
-      headers.forEach((h, i) => { row[h] = vals[i] ?? ""; });
-      return row;
-    });
+  return lines.slice(1).filter((l) => l.trim()).map((l) => {
+    const vals = splitLine(l);
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = vals[i] ?? ""; });
+    return row;
+  });
 }
 
 interface Product {
@@ -53,40 +48,80 @@ interface Product {
   tags: string[]; createdAt: string;
 }
 
-const PAGE_SIZE = 25;
+interface ProductsResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-const CATEGORIES = [
-  "Window Operators & Cranks","Window Locks & Latches","Window Balances",
-  "Window Screens & Frames","Door Hardware","Door Locks & Multipoint",
-  "Weatherstripping & Seals","Hinges & Pivots","Rollers & Guides",
-  "Sash & Frame Parts","Glazing & Seals","Deer Blind Windows","Skylights",
-  "Rollers & Screens","Window & Door Hardware","Locks & Handles","Tracks & Channels",
-];
+interface Category { id: number; name: string; productCount?: number; }
+
+const PAGE_SIZE = 50;
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [deb, setDeb] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDeb(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return deb;
+}
 
 export default function AdminProductsList() {
   const qc = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState("all");
-  const [stockFilter, setStockFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editPrice, setEditPrice] = useState("");
-  const [editName, setEditName] = useState("");
-  const [editDesc, setEditDesc] = useState("");
+  const [search, setSearch]         = useState("");
+  const [catFilter, setCatFilter]   = useState("");
+  const [stockFilter, setStockFilter] = useState("");
+  const [page, setPage]             = useState(1);
+  const [editingId, setEditingId]   = useState<number | null>(null);
+  const [editPrice, setEditPrice]   = useState("");
+  const [editName, setEditName]     = useState("");
+  const [editDesc, setEditDesc]     = useState("");
   const [editSupplier, setEditSupplier] = useState("");
-  const [importing, setImporting] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting]   = useState(false);
+  const [exporting, setExporting]   = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, refetch } = useQuery<{ products: Product[] }>({
-    queryKey: ["admin-products-list"],
+  const debouncedSearch = useDebounced(search, 350);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1); }, [debouncedSearch, catFilter, stockFilter]);
+
+  // ── Fetch products (server-side) ──────────────────────────────────────────
+  const params = new URLSearchParams({
+    page:  String(page),
+    limit: String(PAGE_SIZE),
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    ...(catFilter       ? { category: catFilter }     : {}),
+    ...(stockFilter     ? { inStock:  stockFilter }   : {}),
+  });
+
+  const queryKey = ["admin-products", page, debouncedSearch, catFilter, stockFilter];
+
+  const { data, isLoading, isFetching, refetch } = useQuery<ProductsResponse>({
+    queryKey,
     queryFn: async () => {
-      const res = await fetch("/api/admin/products");
+      const res = await fetch(`/api/admin/products?${params}`);
       if (!res.ok) throw new Error("Failed to load products");
       return res.json();
     },
+    placeholderData: (prev) => prev,
   });
 
+  // ── Fetch categories for filter dropdown ──────────────────────────────────
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["admin-categories-list"],
+    queryFn: async () => {
+      const res = await fetch("/api/categories");
+      if (!res.ok) return [];
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+
+  // ── Mutations ─────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: async ({ sku, updates }: { sku: string; updates: Record<string, unknown> }) => {
       const res = await fetch(`/api/admin/products/${sku}`, {
@@ -97,7 +132,11 @@ export default function AdminProductsList() {
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Update failed"); }
       return res.json();
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-products-list"] }); setEditingId(null); toast({ title: "Product updated" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setEditingId(null);
+      toast({ title: "Product updated" });
+    },
     onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
@@ -108,43 +147,11 @@ export default function AdminProductsList() {
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Delete failed"); }
       return res.json();
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-products-list"] }); toast({ title: "Product deleted" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-products"] }); toast({ title: "Product deleted" }); },
     onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
   });
 
-  const all = data?.products ?? [];
-
-  const filtered = all.filter((p) => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || p.sku.toLowerCase().includes(q) || p.name.toLowerCase().includes(q) ||
-      p.supplier?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
-    const matchCat = catFilter === "all" || p.category === catFilter;
-    const matchStock = stockFilter === "all" || (stockFilter === "in" ? p.inStock : !p.inStock);
-    return matchSearch && matchCat && matchStock;
-  });
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  useEffect(() => { setPage(1); }, [search, catFilter, stockFilter]);
-
-  const startEdit = (p: Product) => {
-    setEditingId(p.id);
-    setEditPrice(p.price);
-    setEditName(p.name);
-    setEditDesc(p.description ?? "");
-    setEditSupplier(p.supplier ?? "");
-  };
-
-  const saveEdit = (sku: string) => {
-    updateMutation.mutate({ sku, updates: {
-      price: Number(editPrice),
-      name: editName,
-      description: editDesc,
-      supplier: editSupplier,
-    }});
-  };
-
+  // ── Export ────────────────────────────────────────────────────────────────
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -165,20 +172,17 @@ export default function AdminProductsList() {
     }
   };
 
+  // ── Import ────────────────────────────────────────────────────────────────
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!fileInputRef.current) return;
-    fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
     if (!file) return;
 
     setImporting(true);
     try {
       const text = await file.text();
       const rows = parseCsv(text);
-      if (rows.length === 0) {
-        toast({ title: "Empty file", description: "No rows found in the CSV", variant: "destructive" });
-        return;
-      }
+      if (rows.length === 0) { toast({ title: "Empty file", description: "No rows found in the CSV", variant: "destructive" }); return; }
 
       const res = await fetch("/api/admin/products/import", {
         method: "POST",
@@ -188,22 +192,19 @@ export default function AdminProductsList() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error ?? "Import failed");
 
-      qc.invalidateQueries({ queryKey: ["admin-products-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
       const parts = [
-        result.inserted && `${result.inserted} added`,
-        result.updated && `${result.updated} updated`,
-        result.needsPricing && `${result.needsPricing} need pricing (price set to $0, out of stock)`,
-        result.skipped && `${result.skipped} blank rows skipped`,
-        result.errored && `${result.errored} errors`,
+        result.inserted  && `${result.inserted} added`,
+        result.updated   && `${result.updated} updated`,
+        result.needsPricing && `${result.needsPricing} need pricing`,
+        result.skipped   && `${result.skipped} blank rows skipped`,
+        result.errored   && `${result.errored} errors`,
       ].filter(Boolean).join(" · ");
       toast({
         title: result.errored > 0 ? "Import finished with errors" : "Import complete",
         description: parts || "No changes",
-        variant: result.errored > 0 && result.inserted === 0 && result.updated === 0 ? "destructive" : "default",
+        variant: result.errored > 0 && !result.inserted && !result.updated ? "destructive" : "default",
       });
-      if (result.errors?.length > 0) {
-        console.warn("Import errors (first 50):", result.errors);
-      }
     } catch (e: any) {
       toast({ title: "Import failed", description: e.message, variant: "destructive" });
     } finally {
@@ -211,21 +212,47 @@ export default function AdminProductsList() {
     }
   };
 
+  // ── Edit helpers ──────────────────────────────────────────────────────────
+  const startEdit = (p: Product) => {
+    setEditingId(p.id);
+    setEditPrice(p.price);
+    setEditName(p.name);
+    setEditDesc(p.description ?? "");
+    setEditSupplier(p.supplier ?? "");
+  };
+  const saveEdit = (sku: string) =>
+    updateMutation.mutate({ sku, updates: {
+      price: Number(editPrice), name: editName,
+      description: editDesc, supplier: editSupplier,
+    }});
+
+  const products    = data?.products    ?? [];
+  const total       = data?.total       ?? 0;
+  const totalPages  = data?.totalPages  ?? 1;
+  const showingFrom = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const showingTo   = Math.min(page * PAGE_SIZE, total);
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
-      <div className="bg-slate-900 text-white py-6 px-6 flex items-center justify-between">
+
+      {/* Header */}
+      <div className="bg-slate-900 text-white py-5 px-6 flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold">Products</h1>
-          <p className="text-slate-400 text-sm">{all.length} total · {filtered.length} shown</p>
+          <h1 className="text-xl font-bold">All Products</h1>
+          <p className="text-slate-400 text-sm">
+            {total.toLocaleString()} total
+            {(debouncedSearch || catFilter || stockFilter) && " matching filters"}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1" onClick={() => refetch()}>
-            <RefreshCw className="w-3.5 h-3.5" />
+          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800"
+            onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
             onClick={handleExport} disabled={exporting}>
             {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            Export CSV
+            Export All CSV
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
             onClick={() => fileInputRef.current?.click()} disabled={importing}>
@@ -234,38 +261,61 @@ export default function AdminProductsList() {
           </Button>
           <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportFile} />
           <Link href="/admin/products/new">
-            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90"><PlusCircle className="w-4 h-4" /> Add Product</Button>
+            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+              <PlusCircle className="w-4 h-4" /> Add Product
+            </Button>
           </Link>
         </div>
       </div>
 
       <div className="p-4 md:p-6 space-y-4">
+
         {/* Filters */}
         <div className="bg-white rounded-xl border shadow-sm p-4 flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search SKU, name, category, supplier…" className="pl-9" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search SKU, name, category, supplier…"
+              className="pl-9"
+            />
           </div>
-          <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm min-w-48">
-            <option value="all">All Categories</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          <select
+            value={catFilter}
+            onChange={(e) => setCatFilter(e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm min-w-52"
+          >
+            <option value="">All Categories</option>
+            {(categories ?? []).map((c) => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
           </select>
-          <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm">
-            <option value="all">All Stock</option>
-            <option value="in">In Stock</option>
-            <option value="out">Out of Stock</option>
+          <select
+            value={stockFilter}
+            onChange={(e) => setStockFilter(e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="">All Stock Status</option>
+            <option value="true">In Stock</option>
+            <option value="false">Out of Stock</option>
           </select>
+          {(search || catFilter || stockFilter) && (
+            <Button variant="ghost" size="sm" className="text-slate-500 whitespace-nowrap"
+              onClick={() => { setSearch(""); setCatFilter(""); setStockFilter(""); }}>
+              <X className="w-3.5 h-3.5 mr-1" /> Clear
+            </Button>
+          )}
         </div>
 
         {/* Table */}
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           {isLoading ? (
-            <p className="text-center py-16 text-muted-foreground">Loading products…</p>
-          ) : paged.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="flex items-center justify-center gap-3 py-20 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin" /> Loading products…
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-20">
               <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p className="text-muted-foreground">No products match your filters</p>
             </div>
@@ -275,6 +325,7 @@ export default function AdminProductsList() {
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b text-xs text-muted-foreground uppercase tracking-wide">
                     <tr>
+                      <th className="text-left px-4 py-3 w-10">#</th>
                       <th className="text-left px-4 py-3">SKU</th>
                       <th className="text-left px-4 py-3">Name</th>
                       <th className="text-left px-4 py-3 hidden md:table-cell">Category</th>
@@ -285,10 +336,15 @@ export default function AdminProductsList() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {paged.map((p) => (
-                      <tr key={p.id} className={`hover:bg-slate-50 ${editingId === p.id ? "bg-blue-50" : ""}`}>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{p.sku}</td>
-                        <td className="px-4 py-3">
+                    {products.map((p, i) => (
+                      <tr key={p.id} className={`hover:bg-slate-50 transition-colors ${editingId === p.id ? "bg-blue-50" : ""}`}>
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                          {showingFrom + i}
+                        </td>
+                        <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                          {p.sku}
+                        </td>
+                        <td className="px-4 py-2.5 max-w-xs">
                           {editingId === p.id ? (
                             <div className="space-y-1">
                               <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-7 text-xs py-0" />
@@ -302,9 +358,9 @@ export default function AdminProductsList() {
                             </div>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{p.category}</td>
-                        <td className="px-4 py-3 text-xs hidden lg:table-cell">{p.supplier ?? "—"}</td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground hidden md:table-cell whitespace-nowrap">{p.category}</td>
+                        <td className="px-4 py-2.5 text-xs hidden lg:table-cell">{p.supplier ?? "—"}</td>
+                        <td className="px-4 py-2.5 text-right">
                           {editingId === p.id ? (
                             <Input value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
                               type="number" step="0.01" className="h-7 w-24 text-xs py-0 ml-auto" />
@@ -312,17 +368,19 @@ export default function AdminProductsList() {
                             <span className="font-bold">${Number(p.price).toFixed(2)}</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-4 py-2.5 text-center">
                           <button
                             onClick={() => updateMutation.mutate({ sku: p.sku, updates: { inStock: !p.inStock } })}
-                            className={`text-xs px-2 py-1 rounded-full font-medium border transition-colors ${
-                              p.inStock ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200" : "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium border transition-colors ${
+                              p.inStock
+                                ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                                : "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
                             }`}
                           >
                             {p.inStock ? "In Stock" : "Out"}
                           </button>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-2.5 text-right">
                           <div className="flex items-center justify-end gap-1">
                             {editingId === p.id ? (
                               <>
@@ -345,22 +403,24 @@ export default function AdminProductsList() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
-                  <span className="text-muted-foreground">
-                    {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+              <div className="flex items-center justify-between px-4 py-3 border-t text-sm bg-slate-50">
+                <span className="text-muted-foreground">
+                  {total === 0 ? "No products" : `${showingFrom.toLocaleString()}–${showingTo.toLocaleString()} of ${total.toLocaleString()} products`}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={page === 1}>First</Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="px-3 text-sm font-medium text-slate-600">
+                    Page {page} of {totalPages.toLocaleString()}
                   </span>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="flex items-center px-3 text-sm font-medium">{page} / {totalPages}</span>
-                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                      <ChevronRightIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Last</Button>
                 </div>
-              )}
+              </div>
             </>
           )}
         </div>

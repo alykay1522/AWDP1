@@ -109,14 +109,53 @@ router.get("/admin/products/preview-sku", async (req, res) => {
 });
 
 // GET /api/admin/products — list all products (admin, all fields)
-router.get("/admin/products", async (_req, res) => {
+router.get("/admin/products", async (req, res) => {
   try {
-    const products = await db
-      .select()
-      .from(productsTable)
-      .orderBy(sql`${productsTable.createdAt} desc`)
-      .limit(500);
-    res.json({ products });
+    const pageNum   = Math.max(1, Number(req.query.page  ?? 1));
+    const limitNum  = Math.min(100, Math.max(1, Number(req.query.limit ?? 50)));
+    const offset    = (pageNum - 1) * limitNum;
+    const search    = String(req.query.search   ?? "").trim();
+    const category  = String(req.query.category ?? "").trim();
+    const stockStr  = String(req.query.inStock  ?? "").trim(); // "true" | "false" | ""
+
+    const { ilike, and, or, eq, count, desc } = await import("drizzle-orm");
+
+    const conditions: any[] = [];
+    if (search) {
+      conditions.push(
+        or(
+          ilike(productsTable.name,        `%${search}%`),
+          ilike(productsTable.sku,         `%${search}%`),
+          ilike(productsTable.supplier,    `%${search}%`),
+          ilike(productsTable.category,    `%${search}%`),
+        )
+      );
+    }
+    if (category) conditions.push(eq(productsTable.category, category));
+    if (stockStr === "true")  conditions.push(eq(productsTable.inStock, true));
+    if (stockStr === "false") conditions.push(eq(productsTable.inStock, false));
+
+    const where = conditions.length ? and(...conditions) : undefined;
+
+    const [products, [{ total }]] = await Promise.all([
+      db.select()
+        .from(productsTable)
+        .where(where)
+        .orderBy(desc(productsTable.id))
+        .limit(limitNum)
+        .offset(offset),
+      db.select({ total: count() })
+        .from(productsTable)
+        .where(where),
+    ]);
+
+    res.json({
+      products,
+      total: Number(total),
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(Number(total) / limitNum),
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
