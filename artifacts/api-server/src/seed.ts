@@ -117,8 +117,12 @@ export async function fixProductCategories(): Promise<void> {
 
   const updates: Array<{ label: string; query: string }> = [
     {
-      label: "Window Balances and Accessories (TR/TE/IA/IB/BI/TF/TP/BE/LT)",
-      query: `UPDATE products SET category = 'Window Balances and Accessories' WHERE (category IS NULL OR category = '') AND (sku LIKE 'AWDP-TR%' OR sku LIKE 'AWDP-TE%' OR sku LIKE 'AWDP-IA%' OR sku LIKE 'AWDP-IB%' OR sku LIKE 'AWDP-BI%' OR sku LIKE 'AWDP-TF%' OR sku LIKE 'AWDP-TP%' OR sku LIKE 'AWDP-BE%' OR sku LIKE 'AWDP-LT%')`,
+      label: "Window Balances (TR/TE/IA/IB/BI/TF/TP/BE/LT) — balance products by name",
+      query: `UPDATE products SET category = 'Window Balances' WHERE (category IS NULL OR category = '') AND (sku LIKE 'AWDP-TR%' OR sku LIKE 'AWDP-TE%' OR sku LIKE 'AWDP-IA%' OR sku LIKE 'AWDP-IB%' OR sku LIKE 'AWDP-BI%' OR sku LIKE 'AWDP-TF%' OR sku LIKE 'AWDP-TP%' OR sku LIKE 'AWDP-BE%' OR sku LIKE 'AWDP-LT%') AND (name ILIKE '%balance%' OR name ILIKE '%chan bal%' OR name ILIKE '%ribbed bal%' OR name ILIKE '%overhead bal%' OR name ILIKE '% bal w/%' OR name ILIKE '% bal w:%' OR name ILIKE '% bal @%' OR name ILIKE '% bal.%' OR name ILIKE '% bal %' OR name ILIKE 'inverted tilt b%')`,
+    },
+    {
+      label: "Sash Hardware (TR/TE/IA/IB/BI/TF/TP/BE/LT) — non-balance accessories",
+      query: `UPDATE products SET category = 'Sash Hardware' WHERE (category IS NULL OR category = '') AND (sku LIKE 'AWDP-TR%' OR sku LIKE 'AWDP-TE%' OR sku LIKE 'AWDP-IA%' OR sku LIKE 'AWDP-IB%' OR sku LIKE 'AWDP-BI%' OR sku LIKE 'AWDP-TF%' OR sku LIKE 'AWDP-TP%' OR sku LIKE 'AWDP-BE%' OR sku LIKE 'AWDP-LT%')`,
     },
     {
       label: "Window Hardware (OT/OA/OF/OR/RL/IE/OB/OO/BB)",
@@ -153,8 +157,8 @@ export async function fixProductCategories(): Promise<void> {
       query: `UPDATE products SET category = 'Door Hardware' WHERE (category IS NULL OR category = '') AND sku LIKE 'AWDP-LE%' AND (name ILIKE '%PATIO DOOR%' OR name ILIKE '%ROLLER%' OR name ILIKE '%HOOK MOUNT%' OR name ILIKE '%TAILPIECE%')`,
     },
     {
-      label: "AWDP-LE: Balances",
-      query: `UPDATE products SET category = 'Window Balances and Accessories' WHERE (category IS NULL OR category = '') AND sku LIKE 'AWDP-LE%' AND (name ILIKE '%BALANCE CLIP%' OR name ILIKE '%BALANCE SUPPORT%')`,
+      label: "AWDP-LE: Balance accessories",
+      query: `UPDATE products SET category = 'Window Balances' WHERE (category IS NULL OR category = '') AND sku LIKE 'AWDP-LE%' AND (name ILIKE '%BALANCE CLIP%' OR name ILIKE '%BALANCE SUPPORT%')`,
     },
     {
       label: "AWDP-LE: Window Hardware (remainder)",
@@ -175,6 +179,42 @@ export async function fixProductCategories(): Promise<void> {
   }
 
   logger.info({ totalFixed }, "fixProductCategories complete");
+}
+
+/**
+ * Migrates any products still using legacy category names to the new split categories.
+ * Always runs at startup — safe to re-run (no-ops if nothing needs changing).
+ */
+export async function migrateLegacyCategories(): Promise<void> {
+  // Split old "Window Balances and Accessories" into two distinct categories
+  const balanceResult = await db.execute(sql.raw(`
+    UPDATE products
+    SET category = 'Window Balances'
+    WHERE category = 'Window Balances and Accessories'
+    AND (
+      name ILIKE '%balance%'
+      OR name ILIKE '%chan bal%'
+      OR name ILIKE '%ribbed bal%'
+      OR name ILIKE '%overhead bal%'
+      OR name ILIKE '% bal w/%'
+      OR name ILIKE '% bal w:%'
+      OR name ILIKE '% bal @%'
+      OR name ILIKE '% bal.%'
+      OR name ILIKE '% bal %'
+      OR name ILIKE 'inverted tilt b%'
+    )
+  `));
+  const sashResult = await db.execute(sql.raw(`
+    UPDATE products
+    SET category = 'Sash Hardware'
+    WHERE category = 'Window Balances and Accessories'
+  `));
+
+  const balRows = (balanceResult as { rowCount?: number }).rowCount ?? 0;
+  const sashRows = (sashResult as { rowCount?: number }).rowCount ?? 0;
+  if (balRows > 0 || sashRows > 0) {
+    logger.info({ balRows, sashRows }, "migrateLegacyCategories: split 'Window Balances and Accessories'");
+  }
 }
 
 export async function seedIfEmpty(): Promise<void> {
