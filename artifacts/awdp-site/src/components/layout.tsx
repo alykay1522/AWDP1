@@ -211,8 +211,8 @@ export function Layout({ children }: { children: ReactNode }) {
                       ) : (
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
-                          <p className="text-xs text-green-700 flex items-center gap-1 font-medium">
-                            <Truck className="w-3 h-3" /> In-stock orders before 2 PM CT ship same day
+                          <p className="text-xs text-slate-600 flex items-center gap-1 font-medium">
+                            <Truck className="w-3 h-3" /> Some items may require sourcing from our distributors before shipping
                           </p>
                         </div>
                       )}
@@ -331,9 +331,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li><Link href="/policies#guarantee" className="hover:text-white transition-colors">Secure Shopping Guarantee</Link></li>
                 <li><Link href="/policies" className="hover:text-white transition-colors">All Policies</Link></li>
               </ul>
-              <div className="mt-6 bg-green-900/30 border border-green-700/40 rounded-md px-3 py-2.5 text-green-300 text-xs leading-snug flex items-start gap-2">
+              <div className="mt-6 bg-slate-700/40 border border-slate-600/40 rounded-md px-3 py-2.5 text-slate-300 text-xs leading-snug flex items-start gap-2">
                 <Truck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                <span>In-stock orders placed before 2:00 PM CT ship same day. Standard (3-5 days), Expedited (2-3 days), Next Day Air available.</span>
+                <span>Shipping is determined at checkout. Some items may need to be sourced from our distributors before they can ship — we will contact you if additional lead time is needed.</span>
               </div>
               <div className="mt-3 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs leading-snug">
                 Orders under $50 may require additional shipping. We'll contact you before processing.

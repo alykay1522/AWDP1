@@ -154,7 +154,7 @@ export default function ProductDetail() {
                 <span className="font-mono text-sm tracking-wider text-muted-foreground bg-slate-100 px-2 py-1 rounded">SKU: {product.sku}</span>
                 {product.inStock ? (
                   <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded">
-                    <PackageCheck className="w-4 h-4" /> In Stock & Ready to Ship
+                    <PackageCheck className="w-4 h-4" /> In Stock
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 text-sm font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded">
@@ -224,7 +224,7 @@ export default function ProductDetail() {
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
                   <div className="flex items-center gap-3">
-                    <Truck className="w-5 h-5 text-primary" /> Ships same day if ordered before 2PM CST
+                    <Truck className="w-5 h-5 text-primary" /> Shipping calculated at checkout — some items may require distributor sourcing
                   </div>
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-primary" /> Genuine Replacement Part - Quality Guaranteed
@@ -296,10 +296,11 @@ export default function ProductDetail() {
             
             <TabsContent value="shipping" className="mt-0 text-slate-600 space-y-4 max-w-3xl">
               <h3 className="text-lg font-bold text-slate-900 mb-2">Shipping Information</h3>
-              <p>In-stock items typically ship the same day if ordered before 2:00 PM Central Time, Monday through Friday.</p>
+              <p>Shipping costs are calculated at checkout based on your delivery address, package weight, and dimensions. We ship via UPS, FedEx, and/or USPS.</p>
+              <p>Please note that <strong>not all orders ship immediately</strong>. Some items need to be sourced from our distributors before they can be sent out. If your order requires additional lead time, we will contact you.</p>
               <ul className="list-disc pl-5 space-y-1 mb-6">
-                <li>Standard Shipping (3-5 business days)</li>
-                <li>Expedited Shipping (2-3 business days)</li>
+                <li>Standard Shipping (3-5 business days from ship date)</li>
+                <li>Expedited Shipping (2-3 business days from ship date)</li>
                 <li>Next Day Air available at checkout</li>
               </ul>
               

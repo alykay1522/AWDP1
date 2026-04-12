@@ -104,7 +104,7 @@ export default function Home() {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight mb-4 text-white shadow-sm">
               Replacement Window &amp; Door Parts
             </h1>
-            <p className="text-xl md:text-2xl text-blue-300 font-semibold mb-6">Expert Parts Identification &amp; Fast Nationwide Shipping</p>
+            <p className="text-xl md:text-2xl text-blue-300 font-semibold mb-6">Expert Parts Identification &amp; Nationwide Shipping</p>
 
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl leading-relaxed">
               Over 40 years of industry experience. 35,000+ parts in stock. If they made it, we can find it — if we can't, you probably never will.
@@ -147,8 +147,8 @@ export default function Home() {
             </div>
             <div className="flex flex-col items-center text-center px-4">
               <Truck className="w-8 h-8 text-primary mb-3" />
-              <h3 className="font-bold text-slate-900">Fast Shipping</h3>
-              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">Nationwide Delivery</p>
+              <h3 className="font-bold text-slate-900">Nationwide Shipping</h3>
+              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">Determined at Checkout</p>
             </div>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Browse by Part Type</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Shop the most popular replacement hardware categories — all in stock, ready to ship.</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Shop the most popular replacement hardware categories. Shipping is calculated at checkout.</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -336,7 +336,7 @@ export default function Home() {
               { icon: Award,        title: "40+ Years Experience",    desc: "Unmatched industry knowledge to help you find the right part every time." },
               { icon: Shield,       title: "Veteran Owned",           desc: "Proudly American, veteran-owned and operated with integrity." },
               { icon: PackageSearch,title: "Free Parts ID",           desc: "Send a photo — our experts identify and source any part at no charge." },
-              { icon: Truck,        title: "Fast Shipping",           desc: "Orders ship quickly to homeowners, contractors, and property managers nationwide." },
+              { icon: Truck,        title: "Nationwide Shipping",      desc: "We ship to homeowners, contractors, and property managers across the country. Shipping is calculated at checkout." },
               { icon: Wrench,       title: "Obsolete Parts Experts",  desc: "Discontinued or hard-to-find? We specialize in parts nobody else stocks." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="text-center p-6 rounded-xl border bg-slate-50">

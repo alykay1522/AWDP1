@@ -1,4 +1,4 @@
-import { Shield, Truck, RefreshCcw, Lock, Clock, Zap, PackageCheck, AlertTriangle } from "lucide-react";
+import { Shield, Truck, RefreshCcw, Lock, Zap, PackageCheck, AlertTriangle } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Link } from "wouter";
 
@@ -38,14 +38,15 @@ export default function Policies() {
               <h2 className="text-2xl font-serif font-bold text-slate-900">Shipping Policy</h2>
             </div>
 
-            {/* Same-day cutoff callout */}
-            <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-start gap-3 mb-6">
-              <Clock className="w-5 h-5 text-green-700 shrink-0 mt-0.5" />
+            {/* Shipping notice */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 flex items-start gap-3 mb-6">
+              <Truck className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-green-800 text-sm">Same-Day Shipping Available</p>
-                <p className="text-green-700 text-sm mt-0.5">
-                  In-stock items typically ship the <strong>same business day</strong> if ordered before
-                  <strong> 2:00 PM Central Time</strong>, Monday through Friday.
+                <p className="font-bold text-slate-800 text-sm">Shipping Determined at Checkout</p>
+                <p className="text-slate-600 text-sm mt-0.5">
+                  Shipping costs are calculated automatically during checkout based on your delivery address, package weight, and dimensions.
+                  There is no guarantee that orders will ship immediately — some items may need to be sourced from our distributors first.
+                  We will contact you if additional lead time is required.
                 </p>
               </div>
             </div>
@@ -93,9 +94,7 @@ export default function Policies() {
             </div>
 
             <p className="text-slate-600 text-sm leading-relaxed">
-              Shipping costs are automatically calculated during checkout based on your delivery address,
-              package weight, and dimensions. We ship via UPS, FedEx, and/or USPS.
-              You do not need to complete a purchase to view shipping charges &mdash; they are shown before you pay.
+              We ship via UPS, FedEx, and/or USPS. You do not need to complete a purchase to view shipping charges &mdash; they are shown before you pay.
             </p>
           </section>
 

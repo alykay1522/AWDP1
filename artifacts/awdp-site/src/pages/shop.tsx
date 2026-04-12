@@ -61,7 +61,7 @@ export default function Shop() {
       <PageSeo
         title="Shop Window & Door Parts"
         path="/shop"
-        description="Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Fast shipping."
+        description="Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout."
       />
 
       {/* Order minimum notice */}
