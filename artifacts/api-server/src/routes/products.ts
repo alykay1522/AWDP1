@@ -5,6 +5,10 @@ import { eq, ilike, and, or, sql, count, isNotNull, asc, desc } from "drizzle-or
 
 const router: IRouter = Router();
 
+// Products priced below this are hidden from the storefront
+const MIN_VISIBLE_PRICE = 30;
+const priceAboveMin = sql`${productsTable.price}::numeric >= ${MIN_VISIBLE_PRICE}`;
+
 function toNumber(val: string | undefined, fallback: number): number {
   const n = Number(val);
   return isNaN(n) ? fallback : n;
@@ -17,7 +21,8 @@ router.get("/products/featured", async (req, res) => {
       .from(productsTable)
       .where(and(
         eq(productsTable.inStock, true),
-        isNotNull(productsTable.imageUrl)
+        isNotNull(productsTable.imageUrl),
+        priceAboveMin
       ))
       .orderBy(sql`RANDOM()`)
       .limit(8);
@@ -38,7 +43,7 @@ router.get("/products/search-suggestions", async (req, res) => {
     const results = await db
       .select({ name: productsTable.name })
       .from(productsTable)
-      .where(and(isNotNull(productsTable.imageUrl), ilike(productsTable.name, `%${q}%`)))
+      .where(and(isNotNull(productsTable.imageUrl), priceAboveMin, ilike(productsTable.name, `%${q}%`)))
       .limit(8);
     res.json(results.map((r) => r.name));
   } catch (err) {
@@ -73,8 +78,8 @@ router.get("/products", async (req, res) => {
     const limit = Math.min(toNumber(limitStr, 24), 100);
     const offset = (page - 1) * limit;
 
-    // Always require an image — products without images are hidden from the shop
-    const conditions = [isNotNull(productsTable.imageUrl)];
+    // Always require an image and minimum price — products without images or below $30 are hidden
+    const conditions = [isNotNull(productsTable.imageUrl), priceAboveMin];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {
       conditions.push(
@@ -120,7 +125,7 @@ router.get("/categories", async (req, res) => {
     const counts = await db
       .select({ category: productsTable.category, count: count() })
       .from(productsTable)
-      .where(isNotNull(productsTable.imageUrl))
+      .where(and(isNotNull(productsTable.imageUrl), priceAboveMin))
       .groupBy(productsTable.category);
 
     const countMap = new Map(counts.map((c) => [c.category, Number(c.count)]));
