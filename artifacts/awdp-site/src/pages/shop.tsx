@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { PageSeo } from "@/components/page-seo";
+import { CategorySeoBlock } from "@/components/category-seo-block";
 import { useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,33 +10,63 @@ import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+function buildPageMeta(search: string, category: string) {
+  if (category) {
+    return {
+      title: `${category} – Replacement Parts`,
+      description: `Shop ${category} replacement parts at All Window Door Parts. Hard-to-find and OEM-specific hardware for every major brand. Veteran-owned, 40+ years experience. Shipping calculated at checkout.`,
+    };
+  }
+  if (search) {
+    return {
+      title: `"${search}" – Window & Door Parts`,
+      description: `Shop replacement parts matching "${search}" at All Window Door Parts. 35,000+ parts including hard-to-find and discontinued hardware. Veteran-owned, 40+ years experience.`,
+    };
+  }
+  return {
+    title: "Shop Window & Door Parts",
+    description: "Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout.",
+  };
+}
+
 export default function Shop() {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
 
-  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [search, setSearch]         = useState(searchParams.get("search") || "");
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
-  const [page, setPage] = useState(1);
-  const [sort, setSort] = useState("newest");
+  const [category, setCategory]     = useState(searchParams.get("category") || "");
+  const [page, setPage]             = useState(1);
+  const [sort, setSort]             = useState("newest");
 
+  // Sync URL params whenever the wouter location changes
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlSearch = params.get("search");
-    if (urlSearch !== null && urlSearch !== search) {
+    const urlSearch   = params.get("search") ?? "";
+    const urlCategory = params.get("category") ?? "";
+
+    if (urlSearch !== search) {
       setSearch(urlSearch);
       setSearchInput(urlSearch);
+      setPage(1);
+    }
+    if (urlCategory !== category) {
+      setCategory(urlCategory);
+      setPage(1);
     }
   }, [location]);
 
   const { data: productsData, isLoading, isError, error } = useGetProducts({
-    search: search || undefined,
+    search:   search   || undefined,
+    category: category || undefined,
     page,
     limit: 24,
     sort,
   }, {
     query: {
       queryKey: getGetProductsQueryKey({
-        search: search || undefined,
+        search:   search   || undefined,
+        category: category || undefined,
         page,
         limit: 24,
         sort,
@@ -47,36 +78,50 @@ export default function Shop() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
+    setCategory("");
     setPage(1);
   };
 
   const clearSearch = () => {
     setSearch("");
     setSearchInput("");
+    setCategory("");
     setPage(1);
   };
+
+  const { title: seoTitle, description: seoDesc } = buildPageMeta(search, category);
+
+  const activeLabel = category
+    ? category
+    : search
+    ? `"${search}"`
+    : null;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <PageSeo
-        title="Shop Window & Door Parts"
+        title={seoTitle}
         path="/shop"
-        description="Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout."
+        description={seoDesc}
       />
 
       {/* Order minimum notice */}
       <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">
-        <span className="text-amber-600 text-base leading-none">!</span>
+        <span className="text-amber-600 text-base leading-none" aria-hidden="true">!</span>
         $50 minimum on all orders &mdash; Anything below $50 will be cancelled
       </div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b pb-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Shop Parts</h1>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+            {category ? category : "Shop Parts"}
+          </h1>
           <p className="text-muted-foreground mt-1 font-medium">
-            {productsData?.total ? `${productsData.total.toLocaleString()} products found` : "Loading products..."}
-            {search && ` matching "${search}"`}
+            {productsData?.total
+              ? `${productsData.total.toLocaleString()} parts found`
+              : isLoading ? "Loading…" : "0 parts found"}
+            {activeLabel && ` for ${activeLabel}`}
           </p>
         </div>
 
@@ -84,20 +129,21 @@ export default function Shop() {
           <form onSubmit={handleSearchSubmit} className="relative">
             <Input
               type="search"
-              placeholder="Search parts..."
+              placeholder="Search parts…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9 bg-white w-56"
+              aria-label="Search parts"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </form>
-          {search && (
+          {(search || category) && (
             <Button variant="ghost" size="sm" onClick={clearSearch} className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2">
-              <X className="w-4 h-4 mr-1" /> Clear
+              <X className="w-4 h-4 mr-1" aria-hidden="true" /> Clear
             </Button>
           )}
           <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
-            <SelectTrigger className="w-[180px] bg-white">
+            <SelectTrigger className="w-[180px] bg-white" aria-label="Sort products">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -161,6 +207,8 @@ export default function Shop() {
                         variant={page === pageNum ? "default" : "ghost"}
                         className={`w-10 h-10 p-0 ${page === pageNum ? "pointer-events-none" : ""}`}
                         onClick={() => setPage(pageNum)}
+                        aria-label={`Go to page ${pageNum}`}
+                        aria-current={page === pageNum ? "page" : undefined}
                       >
                         {pageNum}
                       </Button>
@@ -178,6 +226,9 @@ export default function Shop() {
               </Button>
             </div>
           )}
+
+          {/* Category SEO text block — shown after results */}
+          <CategorySeoBlock search={search} category={category} />
         </>
       ) : (
         <div className="text-center py-24 bg-white rounded-xl border border-dashed">

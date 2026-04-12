@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { useGetCategories, getGetCategoriesQueryKey } from "@workspace/api-client-react";
 import { PageSeo } from "@/components/page-seo";
+import { CatalogSeoBlock } from "@/components/category-seo-block";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PackageSearch, FolderTree, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,8 +75,11 @@ export default function Categories() {
           </div>
         )}
 
+        {/* Catalog SEO block */}
+        <CatalogSeoBlock />
+
         {/* Free Parts ID Promo Banner */}
-        <div className="mt-20 bg-primary rounded-2xl overflow-hidden shadow-xl">
+        <div className="mt-12 bg-primary rounded-2xl overflow-hidden shadow-xl">
           <div className="px-6 py-12 md:px-12 md:py-16 text-center max-w-4xl mx-auto">
             <PackageSearch className="w-16 h-16 text-accent mx-auto mb-6" />
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">Still can't find what you're looking for?</h2>

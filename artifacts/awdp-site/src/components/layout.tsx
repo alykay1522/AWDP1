@@ -300,6 +300,30 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Footer */}
       <footer className="bg-slate-950 text-slate-300 py-16 mt-auto">
         <div className="container mx-auto px-4">
+
+          {/* Footer SEO block */}
+          <div className="border border-slate-700 rounded-xl px-6 py-8 mb-12 text-sm leading-relaxed text-slate-400">
+            <p className="mb-3">
+              <span className="font-bold text-slate-200">All Window Door Parts</span> is America's trusted source for window and door hardware,
+              specializing in obsolete, discontinued, and hard-to-find replacement parts. With over 40 years of hands-on experience,
+              we help homeowners, contractors, and property managers identify and replace the exact parts needed to restore smooth, secure operation.
+              From{" "}
+              <Link href="/shop?search=casement" className="text-slate-300 hover:text-white underline underline-offset-2">operators</Link>,{" "}
+              <Link href="/shop?search=balance" className="text-slate-300 hover:text-white underline underline-offset-2">balances</Link>,{" "}
+              <Link href="/shop?search=roller" className="text-slate-300 hover:text-white underline underline-offset-2">rollers</Link>,{" "}
+              <Link href="/shop?search=lock" className="text-slate-300 hover:text-white underline underline-offset-2">locks</Link>,{" "}
+              <Link href="/shop?search=latch" className="text-slate-300 hover:text-white underline underline-offset-2">tilt latches</Link>,{" "}
+              <Link href="/shop?search=hinge" className="text-slate-300 hover:text-white underline underline-offset-2">hinges</Link>, and{" "}
+              <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-slate-300 hover:text-white underline underline-offset-2">weatherstripping</Link>,
+              we carry solutions for nearly every brand and window type. Can't find your part?{" "}
+              <Link href="/parts-identification" className="text-accent hover:text-white font-semibold underline underline-offset-2">Use our Free Parts ID service</Link>{" "}
+              and our experts will match it for you — at no charge.
+            </p>
+            <p className="text-xs text-slate-500">
+              Veteran Owned &amp; Operated &nbsp;&middot;&nbsp; 40+ Years Experience &nbsp;&middot;&nbsp; SSL Secured Checkout &nbsp;&middot;&nbsp; Expert Parts Matching &nbsp;&middot;&nbsp; Hard-to-Find &amp; Obsolete Parts Specialists
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div className="space-y-4">
               <img src={logo} alt="All Window Door Parts" className="h-16 w-auto bg-white/10 p-2 rounded-md object-contain" />

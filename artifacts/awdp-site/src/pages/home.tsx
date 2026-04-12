@@ -200,10 +200,10 @@ export default function Home() {
             <p className="text-slate-600 leading-relaxed text-lg">
               All Window Door Parts specializes in replacement hardware for casement windows, sliding patio doors,
               double-hung windows, awning windows, and more. Whether you need a{" "}
-              <Link href="/shop?search=sash+balance" className="text-primary font-semibold hover:underline">sash balance</Link>,{" "}
-              <Link href="/shop?search=casement+operator" className="text-primary font-semibold hover:underline">casement operator</Link>,{" "}
-              <Link href="/shop?search=patio+door+roller" className="text-primary font-semibold hover:underline">patio door roller</Link>, or hard-to-find{" "}
-              <Link href="/shop?search=weatherstripping" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
+              <Link href="/shop?search=balance" className="text-primary font-semibold hover:underline">window balance</Link>,{" "}
+              <Link href="/shop?search=casement" className="text-primary font-semibold hover:underline">casement operator</Link>,{" "}
+              <Link href="/shop?search=roller" className="text-primary font-semibold hover:underline">patio door roller</Link>, or hard-to-find{" "}
+              <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
               our catalog of 35,000+ parts covers virtually every make and model — including obsolete and discontinued hardware
               that nobody else stocks. Homeowners, contractors, and property managers across the country trust us to
               identify and deliver the exact part they need.
@@ -222,12 +222,12 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: ArrowUp,    label: "Window Won't Stay Up",      desc: "Broken sash balance or spring",        href: "/shop?search=sash+balance" },
-              { icon: Wrench,     label: "Crank Operator Broken",      desc: "Casement or awning won't open/close", href: "/shop?search=casement+operator" },
-              { icon: Move,       label: "Patio Door Hard to Slide",   desc: "Worn rollers or track damage",         href: "/shop?search=patio+door+roller" },
-              { icon: Wind,       label: "Weatherstripping Worn Out",  desc: "Drafts, leaks, or worn seals",         href: "/shop?search=weatherstripping" },
-              { icon: Lock,       label: "Lock Won't Latch",           desc: "Broken or misaligned lock hardware",   href: "/shop?search=window+lock" },
-              { icon: LayoutGrid, label: "Screen Door Damaged",        desc: "Torn screen, bent frame, or hardware", href: "/shop?search=screen" },
+              { icon: ArrowUp,    label: "Window Won't Stay Up",      desc: "Broken balance or spring",             href: "/shop?search=balance" },
+              { icon: Wrench,     label: "Crank Operator Broken",      desc: "Casement or awning won't open/close", href: "/shop?search=casement" },
+              { icon: Move,       label: "Patio Door Hard to Slide",   desc: "Worn rollers or track damage",         href: "/shop?search=roller" },
+              { icon: Wind,       label: "Weatherstripping Worn Out",  desc: "Drafts, leaks, or worn seals",         href: "/shop?category=Window+Glazing+and+Weatherstrip" },
+              { icon: Lock,       label: "Lock Won't Latch",           desc: "Broken or misaligned lock hardware",   href: "/shop?search=lock" },
+              { icon: LayoutGrid, label: "Screen Door Damaged",        desc: "Torn screen, bent frame, or hardware", href: "/shop?category=Screen+Hardware+and+Accessories" },
               { icon: Key,        label: "Handle Broken or Loose",     desc: "Door or window handle replacement",    href: "/shop?search=handle" },
               { icon: Droplets,   label: "Window Leaks Air or Water",  desc: "Glazing, seals, or frame repair",      href: "/parts-identification" },
             ].map(({ icon: Icon, label, desc, href }) => (
@@ -350,12 +350,12 @@ export default function Home() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { name: "Casement Operators",  href: "/shop?search=casement+operator",    Icon: Wrench,          desc: "Open & close casement windows" },
-              { name: "Patio Door Rollers",  href: "/shop?search=patio+door+roller",    Icon: Move,            desc: "Sliding door roller replacements" },
-              { name: "Sash Balances",       href: "/shop?search=sash+balance",         Icon: SlidersHorizontal, desc: "Keep double-hung windows up" },
-              { name: "Weatherstripping",    href: "/shop?search=weatherstripping",      Icon: Wind,            desc: "Stop drafts and air leaks" },
-              { name: "Door Hinges",         href: "/shop?search=hinge",                Icon: Layers,          desc: "Door hinge replacements" },
-              { name: "Window Handles",      href: "/shop?search=handle",               Icon: Key,             desc: "Handles and operator hardware" },
+              { name: "Casement Operators",  href: "/shop?search=casement",                            Icon: Wrench,            desc: "Open & close casement windows" },
+              { name: "Patio Door Rollers",  href: "/shop?search=roller",                              Icon: Move,              desc: "Sliding door roller replacements" },
+              { name: "Window Balances",     href: "/shop?search=balance",                             Icon: SlidersHorizontal, desc: "Keep double-hung windows up" },
+              { name: "Weatherstripping",    href: "/shop?category=Window+Glazing+and+Weatherstrip",  Icon: Wind,              desc: "Stop drafts and air leaks" },
+              { name: "Door Hinges",         href: "/shop?search=hinge",                               Icon: Layers,            desc: "Door hinge replacements" },
+              { name: "Window Handles",      href: "/shop?search=handle",                              Icon: Key,               desc: "Handles and operator hardware" },
             ].map(({ name, href, Icon, desc }) => (
               <Link key={name} href={href} className="bg-white p-5 rounded-xl border shadow-sm hover:shadow-md hover:border-primary transition-all text-center group">
                 <div className="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors mb-3">
