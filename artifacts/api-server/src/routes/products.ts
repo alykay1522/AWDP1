@@ -9,6 +9,63 @@ const router: IRouter = Router();
 const MIN_VISIBLE_PRICE = 30;
 const priceAboveMin = sql`${productsTable.price}::numeric >= ${MIN_VISIBLE_PRICE}`;
 
+// ---------------------------------------------------------------------------
+// Search synonym / alias normalization
+// Maps user-facing terms → the actual words that appear in product names.
+// Longer/more-specific phrases must come before shorter ones so they match first.
+// ---------------------------------------------------------------------------
+const SEARCH_ALIASES: Array<[RegExp, string]> = [
+  // Lock types → "lock"
+  [/^sash locks?$/i,        "lock"],
+  [/^cam locks?$/i,         "lock"],
+  [/^sweep locks?$/i,       "lock"],
+  [/^window locks?$/i,      "lock"],
+  // Keeper
+  [/^lock keeper(?:s)?$/i,      "keeper"],
+  // Latch types → "latch"
+  [/^tilt latch(?:es)?$/i,      "latch"],
+  [/^window latch(?:es)?$/i,    "latch"],
+  // Operator / crank
+  [/^window cranks?$/i,     "operator"],
+  [/^cranks?$/i,            "operator"],
+  // Balance types → "balance"
+  [/^channel balances?$/i,  "balance"],
+  [/^window balances?$/i,   "balance"],
+  // Roller types → "roller"
+  [/^patio door rollers?$/i, "roller"],
+];
+
+// Terms that map to a category filter rather than a text search
+const CATEGORY_ALIASES: Array<[RegExp, string]> = [
+  [/^weather\s?strips?$/i,   "Window Glazing and Weatherstrip"],
+  [/^weatherstripping$/i,    "Window Glazing and Weatherstrip"],
+  [/^seals?$/i,              "Window Glazing and Weatherstrip"],
+];
+
+/**
+ * Normalise a raw search string.
+ * Returns { search, category } where one or both may be undefined.
+ * If the term maps to a category, search is cleared and category is set.
+ */
+function normalizeSearch(raw: string | undefined, existingCategory: string | undefined): { search?: string; category?: string } {
+  if (!raw || !raw.trim()) return { category: existingCategory };
+
+  const term = raw.trim();
+
+  // Check category aliases first
+  for (const [pattern, cat] of CATEGORY_ALIASES) {
+    if (pattern.test(term)) return { category: cat };
+  }
+
+  // Check search aliases
+  for (const [pattern, canonical] of SEARCH_ALIASES) {
+    if (pattern.test(term)) return { search: canonical, category: existingCategory };
+  }
+
+  // No alias match — return as-is
+  return { search: term, category: existingCategory };
+}
+
 function toNumber(val: string | undefined, fallback: number): number {
   const n = Number(val);
   return isNaN(n) ? fallback : n;
@@ -35,11 +92,25 @@ router.get("/products/featured", async (req, res) => {
 
 router.get("/products/search-suggestions", async (req, res) => {
   try {
-    const q = String(req.query.q || "");
-    if (!q || q.length < 2) {
+    const rawQ = String(req.query.q || "");
+    if (!rawQ || rawQ.length < 2) {
       res.json([]);
       return;
     }
+
+    const { search: q, category } = normalizeSearch(rawQ, undefined);
+
+    // If aliased to a category, return representative product names from that category
+    if (!q && category) {
+      const results = await db
+        .select({ name: productsTable.name })
+        .from(productsTable)
+        .where(and(isNotNull(productsTable.imageUrl), priceAboveMin, eq(productsTable.category, category)))
+        .limit(8);
+      res.json(results.map((r) => r.name));
+      return;
+    }
+
     const results = await db
       .select({ name: productsTable.name })
       .from(productsTable)
@@ -73,10 +144,15 @@ router.get("/products/:sku", async (req, res) => {
 
 router.get("/products", async (req, res) => {
   try {
-    const { category, search, page: pageStr, limit: limitStr, sort } = req.query as Record<string, string | undefined>;
+    const { page: pageStr, limit: limitStr, sort } = req.query as Record<string, string | undefined>;
     const page = toNumber(pageStr, 1);
     const limit = Math.min(toNumber(limitStr, 24), 100);
     const offset = (page - 1) * limit;
+
+    // Normalize search term — resolves aliases/synonyms to actual catalog terms
+    const rawCategory = req.query.category as string | undefined;
+    const rawSearch   = req.query.search   as string | undefined;
+    const { search, category } = normalizeSearch(rawSearch, rawCategory);
 
     // Always require an image and minimum price — products without images or below $30 are hidden
     const conditions = [isNotNull(productsTable.imageUrl), priceAboveMin];
