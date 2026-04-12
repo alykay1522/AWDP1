@@ -2,22 +2,27 @@
   {
     "name": "Window Hardware",
     "slug": "window-hardware",
-    "description": "Operators, cranks, locks, latches, sash hardware, and window frame parts"
+    "description": "Operators, cranks, handles, locks, latches, and all window frame hardware"
   },
   {
     "name": "Door Hardware",
     "slug": "door-hardware",
-    "description": "Door locks, hinges, rollers, guides, and door frame hardware"
+    "description": "Rollers, hinges, closers, guides, tracks, handles, and patio door hardware"
   },
   {
-    "name": "Window Balances and Accessories",
-    "slug": "window-balances-and-accessories",
-    "description": "Spiral balances, block and tackle balances, and balance accessories"
+    "name": "Window Balances",
+    "slug": "window-balances",
+    "description": "Channel balances, spiral balances, block-and-tackle balances, and balance accessories"
+  },
+  {
+    "name": "Sash Hardware",
+    "slug": "sash-hardware",
+    "description": "Tilt latches, cam locks, sweep locks, sash keepers, and sash-specific hardware"
   },
   {
     "name": "Window Glazing and Weatherstrip",
     "slug": "window-glazing-and-weatherstrip",
-    "description": "Glazing seals, weatherstrip, and insulating components"
+    "description": "Glazing seals, weatherstrip, corner seals, and insulating components"
   },
   {
     "name": "Screen Hardware and Accessories",
