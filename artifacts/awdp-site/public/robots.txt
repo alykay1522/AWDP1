@@ -3,5 +3,6 @@ Allow: /
 
 Disallow: /admin/
 Disallow: /checkout/
+Disallow: /api/
 
 Sitemap: https://www.allwindowdoorparts.com/sitemap.xml

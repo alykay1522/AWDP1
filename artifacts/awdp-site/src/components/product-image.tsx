@@ -6,9 +6,10 @@ interface ProductImageProps {
   alt: string;
   className?: string;
   placeholderClassName?: string;
+  loading?: "lazy" | "eager";
 }
 
-export function ProductImage({ src, alt, className, placeholderClassName }: ProductImageProps) {
+export function ProductImage({ src, alt, className, placeholderClassName, loading = "lazy" }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
@@ -25,6 +26,8 @@ export function ProductImage({ src, alt, className, placeholderClassName }: Prod
       src={src}
       alt={alt}
       className={className}
+      loading={loading}
+      decoding="async"
       onError={() => setFailed(true)}
     />
   );
