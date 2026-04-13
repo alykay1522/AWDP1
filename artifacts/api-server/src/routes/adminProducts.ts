@@ -359,18 +359,32 @@ function titleVariants(raw: string): string[] {
   push(raw.replace(/[.\s]+$/, ""));
   push(v1.replace(/[.\s]+$/, ""));
 
-  // Weight format normalization: "32LBS" ↔ "(32LBS)" ↔ "-32LBS" ↔ " 32LBS"
+  // Weight format normalization across many DB styles:
+  //   "32LBS" ↔ "(32LBS)" ↔ "-32LBS" ↔ "-32LBS." ↔ " 32 Lbs" ↔ "32 Lbs"
+  const normalizeWeight = (s: string) =>
+    // collapse "32 Lbs" / "32 LBS" / "32lbs" all to "32LBS"
+    s.replace(/(\d+)\s+[Ll][Bb][Ss]\.?\s*$/g, "$1LBS")
+     .replace(/(\d+)[Ll][Bb][Ss]\.?\s*$/g,    "$1LBS");
+
+  const rn = normalizeWeight(raw);
+  const v1n = normalizeWeight(v1);
+  push(rn);
+  push(v1n);
+
   // Remove parens around weight
-  push(raw.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
-  push(v1.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
+  push(rn.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
+  push(v1n.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
   // Add parens around weight
-  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
-  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
+  push(rn.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
+  push(v1n.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
   // Dash-weight
-  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
-  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
-  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
-  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
+  push(rn.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
+  push(v1n.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
+  push(rn.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
+  push(v1n.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
+  // Space-separated weight (DB stores "34 Lbs" pattern)
+  push(rn.replace(/(\d+)LBS$/i, "$1 Lbs"));
+  push(v1n.replace(/(\d+)LBS$/i, "$1 Lbs"));
 
   return [...seen];
 }
