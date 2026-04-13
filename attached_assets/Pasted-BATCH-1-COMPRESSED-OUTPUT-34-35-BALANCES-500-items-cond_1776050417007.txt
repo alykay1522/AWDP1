@@ -1,0 +1,171 @@
+BATCH 1 — COMPRESSED OUTPUT (34"–35" BALANCES)
+(~500 items condensed)
+
+CHANNEL BALANCES — 34"
+Category: Balances
+Subcategory: Channel
+Items:
+
+34" Channel Balance — Standard Lift
+
+34" Channel Balance with End Clips
+
+34" Channel Balance with Attached Shoe
+
+34" Channel Balance – 32–35 lb Rating
+
+34" Channel Balance – 40 lb Rating
+
+34" Channel Balance – 42–45 lb Rating
+
+34" Channel Balance – 49 lb Rating
+
+34" Channel Balance – 55 lb Rating
+
+34" Channel Balance – 60 lb Rating
+
+34" Channel Balance – Heavy‑Duty Variant
+Notes:  
+Many duplicates caused by “W/62‑xxx” codes → merged.
+
+RIBBED BALANCES — 34"
+Category: Balances
+Subcategory: Ribbed
+Items:
+
+34" Ribbed Balance
+
+34" Ribbed Balance with Shoe
+
+34" White Ribbed Balance
+
+34" Mill Ribbed Balance
+
+34" Beige Ribbed Balance
+
+34" Ribbed Balance – 24–29 lb Rating
+Notes:  
+Color variants merged; shoe codes removed.
+
+2‑SPRING BALANCES — 34"
+Category: Balances
+Subcategory: 2‑Spring
+Items:
+
+34" Dual‑Spring Balance – 18 lb
+
+34" Dual‑Spring Balance – 20 lb
+
+34" Dual‑Spring Balance – 22 lb
+
+34" Dual‑Spring Balance – 32 lb
+
+34" Dual‑Spring Balance – 34 lb
+
+34" Dual‑Spring Balance – 36 lb
+
+34" Dual‑Spring Balance – 42 lb
+
+34" Dual‑Spring Balance – 43 lb
+
+34" Dual‑Spring Balance – 47 lb
+
+34" Dual‑Spring Balance – 49 lb
+
+34" Dual‑Spring Balance – 50 lb
+
+34" Dual‑Spring Balance – 52 lb
+
+34" Dual‑Spring Balance – 54 lb
+
+34" Dual‑Spring Balance – 55 lb
+
+34" Dual‑Spring Balance – 56 lb
+
+34" Dual‑Spring Balance – 57 lb
+
+34" Dual‑Spring Balance – 59 lb
+
+34" Dual‑Spring Balance – 62 lb
+Notes:  
+Dozens of duplicates → merged by weight.
+
+4‑SPRING BALANCES — 34"
+Category: Balances
+Subcategory: 4‑Spring
+Items:
+
+34" Quad‑Spring Balance – 35 lb
+
+34" Quad‑Spring Balance – 40 lb
+
+34" Quad‑Spring Balance – 49 lb
+
+34" Quad‑Spring Balance – 52 lb
+
+34" Quad‑Spring Balance – 55 lb
+
+34" Quad‑Spring Balance – 57 lb
+
+34" Quad‑Spring Balance – 86 lb
+
+34" Quad‑Spring Balance – 88 lb
+
+34" Quad‑Spring Balance – 95 lb
+
+34" Quad‑Spring Balance – 97 lb
+Notes:  
+High‑weight variants grouped.
+
+RANGER 7800 SERIES — 34"
+Category: Specialty Balances
+Subcategory: Ranger 7800
+Items:
+
+34" Ranger‑Series Balance
+
+34" Ranger‑Series Balance – 45 lb
+
+34" HD Ranger‑Series Balance
+Notes:  
+All “7800”, “HD 7800”, “TGX 7800” merged into one family.
+
+OVERHEAD BALANCES — 34"
+Category: Balances
+Subcategory: Overhead
+Items:
+
+34" Overhead Balance
+
+34" Overhead Balance – 14 lb
+
+34" Overhead Balance – 20 lb
+
+34" Overhead Balance – 25 lb
+
+34" Overhead Balance – 27 lb
+
+34" Overhead Balance – 30 lb
+
+34" Overhead Balance – 34 lb
+
+34" Overhead Balance – 35 lb
+
+34" Overhead Balance – 36 lb
+
+34" Overhead Balance – 41 lb
+Notes:  
+WM Overhead variants merged.
+
+TILT / INVERTED BALANCES — 34"
+Category: Balances
+Subcategory: Tilt / Inverted
+Items:
+
+34" Tilt Balance
+
+34" Inverted Tilt Balance
+
+34" Inverted Balance
+Notes:  
+All tilt‑style variants merged.

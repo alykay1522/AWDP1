@@ -80,9 +80,11 @@ export default function AdminProductsList() {
   const [editName, setEditName]     = useState("");
   const [editDesc, setEditDesc]     = useState("");
   const [editSupplier, setEditSupplier] = useState("");
-  const [importing, setImporting]   = useState(false);
-  const [exporting, setExporting]   = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting]     = useState(false);
+  const [exporting, setExporting]     = useState(false);
+  const [renaming, setRenaming]       = useState(false);
+  const fileInputRef      = useRef<HTMLInputElement>(null);
+  const renameInputRef    = useRef<HTMLInputElement>(null);
 
   const debouncedSearch = useDebounced(search, 350);
 
@@ -212,6 +214,52 @@ export default function AdminProductsList() {
     }
   };
 
+  // ── Rename map upload ─────────────────────────────────────────────────────
+  const handleRenameFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (renameInputRef.current) renameInputRef.current.value = "";
+    if (!file) return;
+
+    setRenaming(true);
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      if (rows.length === 0) {
+        toast({ title: "Empty file", description: "No rows found in the CSV", variant: "destructive" });
+        return;
+      }
+
+      const res = await fetch("/api/admin/products/bulk-rename", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error ?? "Rename failed");
+
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+
+      const parts = [
+        result.productsUpdated && `${result.productsUpdated} products renamed`,
+        result.notFound        && `${result.notFound} names not found in catalog`,
+        result.skipped         && `${result.skipped} rows skipped`,
+      ].filter(Boolean).join(" · ");
+
+      toast({
+        title: result.notFound > 0 ? "Rename complete (some misses)" : "Rename complete",
+        description: parts || "No changes",
+      });
+
+      if (result.misses?.length > 0) {
+        console.warn("Names not found in catalog:", result.misses);
+      }
+    } catch (e: any) {
+      toast({ title: "Rename failed", description: e.message, variant: "destructive" });
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   // ── Edit helpers ──────────────────────────────────────────────────────────
   const startEdit = (p: Product) => {
     setEditingId(p.id);
@@ -259,7 +307,15 @@ export default function AdminProductsList() {
             {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             Import CSV
           </Button>
-          <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportFile} />
+          <Button size="sm" variant="outline"
+            className="border-yellow-500 text-yellow-300 hover:bg-yellow-900/30 gap-1.5"
+            onClick={() => renameInputRef.current?.click()} disabled={renaming}
+            title="Upload a CSV with 'Original Title' and 'AWDP Title' columns to rename products in bulk">
+            {renaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            Upload Name Map
+          </Button>
+          <input ref={fileInputRef}    type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportFile} />
+          <input ref={renameInputRef}  type="file" accept=".csv,text/csv" className="hidden" onChange={handleRenameFile} />
           <Link href="/admin/products/new">
             <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
               <PlusCircle className="w-4 h-4" /> Add Product

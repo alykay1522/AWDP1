@@ -3,7 +3,7 @@ import multer from "multer";
 import * as os from "os";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, sql, inArray, ilike } from "drizzle-orm";
 import { z } from "zod";
 import AdmZip from "adm-zip";
 import * as fs from "fs";
@@ -330,6 +330,111 @@ function normalizeRow(raw: Record<string, string>): Record<string, string> {
     specifications: pick("specifications", "specs", "attributes", "attrs"),
   };
 }
+
+// POST /api/admin/products/bulk-rename
+// Accepts CSV rows with "Original Title" → "AWDP Title" mapping.
+// Matches products by name (case-insensitive) and renames them.
+// Body: { rows: Array<Record<string,string>> } — already parsed from CSV client-side.
+/**
+ * Produce candidate search strings from an "Original Title" value.
+ * The DB has inconsistent formatting (34in vs 34", spaces, dashes, dots, parens)
+ * so we try several normalizations in order.
+ */
+function titleVariants(raw: string): string[] {
+  const seen = new Set<string>();
+  const push = (s: string) => { const t = s.trim(); if (t) seen.add(t); };
+
+  push(raw);
+
+  // 34in → 34" (with and without space)
+  const v1 = raw.replace(/(\d+)\s*in\s+/gi, '$1"');
+  push(v1);
+  push(v1.replace(/"\s+/g, '"'));           // remove space after "
+
+  // 34" → 34in (reverse direction for DB entries that use "in")
+  const v2 = raw.replace(/(\d+)"\s*/gi, '$1in ');
+  push(v2);
+
+  // Trailing dot/punctuation removal
+  push(raw.replace(/[.\s]+$/, ""));
+  push(v1.replace(/[.\s]+$/, ""));
+
+  // Weight format normalization: "32LBS" ↔ "(32LBS)" ↔ "-32LBS" ↔ " 32LBS"
+  // Remove parens around weight
+  push(raw.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
+  push(v1.replace(/\s*\((\d+LBS)\)\s*$/i, " $1"));
+  // Add parens around weight
+  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
+  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, " ($1)"));
+  // Dash-weight
+  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
+  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1"));
+  push(raw.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
+  push(v1.replace(/\s+(\d+LBS)\.?\s*$/i, "-$1."));
+
+  return [...seen];
+}
+
+router.post("/admin/products/bulk-rename", async (req, res) => {
+  try {
+    const { rows } = req.body as { rows: Record<string, string>[] };
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: "No rows provided" });
+    }
+
+    let updated    = 0;
+    let notFound   = 0;
+    let skipped    = 0;
+    const misses: string[] = [];
+
+    for (const row of rows) {
+      const originalTitle = (
+        row["Original Title"] ?? row["original title"] ?? row["original_title"] ?? ""
+      ).trim();
+      const awdpTitle = (
+        row["AWDP Title"] ?? row["awdp title"] ?? row["awdp_title"] ?? ""
+      ).trim();
+
+      if (!originalTitle || !awdpTitle) { skipped++; continue; }
+      if (originalTitle === awdpTitle)  { skipped++; continue; }
+
+      // Try each normalized variant until we get a match
+      let matched: { id: number }[] = [];
+      for (const variant of titleVariants(originalTitle)) {
+        const hits = await db
+          .select({ id: productsTable.id })
+          .from(productsTable)
+          .where(ilike(productsTable.name, variant));
+        if (hits.length > 0) { matched = hits; break; }
+      }
+
+      if (matched.length === 0) {
+        notFound++;
+        if (misses.length < 100) misses.push(originalTitle);
+        continue;
+      }
+
+      const ids = matched.map((m) => m.id);
+      await db
+        .update(productsTable)
+        .set({ name: awdpTitle })
+        .where(inArray(productsTable.id, ids));
+
+      updated += matched.length;
+    }
+
+    res.json({
+      message: "Bulk rename complete",
+      rowsProcessed: rows.length,
+      productsUpdated: updated,
+      notFound,
+      skipped,
+      misses: misses.length > 0 ? misses : undefined,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // POST /api/admin/products/import — upsert products from CSV rows (parsed client-side)
 // Accepts both AWDP-format SKUs (update) and raw supplier part numbers (insert as new).
