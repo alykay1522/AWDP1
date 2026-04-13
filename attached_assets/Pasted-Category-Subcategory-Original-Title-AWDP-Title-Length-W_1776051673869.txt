@@ -1,0 +1,42 @@
+Category,Subcategory,Original Title,AWDP Title,Length,Weight,Notes
+Weatherseal,Kerf Bulb,KERF BULB SEAL WHITE,White Kerf‑Insert Bulb Weatherseal,, ,
+Weatherseal,Kerf Bulb,KERF BULB SEAL BROWN,Brown Kerf‑Insert Bulb Weatherseal,, ,
+Weatherseal,Kerf Bulb,KERF BULB SEAL BLACK,Black Kerf‑Insert Bulb Weatherseal,, ,
+Weatherseal,Kerf Bulb,KERF BULB SEAL GRAY,Gray Kerf‑Insert Bulb Weatherseal,, ,
+Weatherseal,Kerf Bulb,KERF BULB SEAL 100FT ROLL,Kerf‑Insert Bulb Weatherseal – 100 ft Roll,, ,
+
+Weatherseal,Foam Bulb,FOAM BULB SEAL WHITE,White Foam Bulb Weatherseal,, ,
+Weatherseal,Foam Bulb,FOAM BULB SEAL BROWN,Brown Foam Bulb Weatherseal,, ,
+Weatherseal,Foam Bulb,FOAM BULB SEAL BLACK,Black Foam Bulb Weatherseal,, ,
+Weatherseal,Foam Bulb,FOAM BULB SEAL GRAY,Gray Foam Bulb Weatherseal,, ,
+Weatherseal,Foam Bulb,FOAM BULB SEAL 100FT ROLL,Foam Bulb Weatherseal – 100 ft Roll,, ,
+
+Weatherseal,Leaf,LEAF WEATHERSEAL WHITE,White Leaf‑Style Weatherseal,, ,
+Weatherseal,Leaf,LEAF WEATHERSEAL BROWN,Brown Leaf‑Style Weatherseal,, ,
+Weatherseal,Leaf,LEAF WEATHERSEAL BLACK,Black Leaf‑Style Weatherseal,, ,
+Weatherseal,Leaf,LEAF WEATHERSEAL GRAY,Gray Leaf‑Style Weatherseal,, ,
+
+Weatherseal,Q-Lon,Q-LON SEAL WHITE,White Q‑Lon Compression Weatherseal,, ,
+Weatherseal,Q-Lon,Q-LON SEAL BROWN,Brown Q‑Lon Compression Weatherseal,, ,
+Weatherseal,Q-Lon,Q-LON SEAL BLACK,Black Q‑Lon Compression Weatherseal,, ,
+Weatherseal,Q-Lon,Q-LON SEAL GRAY,Gray Q‑Lon Compression Weatherseal,, ,
+Weatherseal,Q-Lon,Q-LON SEAL 100FT ROLL,Q‑Lon Compression Weatherseal – 100 ft Roll,, ,
+
+Weatherseal,Wool Pile,WOOL PILE 3/16",3/16" Wool Pile Weatherseal,, ,
+Weatherseal,Wool Pile,WOOL PILE 1/4",1/4" Wool Pile Weatherseal,, ,
+Weatherseal,Wool Pile,WOOL PILE 5/16",5/16" Wool Pile Weatherseal,, ,
+Weatherseal,Wool Pile,WOOL PILE 3/8",3/8" Wool Pile Weatherseal,, ,
+Weatherseal,Wool Pile,WOOL PILE 1/2",1/2" Wool Pile Weatherseal,, ,
+Weatherseal,Wool Pile,WOOL PILE 100FT ROLL,Wool Pile Weatherseal – 100 ft Roll,, ,
+
+Weatherseal,Door Sweep,DOOR SWEEP WHITE,White Door Sweep Weatherseal,, ,
+Weatherseal,Door Sweep,DOOR SWEEP BROWN,Brown Door Sweep Weatherseal,, ,
+Weatherseal,Door Sweep,DOOR SWEEP BLACK,Black Door Sweep Weatherseal,, ,
+Weatherseal,Door Sweep,DOOR SWEEP ALUMINUM,Aluminum Door Sweep Weatherseal,, ,
+Weatherseal,Door Sweep,DOOR SWEEP 36",36" Door Sweep Weatherseal,36, ,
+Weatherseal,Door Sweep,DOOR SWEEP 48",48" Door Sweep Weatherseal,48, ,
+
+Weatherseal,Corner Seal,CORNER SEAL WHITE,White Corner Seal,, ,
+Weatherseal,Corner Seal,CORNER SEAL BROWN,Brown Corner Seal,, ,
+Weatherseal,Corner Seal,CORNER SEAL BLACK,Black Corner Seal,, ,
+Weatherseal,Corner Seal,CORNER SEAL GRAY,Gray Corner Seal,, ,
