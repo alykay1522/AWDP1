@@ -17,3 +17,9 @@ id = "4jPYu7r1wAovPEVOrOHfY"
 uri = "file://scripts/woocommerce-import.csv"
 type = "table"
 title = "WooCommerce Product Import (387 products)"
+
+[[outputs]]
+id = "899Dr3bFjjesR2gT7RcgM"
+uri = "file://product-names.txt"
+type = "text"
+title = "Product Names (8,831 unique, A–Z)"
