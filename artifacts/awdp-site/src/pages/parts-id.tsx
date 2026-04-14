@@ -256,6 +256,7 @@ export default function PartsIdentification() {
                           <Button 
                             variant="destructive" 
                             size="icon" 
+                            aria-label="Remove uploaded image"
                             className="absolute top-2 right-2 w-8 h-8 rounded-full"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -263,7 +264,7 @@ export default function PartsIdentification() {
                               setSelectedImage(null);
                             }}
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-4 h-4" aria-hidden="true" />
                           </Button>
                         </div>
                         <p className="text-sm font-medium text-slate-900 flex items-center gap-2">

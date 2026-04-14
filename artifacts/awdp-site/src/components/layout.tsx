@@ -104,16 +104,17 @@ export function Layout({ children }: { children: ReactNode }) {
                 <Link href="/shop" className="hover:text-accent transition-colors">Shop Parts</Link>
                 <Link href="/categories" className="hover:text-accent transition-colors">Categories</Link>
                 <Link href="/parts-identification" className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 font-bold uppercase tracking-wide text-sm transition-colors">
-                  <PackageSearch className="w-4 h-4" /> Free Parts ID
+                  <PackageSearch className="w-4 h-4" aria-hidden="true" /> Free Parts ID
                 </Link>
                 <Link href="/about" className="hover:text-accent transition-colors">About</Link>
                 <Link href="/contact" className="hover:text-accent transition-colors">Contact</Link>
               </nav>
 
               <form onSubmit={handleSearch} className="flex-1 max-w-sm relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/60 group-focus-within:text-accent transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/60 group-focus-within:text-accent transition-colors" aria-hidden="true" />
                 <Input
                   type="search"
+                  aria-label="Search parts by SKU, brand, or name"
                   placeholder="Search by SKU, brand, or part..."
                   className="w-full pl-9 bg-white/10 border-white/20 text-primary-foreground placeholder:text-primary-foreground/50 focus-visible:bg-white/20 focus-visible:ring-accent"
                   value={searchQuery}
@@ -124,12 +125,12 @@ export function Layout({ children }: { children: ReactNode }) {
 
             {/* Phone - desktop */}
             <a href="tel:785-533-0244" className="hidden md:flex items-center gap-2 text-primary-foreground hover:text-accent transition-colors font-bold text-sm shrink-0">
-              <Phone className="w-4 h-4" /> 785-533-0244
+              <Phone className="w-4 h-4" aria-hidden="true" /> 785-533-0244
             </a>
 
             {/* Mobile: site name + icons */}
             <div className="md:hidden flex items-center gap-2 text-primary-foreground font-bold text-sm">
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4" aria-hidden="true" />
               <a href="tel:785-533-0244">785-533-0244</a>
             </div>
 
@@ -137,8 +138,8 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2 shrink-0">
               <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="relative border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
-                    <ShoppingCart className="w-5 h-5" />
+                  <Button variant="outline" size="icon" aria-label="Open cart" className="relative border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                    <ShoppingCart className="w-5 h-5" aria-hidden="true" />
                     {totalItems > 0 && (
                       <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold">
                         {totalItems}
@@ -253,8 +254,8 @@ export function Layout({ children }: { children: ReactNode }) {
               {/* Mobile Menu */}
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/20 hover:text-white">
-                    <Menu className="w-6 h-6" />
+                  <Button variant="ghost" size="icon" aria-label="Open navigation menu" className="md:hidden text-white hover:bg-white/20 hover:text-white">
+                    <Menu className="w-6 h-6" aria-hidden="true" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px]">
@@ -279,9 +280,10 @@ export function Layout({ children }: { children: ReactNode }) {
           {/* Mobile Search - visible only below md */}
           <div className="md:hidden mt-3">
             <form onSubmit={handleSearch} className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" aria-hidden="true" />
               <Input
                 type="search"
+                aria-label="Search parts by SKU, brand, or name"
                 placeholder="Search by SKU, brand..."
                 className="w-full pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 value={searchQuery}
