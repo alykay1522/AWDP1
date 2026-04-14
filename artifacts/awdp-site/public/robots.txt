@@ -5,4 +5,8 @@ Disallow: /admin/
 Disallow: /checkout/
 Disallow: /api/
 
+# Primary sitemap — static pages
 Sitemap: https://www.allwindowdoorparts.com/sitemap.xml
+
+# Dynamic product sitemap — all 35,000+ products
+Sitemap: https://www.allwindowdoorparts.com/api/sitemap.xml

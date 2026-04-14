@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { isNotNull } from "drizzle-orm";
 
 const router = Router();
 
@@ -29,7 +28,7 @@ router.get("/sitemap.xml", async (_req, res) => {
   try {
     const [categories, products] = await Promise.all([
       db.select({ name: categoriesTable.name, slug: categoriesTable.slug }).from(categoriesTable),
-      db.select({ sku: productsTable.sku }).from(productsTable).where(isNotNull(productsTable.imageUrl)),
+      db.select({ sku: productsTable.sku }).from(productsTable),
     ]);
 
     const today = new Date().toISOString().split("T")[0];

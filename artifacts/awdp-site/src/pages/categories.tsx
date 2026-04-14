@@ -136,9 +136,22 @@ export default function Categories() {
   return (
     <div className="bg-slate-50 min-h-screen">
       <PageSeo
-        title="Product Categories"
+        title="Window & Door Parts Categories — Browse by Type"
         path="/categories"
-        description="Browse window and door parts by category: operators, balances, locks, latches, rollers, glazing seals, screens, and more. Veteran-owned, 40+ years experience. Free Parts ID service."
+        description="Browse 35,000+ window and door replacement parts by category: casement operators, sash balances, patio door rollers, sash locks, weatherstripping, glazing seals, and screen hardware. Veteran-owned, 40+ years experience."
+        keywords="window parts categories, door hardware categories, window balances, casement operators, sash hardware, door rollers, weatherstripping, screen hardware"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Window & Door Parts Categories",
+          description: "Browse replacement parts for windows and doors organized by hardware category.",
+          url: "https://www.allwindowdoorparts.com/categories",
+          provider: {
+            "@type": "Organization",
+            name: "All Window Door Parts",
+            url: "https://www.allwindowdoorparts.com",
+          },
+        }}
       />
 
       {/* Hero */}

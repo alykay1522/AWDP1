@@ -10,29 +10,67 @@ import ctaBg from "@assets/cta_hardware_bg.png";
 
 const BASE_URL = "https://www.allwindowdoorparts.com";
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${BASE_URL}/#website`,
+  name: "All Window Door Parts",
+  url: BASE_URL,
+  description: "Veteran-owned supplier of 35,000+ window and door replacement parts with over 40 years of industry experience.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${BASE_URL}/shop?search={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "@id": `${BASE_URL}/#organization`,
   name: "All Window Door Parts",
   url: BASE_URL,
-  telephone: "+1-785-533-0244",
+  logo: `${BASE_URL}/opengraph.jpg`,
+  image: `${BASE_URL}/opengraph.jpg`,
+  telephone: "+17855330244",
   email: "Info@allwindowdoorparts.com",
   description: "Veteran-owned supplier of replacement window and door hardware with over 40 years of industry experience. Specialists in obsolete and hard-to-find parts including casement operators, sash balances, patio door rollers, locks, weatherstripping, and more.",
   priceRange: "$$",
+  foundingDate: "1984",
   areaServed: { "@type": "Country", name: "United States" },
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "08:00",
+    closes: "17:00",
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+17855330244",
+    contactType: "customer service",
+    email: "Info@allwindowdoorparts.com",
+    availableLanguage: "English",
+  },
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Window & Door Hardware Parts",
+    numberOfItems: 35051,
   },
   knowsAbout: [
     "Casement window operators",
-    "Sash balances",
+    "Window sash balances",
+    "Channel balances",
     "Patio door rollers",
-    "Window locks",
+    "Window locks and latches",
     "Weatherstripping",
     "Door hinges",
     "Window hardware replacement",
+    "Tilt window balances",
+    "Spiral tube balances",
+    "Multipoint locking systems",
   ],
 };
 
@@ -45,7 +83,7 @@ const faqSchema = {
       name: "How does the Free Parts Identification service work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Send us photos of the part you need to identify. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.",
+        text: "Send us photos of the part you need to identify at Info@allwindowdoorparts.com or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.",
       },
     },
     {
@@ -53,7 +91,7 @@ const faqSchema = {
       name: "Do you carry obsolete or discontinued window and door parts?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 35,000+ parts in our catalog, if they made it, we can find it.",
+        text: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 35,000+ parts in our catalog, if they made it, we can almost always find it. Our Free Parts ID service helps us locate even the most obscure parts.",
       },
     },
     {
@@ -61,7 +99,23 @@ const faqSchema = {
       name: "What brands of window and door hardware do you carry?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "We carry parts for most major window and door manufacturers including Truth Hardware, Andersen, Pella, Marvin, Wright Products, Prime Line, and many more — including obscure regional brands.",
+        text: "We carry parts for most major window and door manufacturers including Truth Hardware (EntryGard, Encore, Maxim, Dyad, Ranger), Andersen, Pella, Marvin, Wright Products, Prime Line, Rusco, and many more — including obscure regional and custom brands.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How do I find the right window balance size?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Window balance sizing depends on the balance type and channel length. For channel balances, measure the channel length inside the window frame (typically the distance from the top sill to the bottom of the channel) and match it to the nearest standard size. For spiral tube balances, measure the tube length. If you're unsure, use our Free Parts ID service — send us a photo and we'll identify the exact replacement.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How do I replace a casement window operator?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "To replace a casement window operator, first identify the brand (usually stamped on the operator housing) and note whether it's a left-hand or right-hand unit. Remove the window screen, detach the sash arm from the sash, unscrew the old operator from the frame, and install the new one in reverse order. If you need help identifying the correct replacement, call us at 785-533-0244 or use our Free Parts ID service.",
       },
     },
     {
@@ -69,7 +123,7 @@ const faqSchema = {
       name: "What is the minimum order amount?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our minimum order is $50. Orders below $50 may require additional shipping charges and we will contact you before processing.",
+        text: "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing.",
       },
     },
     {
@@ -77,7 +131,15 @@ const faqSchema = {
       name: "How long does shipping take?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Shipping is calculated at checkout based on your delivery address and package details. Not all items ship immediately — some parts must be sourced from our distributors first. We will contact you if additional lead time is needed.",
+        text: "Shipping is calculated at checkout based on your delivery address and package details. We ship via UPS, FedEx, and USPS. Standard shipping takes 3-5 business days from the ship date. Not all items ship immediately — some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do you ship window and door parts nationwide?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes — All Window Door Parts ships to all 50 states across the United States. Shipping costs are calculated at checkout based on your delivery address, package weight, and dimensions.",
       },
     },
   ],
@@ -94,8 +156,9 @@ export default function Home() {
     <div className="flex flex-col">
       <PageSeo
         path="/"
-        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Replacement window & door hardware specialists: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
-        structuredData={[organizationSchema, faqSchema] as unknown as object}
+        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 35,000+ replacement window &amp; door hardware parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
+        keywords="window replacement parts, door hardware parts, casement window operator, window sash balance, patio door roller, window lock, weatherstripping, sash keeper, tilt latch, window hardware, door hardware, veteran owned"
+        structuredData={[websiteSchema, organizationSchema, faqSchema] as unknown as object}
       />
 
       {/* Hero Section */}

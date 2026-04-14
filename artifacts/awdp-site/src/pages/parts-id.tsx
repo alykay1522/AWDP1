@@ -170,7 +170,28 @@ export default function PartsIdentification() {
       <PageSeo
         title="Free Parts Identification — Can't Find Your Part?"
         path="/parts-identification"
-        description="Can't identify your window or door part? Submit photos and a description — our experts with 40+ years of experience will identify it for you. Free service from All Window Door Parts."
+        description="Can't identify your window or door part? Submit photos and a description — our experts with 40+ years of experience will identify it for you. Free, no-obligation service from All Window Door Parts."
+        keywords="window part identification, door part identification, free parts ID, identify window hardware, mystery window part, find replacement window part"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Free Parts Identification Service",
+          provider: {
+            "@type": "LocalBusiness",
+            name: "All Window Door Parts",
+            url: "https://www.allwindowdoorparts.com",
+            telephone: "+17855330244",
+          },
+          serviceType: "Window and Door Parts Identification",
+          description: "Send us photos of your window or door hardware and our experts with 40+ years of experience will identify the exact replacement part needed — free with no obligation.",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "USD",
+            description: "Free parts identification service — no charge, no obligation",
+          },
+          areaServed: { "@type": "Country", name: "United States" },
+        }}
       />
       {/* Hero Section */}
       <section className="bg-primary text-white py-16 md:py-24 relative overflow-hidden">

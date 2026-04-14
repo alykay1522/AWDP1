@@ -58,9 +58,35 @@ export default function Contact() {
   return (
     <div className="bg-slate-50 min-h-screen py-12 md:py-20">
       <PageSeo
-        title="Contact Us"
+        title="Contact Us — Window & Door Parts Help"
         path="/contact"
-        description="Contact All Window Door Parts at 785-533-0244 or Info@allwindowdoorparts.com. Veteran-owned window and door parts supplier. We're here to help you find the right part."
+        description="Contact All Window Door Parts at 785-533-0244 or Info@allwindowdoorparts.com. Veteran-owned window and door replacement parts supplier, 40+ years experience. We help you find the right part."
+        keywords="contact all window door parts, window parts phone number, door hardware customer service, 785-533-0244"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "@id": "https://www.allwindowdoorparts.com/#organization",
+          name: "All Window Door Parts",
+          url: "https://www.allwindowdoorparts.com",
+          telephone: "+17855330244",
+          email: "Info@allwindowdoorparts.com",
+          description: "Veteran-owned supplier of window and door replacement parts with 40+ years of experience. Specialists in obsolete and hard-to-find window and door hardware.",
+          priceRange: "$$",
+          openingHoursSpecification: {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            opens: "08:00",
+            closes: "17:00",
+          },
+          areaServed: { "@type": "Country", name: "United States" },
+          contactPoint: {
+            "@type": "ContactPoint",
+            telephone: "+17855330244",
+            contactType: "customer service",
+            email: "Info@allwindowdoorparts.com",
+            availableLanguage: "English",
+          },
+        }}
       />
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-16">
