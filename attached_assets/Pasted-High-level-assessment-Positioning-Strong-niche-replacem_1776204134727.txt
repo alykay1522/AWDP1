@@ -1,0 +1,127 @@
+High-level assessment
+•	Positioning: Strong niche (replacement window/door hardware, obsolete parts, veteran-owned) and clear value props.
+•	Big gaps: Technical performance (likely), structured data, internal linking depth, and conversion UX around “Free Parts ID” and shopping paths.
+•	Priority: Treat this as an e commerce + lead-gen hybrid: optimize for both product sales and photo-upload leads.
+1. Technical & performance
+1.1 Core Web Vitals & speed
+•	Likely issues:
+o	Images: Product images and hero graphics may not be fully optimized (no WebP/AVIF, oversized dimensions, missing lazy-loading).
+o	JS/CSS bloat: Theme + plugins can add render-blocking JS/CSS and slow TTFB/LCP.
+•	Actions:
+o	Image optimization:
+	Convert large images to WebP; set proper width/height; enable lazy-loading for below-the-fold images.
+o	CSS/JS:
+	Defer non-critical JS, inline critical CSS, and remove unused CSS/JS where possible.
+o	Caching/CDN:
+	Enable full-page caching and use a CDN for static assets.
+o	Measure:
+	Run PageSpeed Insights on: /, a category page, a product page, and the Free Parts ID page. Fix LCP/CLS/INP issues first.
+1.2 Mobile & responsiveness
+•	Check:
+o	Tap targets (buttons/links) are large enough and spaced.
+o	Forms (photo upload, contact) are easy to use on mobile.
+•	Actions:
+o	Ensure sticky CTA on mobile (e.g., “Upload Photos for Free ID” or “Shop Parts”) so users always have a next step.
+1.3 Security & basics
+•	HTTPS: Ensure all resources load over HTTPS (no mixed content).
+•	404/500 handling:
+o	Custom 404 page with search + links to “Shop Parts” and “Free Parts ID”.
+•	XML sitemap & robots.txt:
+o	Confirm sitemap is auto-generated and referenced in robots.txt.
+o	Block only true junk (admin, cart fragments, etc.), not categories/products.
+2. On-page SEO & structure
+2.1 Titles & meta descriptions
+•	Homepage:
+o	Current title is strong but can be slightly more keyword-targeted:
+	Example:
+	Replacement Window & Door Hardware | Obsolete Parts Experts | All Window Door Parts
+o	Meta description should emphasize: 35,000+ parts, obsolete hardware, Free Parts ID, veteran-owned, fast shipping.
+•	Category pages:
+o	Each category should target a primary keyword:
+	“Casement Window Operators”, “Patio Door Rollers”, “Window Sash Balances”, etc.
+o	Write unique meta descriptions with problem + solution language.
+2.2 Headings & content hierarchy
+•	Homepage:
+o	Ensure a single, strong H1 (e.g., “Replacement Window & Door Hardware – Obsolete Parts Experts”).
+o	Use H2s for sections: “Shop by Problem”, “Featured Hardware”, “Browse by Part Type”, “Why Choose All Window Door Parts?”, “Free Parts ID”.
+•	Product pages:
+o	H1 = product name with key terms (e.g., “30in Window Channel Balance – AWDP-TE-RLP-RB”).
+o	Add short intro paragraph: what it fits, common window types/brands, symptoms it fixes.
+2.3 Internal linking
+•	From homepage:
+o	Link “Shop 35,000+ Parts” to a master catalog or “Shop All Parts” page.
+o	Each “Shop by Problem” tile should link to a problem-focused landing page (not just a generic category) that explains:
+	Symptoms → likely parts → featured products → CTA to Free Parts ID if unsure.
+•	From blog/FAQ (if present):
+o	Use how-to content to link into specific categories and products.
+3. Content, messaging & trust
+3.1 Problem-solution framing (already strong—double down)
+•	“Shop by Problem” is gold. Expand it into full funnels:
+o	Each problem page should include:
+	Plain-language explanation (“If your window won’t stay up, the sash balance is likely worn out.”)
+	Photo examples of the issue.
+	Top 3–6 parts that usually fix it.
+	CTA: “Still not sure? Upload photos for Free Parts ID.”
+3.2 Free Parts ID as primary lead magnet
+•	This is your unique superpower—treat it like the main product.
+•	Actions:
+o	Dedicated landing page /free-parts-id/ with:
+	Step-by-step instructions (how to take photos, what angles, include tape measure, etc.).
+	Example before/after: “Customer sent this photo → we identified this exact part → shipped in 3 days.”
+	Short form with photo upload, name, email, phone, and “How urgent is this?”
+o	Add prominent CTAs sitewide: header, footer, and in product/category pages (“Can’t confirm this part? Upload photos for Free ID.”).
+3.3 Social proof & authority
+•	You already have strong testimonials—make them work harder:
+o	Add star ratings and review counts on product pages (if possible).
+o	Create a “Trusted by” section: homeowners, contractors, property managers, HOAs, etc.
+o	Add about page depth: founder story, 40+ years timeline, veteran background, photos of the team/warehouse.
+4. UX & conversion optimization
+4.1 Navigation & IA
+•	Top nav should clearly separate:
+o	Shop Parts (with dropdown: Casement Operators, Sash Balances, Patio Door Rollers, Weatherstripping, Locks, Handles, Hinges, etc.)
+o	Shop by Problem
+o	Free Parts ID
+o	About / Contact
+•	Add a prominent search bar (people often know brand/model numbers or rough part names).
+4.2 Product page UX
+•	Must-haves:
+o	Clear price, availability (“In Stock”)
+o	Compatibility info: brands, series, years, and common window/door types.
+o	Measurement diagrams with labeled dimensions.
+o	“Not sure this fits?” → link to Free Parts ID.
+4.3 Checkout & friction
+•	Minimize steps to checkout; avoid forced account creation if possible.
+•	Show shipping options and estimates early (cart/mini-cart).
+•	Reassure with security badges, “Secure Shopping Guarantee”, and clear return policy.
+5. Schema, local & brand signals
+5.1 Structured data
+•	Implement JSON-LD for:
+o	Organization (name, logo, phone, sameAs social profiles).
+o	Product (name, SKU, price, availability, brand, image, description).
+o	BreadcrumbList for categories/products.
+o	FAQPage on Free Parts ID and key problem pages.
+5.2 Local & trust signals
+•	Even if you ship nationwide, emphasize:
+o	Physical location (city/state), phone number, business hours.
+o	“Veteran Owned Business” badge and any relevant certifications.
+•	Create/optimize Google Business Profile with photos, Q&A, and reviews.
+6. Analytics, tracking & growth
+6.1 Measurement
+•	Ensure you have:
+o	GA4 (or equivalent) with e commerce tracking.
+o	Event tracking for:
+	Photo uploads (Free Parts ID).
+	Add to cart, checkout start, purchase.
+•	Set up funnels:
+o	“Shop by Problem → Product → Add to Cart → Purchase”
+o	“Free Parts ID → Form submit → Quote/Order”
+6.2 Content & SEO growth
+•	Build a knowledge base / blog around:
+o	“How to identify your window sash balance”
+o	“How to measure a patio door roller”
+o	“Signs your weatherstripping needs replacement”
+•	Each article should:
+o	Include step-by-step photos.
+o	Link to relevant categories/products.
+o	End with “Still unsure? Upload photos for Free Parts ID.”
+

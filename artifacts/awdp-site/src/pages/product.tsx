@@ -91,7 +91,7 @@ export default function ProductDetail() {
   }
 
   const price = Number(product.price);
-  const isCallForPricing = price === 0;
+  const isCallForPricing = price < 50;
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const savings = isSale ? originalPrice - price : 0;

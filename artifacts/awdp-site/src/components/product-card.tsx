@@ -13,7 +13,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
 
   const price = Number(product.price);
-  const isCallForPricing = price === 0;
+  const isCallForPricing = price < 50;
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
 
