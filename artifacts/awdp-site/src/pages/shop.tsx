@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { PageSeo } from "@/components/page-seo";
 import { CategorySeoBlock } from "@/components/category-seo-block";
 import { useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
@@ -30,43 +30,39 @@ function buildPageMeta(search: string, category: string) {
 }
 
 export default function Shop() {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(window.location.search);
+  const [, navigate] = useLocation();
+  // useSearch() from wouter v3 — reactive to query-string changes even when path stays /shop
+  const rawSearch = useSearch();
 
-  const [search, setSearch]         = useState(searchParams.get("search") || "");
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
-  const [category, setCategory]     = useState(searchParams.get("category") || "");
-  const [page, setPage]             = useState(1);
-  const [sort, setSort]             = useState("newest");
+  const urlParams   = new URLSearchParams(rawSearch);
+  const urlSearch   = urlParams.get("search")   ?? "";
+  const urlCategory = urlParams.get("category") ?? "";
 
-  // Sync URL params whenever the wouter location changes
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [page, setPage]               = useState(1);
+  const [sort, setSort]               = useState("newest");
+
+  // Keep the text input in sync whenever the URL search param changes
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlSearch   = params.get("search") ?? "";
-    const urlCategory = params.get("category") ?? "";
+    setSearchInput(urlSearch);
+    setPage(1);
+  }, [urlSearch]);
 
-    if (urlSearch !== search) {
-      setSearch(urlSearch);
-      setSearchInput(urlSearch);
-      setPage(1);
-    }
-    if (urlCategory !== category) {
-      setCategory(urlCategory);
-      setPage(1);
-    }
-  }, [location]);
+  useEffect(() => {
+    setPage(1);
+  }, [urlCategory]);
 
   const { data: productsData, isLoading, isError, error } = useGetProducts({
-    search:   search   || undefined,
-    category: category || undefined,
+    search:   urlSearch   || undefined,
+    category: urlCategory || undefined,
     page,
     limit: 24,
     sort,
   }, {
     query: {
       queryKey: getGetProductsQueryKey({
-        search:   search   || undefined,
-        category: category || undefined,
+        search:   urlSearch   || undefined,
+        category: urlCategory || undefined,
         page,
         limit: 24,
         sort,
@@ -75,26 +71,29 @@ export default function Shop() {
     }
   });
 
+  // Navigate to /shop?search=... — this updates the URL so the back button works
+  // and so header searches while already on /shop are picked up via useSearch()
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(searchInput);
-    setCategory("");
-    setPage(1);
+    const q = searchInput.trim();
+    if (q) {
+      navigate(`/shop?search=${encodeURIComponent(q)}`);
+    } else {
+      navigate("/shop");
+    }
   };
 
   const clearSearch = () => {
-    setSearch("");
     setSearchInput("");
-    setCategory("");
-    setPage(1);
+    navigate("/shop");
   };
 
-  const { title: seoTitle, description: seoDesc } = buildPageMeta(search, category);
+  const { title: seoTitle, description: seoDesc } = buildPageMeta(urlSearch, urlCategory);
 
-  const activeLabel = category
-    ? category
-    : search
-    ? `"${search}"`
+  const activeLabel = urlCategory
+    ? urlCategory
+    : urlSearch
+    ? `"${urlSearch}"`
     : null;
 
   return (
@@ -115,7 +114,7 @@ export default function Shop() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b pb-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
-            {category ? category : "Shop Parts"}
+            {urlCategory ? urlCategory : "Shop Parts"}
           </h1>
           <p className="text-muted-foreground mt-1 font-medium">
             {productsData?.total
@@ -126,18 +125,25 @@ export default function Shop() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <form onSubmit={handleSearchSubmit} className="relative">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Input
               type="search"
               placeholder="Search parts…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9 bg-white w-56"
+              className="pl-9 pr-10 bg-white w-56"
               aria-label="Search parts"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="Submit search"
+            >
+              <Search className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
           </form>
-          {(search || category) && (
+          {(urlSearch || urlCategory) && (
             <Button variant="ghost" size="sm" onClick={clearSearch} className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2">
               <X className="w-4 h-4 mr-1" aria-hidden="true" /> Clear
             </Button>
@@ -228,7 +234,7 @@ export default function Shop() {
           )}
 
           {/* Category SEO text block — shown after results */}
-          <CategorySeoBlock search={search} category={category} />
+          <CategorySeoBlock search={urlSearch} category={urlCategory} />
         </>
       ) : (
         <div className="text-center py-24 bg-white rounded-xl border border-dashed">
