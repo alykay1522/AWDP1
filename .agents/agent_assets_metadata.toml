@@ -23,3 +23,9 @@ id = "899Dr3bFjjesR2gT7RcgM"
 uri = "file://product-names.txt"
 type = "text"
 title = "Product Names (8,831 unique, A–Z)"
+
+[[outputs]]
+id = "mzvkI_4zeu4JnETxPVvCt"
+uri = "file://attached_assets/awdp_rename_all_12_batches.csv"
+type = "table"
+title = "AWDP Rename Map – All 12 Batches (300 rows)"
