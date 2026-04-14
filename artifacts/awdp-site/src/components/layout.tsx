@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useRef } from "react";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,6 +19,8 @@ export function Layout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
+  const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ORDER_MINIMUM = 50;
   const belowMinimum = totalPrice < ORDER_MINIMUM && items.length > 0;
@@ -101,8 +103,59 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="hidden md:flex flex-1 items-center gap-6">
               <nav className="flex items-center gap-5 font-semibold text-primary-foreground">
                 <Link href="/" className="hover:text-accent transition-colors">Home</Link>
-                <Link href="/shop" className="hover:text-accent transition-colors">Shop Parts</Link>
-                <Link href="/categories" className="hover:text-accent transition-colors">Categories</Link>
+
+                {/* Shop Parts with category dropdown */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (shopDropdownTimer.current) clearTimeout(shopDropdownTimer.current);
+                    setShopDropdownOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 120);
+                  }}
+                >
+                  <Link
+                    href="/shop"
+                    className="hover:text-accent transition-colors flex items-center gap-1"
+                    aria-haspopup="true"
+                    aria-expanded={shopDropdownOpen}
+                  >
+                    Shop Parts
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${shopDropdownOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+                  {shopDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 py-2 z-50 text-sm">
+                      <Link
+                        href="/shop"
+                        className="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:bg-primary/5 hover:text-primary font-bold border-b border-slate-100 mb-1 transition-colors"
+                        onClick={() => setShopDropdownOpen(false)}
+                      >
+                        All Parts (5,800+)
+                      </Link>
+                      {[
+                        ["Window Balances",               "Window+Balances"],
+                        ["Window Hardware",               "Window+Hardware"],
+                        ["Sash Hardware",                 "Sash+Hardware"],
+                        ["Door Hardware",                 "Door+Hardware"],
+                        ["Weatherstrip & Glazing",        "Window+Glazing+and+Weatherstrip"],
+                        ["Screen Hardware & Accessories", "Screen+Hardware+and+Accessories"],
+                        ["Other Hardware",                "Other+Hardware"],
+                      ].map(([label, cat]) => (
+                        <Link
+                          key={cat}
+                          href={`/shop?category=${cat}`}
+                          className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-primary/5 hover:text-primary transition-colors"
+                          onClick={() => setShopDropdownOpen(false)}
+                        >
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <Link href="/parts-identification" className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 font-bold uppercase tracking-wide text-sm transition-colors">
                   <PackageSearch className="w-4 h-4" aria-hidden="true" /> Free Parts ID
                 </Link>

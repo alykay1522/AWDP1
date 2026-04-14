@@ -115,14 +115,16 @@ export default function ProductDetail() {
             description: product.description ?? `${product.name} — window or door replacement part`,
             image: product.imageUrl ?? undefined,
             brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
-            offers: {
-              "@type": "Offer",
-              price: Number(product.price).toFixed(2),
-              priceCurrency: "USD",
-              availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-              url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
-              seller: { "@type": "Organization", name: "All Window Door Parts" }
-            }
+            ...(Number(product.price) > 0 ? {
+              offers: {
+                "@type": "Offer",
+                price: Number(product.price).toFixed(2),
+                priceCurrency: "USD",
+                availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+                seller: { "@type": "Organization", name: "All Window Door Parts" }
+              }
+            } : {})
           },
           {
             "@context": "https://schema.org",

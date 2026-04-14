@@ -172,26 +172,82 @@ export default function PartsIdentification() {
         path="/parts-identification"
         description="Can't identify your window or door part? Submit photos and a description — our experts with 40+ years of experience will identify it for you. Free, no-obligation service from All Window Door Parts."
         keywords="window part identification, door part identification, free parts ID, identify window hardware, mystery window part, find replacement window part"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Service",
-          name: "Free Parts Identification Service",
-          provider: {
-            "@type": "LocalBusiness",
-            name: "All Window Door Parts",
-            url: "https://www.allwindowdoorparts.com",
-            telephone: "+17855330244",
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            name: "Free Parts Identification Service",
+            provider: {
+              "@type": "LocalBusiness",
+              name: "All Window Door Parts",
+              url: "https://www.allwindowdoorparts.com",
+              telephone: "+17855330244",
+            },
+            serviceType: "Window and Door Parts Identification",
+            description: "Send us photos of your window or door hardware and our experts with 40+ years of experience will identify the exact replacement part needed — free with no obligation.",
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+              description: "Free parts identification service — no charge, no obligation",
+            },
+            areaServed: { "@type": "Country", name: "United States" },
           },
-          serviceType: "Window and Door Parts Identification",
-          description: "Send us photos of your window or door hardware and our experts with 40+ years of experience will identify the exact replacement part needed — free with no obligation.",
-          offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "USD",
-            description: "Free parts identification service — no charge, no obligation",
-          },
-          areaServed: { "@type": "Country", name: "United States" },
-        }}
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "How does the Free Parts Identification service work?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Upload clear photos of your window or door part along with a brief description and any brand or age information you know. Our experts — with 40+ years of experience — will identify the exact replacement part and contact you with the answer. The service is completely free with no obligation to purchase."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "What types of parts can you identify?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "We identify all types of window and door hardware including sash balances, casement operators, tilt latches, patio door rollers, hinges, locks, handles, weatherstripping, and obsolete or discontinued parts from the 1970s, 80s, and 90s. If it's a window or door part, we can almost certainly identify it."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "How long does it take to get an answer?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Most part identification requests are answered within 1–2 business days. For urgent needs, you can also call us directly at 785-533-0244."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Is the parts identification service really free?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes — 100% free, no strings attached, and no obligation to buy anything. We offer this service because we want to help homeowners, contractors, and property managers find the right part the first time."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "What photos should I send for the best results?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Take photos in good lighting. Place a ruler or coin next to the part for scale. Show the broken or worn area clearly. If you see any stamped numbers, manufacturer logos, or model numbers on the part, photograph those too — they help us identify the part quickly and accurately."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Can you help with obsolete or discontinued parts?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Absolutely — that's one of our specialties. We carry or know the modern replacements for thousands of discontinued parts from major manufacturers. Even if your window is 40–50 years old, there's a good chance we can find a compatible replacement."
+                }
+              }
+            ]
+          }
+        ] as unknown as object}
       />
       {/* Hero Section */}
       <section className="bg-primary text-white py-16 md:py-24 relative overflow-hidden">
