@@ -1,7 +1,7 @@
 import { useCart } from "@/lib/cart";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, PackageCheck } from "lucide-react";
+import { ShoppingCart, PackageCheck, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
 
@@ -13,8 +13,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
 
   const price = Number(product.price);
+  const isCallForPricing = price === 0;
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
-  const isSale = originalPrice !== null && originalPrice > price;
+  const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
 
   return (
     <div className="group relative bg-card border border-border rounded-lg overflow-hidden hover-elevate transition-all duration-300 flex flex-col h-full">
@@ -51,7 +52,9 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>
-            {isSale ? (
+            {isCallForPricing ? (
+              <span className="text-sm font-bold text-primary block">Call for Pricing</span>
+            ) : isSale ? (
               <div className="flex flex-col">
                 <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
                 <span className="text-xl font-bold text-accent">${price.toFixed(2)}</span>
@@ -70,19 +73,32 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
           
-          <Button 
-            size="icon" 
-            variant="secondary"
-            className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
-            disabled={!product.inStock}
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart(product);
-            }}
-          >
-            <ShoppingCart className="w-4 h-4" />
-            <span className="sr-only">Add to Cart</span>
-          </Button>
+          {isCallForPricing ? (
+            <Button
+              size="icon"
+              variant="secondary"
+              className="rounded-full w-10 h-10 shrink-0 shadow-sm"
+              asChild
+            >
+              <a href="tel:7855330244" aria-label="Call for pricing">
+                <Phone className="w-4 h-4" />
+              </a>
+            </Button>
+          ) : (
+            <Button 
+              size="icon" 
+              variant="secondary"
+              className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
+              disabled={!product.inStock}
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart(product);
+              }}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span className="sr-only">Add to Cart</span>
+            </Button>
+          )}
         </div>
       </div>
     </div>

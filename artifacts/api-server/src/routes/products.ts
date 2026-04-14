@@ -5,9 +5,8 @@ import { eq, ilike, and, or, sql, count, isNotNull, asc, desc } from "drizzle-or
 
 const router: IRouter = Router();
 
-// Products priced below this are hidden from the storefront
-const MIN_VISIBLE_PRICE = 30;
-const priceAboveMin = sql`${productsTable.price}::numeric >= ${MIN_VISIBLE_PRICE}`;
+// Only show products that are either priced at $50+ or have no price (call for pricing)
+const priceAboveMin = sql`(${productsTable.price}::numeric >= 50 OR ${productsTable.price}::numeric = 0)`;
 
 // ---------------------------------------------------------------------------
 // Search synonym / alias normalization
@@ -79,7 +78,7 @@ router.get("/products/featured", async (req, res) => {
       .where(and(
         eq(productsTable.inStock, true),
         isNotNull(productsTable.imageUrl),
-        priceAboveMin
+        sql`${productsTable.price}::numeric >= 50`
       ))
       .orderBy(sql`RANDOM()`)
       .limit(8);
@@ -154,7 +153,7 @@ router.get("/products", async (req, res) => {
     const rawSearch   = req.query.search   as string | undefined;
     const { search, category } = normalizeSearch(rawSearch, rawCategory);
 
-    // Always require an image and minimum price — products without images or below $30 are hidden
+    // Always require an image — show priced products ($50+) and call-for-pricing (price=0) products
     const conditions = [isNotNull(productsTable.imageUrl), priceAboveMin];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {

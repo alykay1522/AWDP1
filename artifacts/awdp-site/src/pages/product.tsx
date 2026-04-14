@@ -91,8 +91,9 @@ export default function ProductDetail() {
   }
 
   const price = Number(product.price);
+  const isCallForPricing = price === 0;
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
-  const isSale = originalPrice !== null && originalPrice > price;
+  const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const savings = isSale ? originalPrice - price : 0;
 
   const productAlt = `${product.name} — SKU ${product.sku} replacement window door part`;
@@ -191,7 +192,9 @@ export default function ProductDetail() {
               </h1>
               
               <div className="mb-6 flex items-end gap-4">
-                {isSale ? (
+                {isCallForPricing ? (
+                  <div className="text-2xl font-bold text-primary">Call for Pricing</div>
+                ) : isSale ? (
                   <>
                     <div className="text-4xl font-bold text-accent">${price.toFixed(2)}</div>
                     <div className="text-xl text-muted-foreground line-through pb-1">${originalPrice!.toFixed(2)}</div>
@@ -209,44 +212,62 @@ export default function ProductDetail() {
 
               {/* Action Area */}
               <div className="bg-slate-50 border p-6 rounded-xl mb-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex items-center border bg-white rounded-md h-14 w-full sm:w-32 shrink-0">
-                    <button 
-                      type="button"
-                      className="px-4 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xl rounded-l-md"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      aria-label="Decrease quantity"
-                    >
-                      -
-                    </button>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full text-center font-bold text-lg border-x-0 bg-transparent h-full focus:outline-none"
-                      aria-label="Quantity"
-                    />
-                    <button 
-                      type="button"
-                      className="px-4 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xl rounded-r-md"
-                      onClick={() => setQuantity(quantity + 1)}
-                      aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
+                {isCallForPricing ? (
+                  <div className="flex flex-col gap-4">
+                    <p className="text-slate-600 text-sm">This item requires a custom quote. Call or email us with your SKU and quantity and we'll get back to you with pricing.</p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button size="lg" className="h-14 flex-1 text-lg font-bold shadow-sm" asChild>
+                        <a href="tel:7855330244">
+                          <Phone className="mr-2 w-5 h-5" /> Call 785-533-0244
+                        </a>
+                      </Button>
+                      <Button size="lg" variant="outline" className="h-14 flex-1 text-lg font-bold" asChild>
+                        <a href={`mailto:Info@allwindowdoorparts.com?subject=Pricing Request: ${product.sku}&body=Hi, I'd like pricing for SKU ${product.sku} (${product.name}). Quantity needed: `}>
+                          Email for Quote
+                        </a>
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <Button 
-                    size="lg" 
-                    className="h-14 flex-1 text-lg font-bold shadow-sm" 
-                    disabled={!product.inStock}
-                    onClick={() => addToCart(product, quantity)}
-                  >
-                    <ShoppingCart className="mr-2 w-5 h-5" /> 
-                    {product.inStock ? "Add to Cart" : "Out of Stock"}
-                  </Button>
-                </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex items-center border bg-white rounded-md h-14 w-full sm:w-32 shrink-0">
+                      <button 
+                        type="button"
+                        className="px-4 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xl rounded-l-md"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        aria-label="Decrease quantity"
+                      >
+                        -
+                      </button>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full text-center font-bold text-lg border-x-0 bg-transparent h-full focus:outline-none"
+                        aria-label="Quantity"
+                      />
+                      <button 
+                        type="button"
+                        className="px-4 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-xl rounded-r-md"
+                        onClick={() => setQuantity(quantity + 1)}
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <Button 
+                      size="lg" 
+                      className="h-14 flex-1 text-lg font-bold shadow-sm" 
+                      disabled={!product.inStock}
+                      onClick={() => addToCart(product, quantity)}
+                    >
+                      <ShoppingCart className="mr-2 w-5 h-5" /> 
+                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                  </div>
+                )}
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
                   <div className="flex items-center gap-3">
@@ -255,10 +276,12 @@ export default function ProductDetail() {
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-primary shrink-0" /> Genuine Replacement Part - Quality Guaranteed
                   </div>
-                  <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 font-semibold text-xs mt-1">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    $50 minimum on all orders &mdash; Anything below $50 will be cancelled
-                  </div>
+                  {!isCallForPricing && (
+                    <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 font-semibold text-xs mt-1">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                      $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+                    </div>
+                  )}
                 </div>
               </div>
 
