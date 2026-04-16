@@ -5,6 +5,23 @@ import { ShoppingCart, PackageCheck, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
 
+const CATEGORY_SNIPPETS: Record<string, string> = {
+  "Window Balances":                   "Replacement sash balance for smooth, reliable window operation.",
+  "Window Hardware":                   "Genuine replacement hardware for casement, awning, and double-hung windows.",
+  "Sash Hardware":                     "Tilt latches, pivot bars, and sash components for proper window function.",
+  "Door Hardware":                     "Replacement locks, handles, hinges, and rollers for patio and entry doors.",
+  "Window Glazing and Weatherstrip":   "Seals, glazing, and weatherstripping to stop drafts and improve energy efficiency.",
+  "Screen Hardware and Accessories":   "Screen frames, spline, rollers, and hardware for screen door and window repair.",
+  "Other Hardware":                    "Specialty and hard-to-find window and door replacement parts.",
+};
+
+function getCategorySnippet(category?: string | null, description?: string | null): string | null {
+  if (!category) return null;
+  const isGeneric = description?.toLowerCase().includes("email us photos");
+  if (!isGeneric && description && description.length > 20) return null;
+  return CATEGORY_SNIPPETS[category] ?? null;
+}
+
 interface ProductCardProps {
   product: Product;
 }
@@ -16,6 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const isCallForPricing = price < 50;
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
+  const snippet = getCategorySnippet(product.category, product.description);
 
   return (
     <div className="group relative bg-card border border-border rounded-lg overflow-hidden hover-elevate transition-all duration-300 flex flex-col h-full">
@@ -56,6 +74,10 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
         </Link>
+
+        {snippet && (
+          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-1.5">{snippet}</p>
+        )}
         
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>

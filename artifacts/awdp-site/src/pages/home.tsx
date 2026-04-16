@@ -7,7 +7,9 @@ import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspa
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import heroBg from "@assets/hero_hardware_bg.png";
+import heroBgWebp from "@assets/hero_hardware_bg.webp";
 import ctaBg from "@assets/cta_hardware_bg.png";
+import ctaBgWebp from "@assets/cta_hardware_bg.webp";
 
 const BASE_URL = "https://www.allwindowdoorparts.com";
 
@@ -165,17 +167,20 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative bg-[#0f172a] text-white overflow-hidden py-20 lg:py-32">
-        <img
-          src={heroBg}
-          alt=""
-          aria-hidden="true"
-          width="1920"
-          height="1080"
-          fetchPriority="high"
-          loading="eager"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none"
-        />
+        <picture className="absolute inset-0 w-full h-full pointer-events-none select-none">
+          <source type="image/webp" srcSet={heroBgWebp} />
+          <img
+            src={heroBg}
+            alt=""
+            aria-hidden="true"
+            width="1920"
+            height="1080"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="w-full h-full object-cover opacity-30"
+          />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/85 to-[#0f172a]/40" />
 
         <div className="container mx-auto px-4 relative z-10">
