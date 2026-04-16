@@ -5,7 +5,8 @@ import { eq, ilike, and, or, sql, count, isNotNull, asc, desc } from "drizzle-or
 
 const router: IRouter = Router();
 
-// Products under $50 (including $0) show "Call for Pricing" in the UI — no price filter here
+// Show only products with an image; hide products priced $0.01–$34.99 (shown as "Email for Details" if $35–$49.99 or $0)
+const visiblePrice = sql`(${productsTable.price}::numeric = 0 OR ${productsTable.price}::numeric >= 35)`;
 
 // ---------------------------------------------------------------------------
 // Search synonym / alias normalization
@@ -103,7 +104,7 @@ router.get("/products/search-suggestions", async (req, res) => {
       const results = await db
         .select({ name: productsTable.name })
         .from(productsTable)
-        .where(and(isNotNull(productsTable.imageUrl), eq(productsTable.category, category)))
+        .where(and(isNotNull(productsTable.imageUrl), visiblePrice, eq(productsTable.category, category)))
         .limit(8);
       res.json(results.map((r) => r.name));
       return;
@@ -112,7 +113,7 @@ router.get("/products/search-suggestions", async (req, res) => {
     const results = await db
       .select({ name: productsTable.name })
       .from(productsTable)
-      .where(and(isNotNull(productsTable.imageUrl), ilike(productsTable.name, `%${q}%`)))
+      .where(and(isNotNull(productsTable.imageUrl), visiblePrice, ilike(productsTable.name, `%${q}%`)))
       .limit(8);
     res.json(results.map((r) => r.name));
   } catch (err) {
@@ -152,8 +153,8 @@ router.get("/products", async (req, res) => {
     const rawSearch   = req.query.search   as string | undefined;
     const { search, category } = normalizeSearch(rawSearch, rawCategory);
 
-    // Always require an image — products under $50 show "Call for Pricing" in the UI
-    const conditions = [isNotNull(productsTable.imageUrl)];
+    // Always require an image and hide products priced $0.01–$34.99
+    const conditions = [isNotNull(productsTable.imageUrl), visiblePrice];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {
       conditions.push(

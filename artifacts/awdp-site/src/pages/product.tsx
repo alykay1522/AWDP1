@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Home, ShoppingCart, Truck, ShieldCheck, Wrench, AlertCircle, PackageCheck, Phone, Camera } from "lucide-react";
+import { ChevronRight, Home, ShoppingCart, Truck, ShieldCheck, Wrench, AlertCircle, PackageCheck, Mail, Camera } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 
@@ -103,7 +103,7 @@ export default function ProductDetail() {
       <PageSeo
         title={`${product.name} — SKU ${product.sku}`}
         path={`/product/${product.sku}`}
-        description={`Buy ${product.name} (SKU: ${product.sku}) — ${product.category} replacement part. ${product.description ? product.description.slice(0, 100) + "…" : "In stock at All Window Door Parts. Veteran-owned, 40+ years experience. Call 785-533-0244."}`}
+        description={`Buy ${product.name} (SKU: ${product.sku}) — ${product.category} replacement part. ${product.description ? product.description.slice(0, 100) + "…" : "In stock at All Window Door Parts. Veteran-owned, 40+ years experience. Email info@allwindowdoorparts.com."}`}
         image={product.imageUrl ?? undefined}
         type="product"
         structuredData={[
@@ -195,7 +195,7 @@ export default function ProductDetail() {
               
               <div className="mb-6 flex items-end gap-4">
                 {isCallForPricing ? (
-                  <div className="text-2xl font-bold text-primary">Call for Pricing</div>
+                  <div className="text-2xl font-bold text-primary">Email for Details</div>
                 ) : isSale ? (
                   <>
                     <div className="text-4xl font-bold text-accent">${price.toFixed(2)}</div>
@@ -216,19 +216,12 @@ export default function ProductDetail() {
               <div className="bg-slate-50 border p-6 rounded-xl mb-6">
                 {isCallForPricing ? (
                   <div className="flex flex-col gap-4">
-                    <p className="text-slate-600 text-sm">This item requires a custom quote. Call or email us with your SKU and quantity and we'll get back to you with pricing.</p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button size="lg" className="h-14 flex-1 text-lg font-bold shadow-sm" asChild>
-                        <a href="tel:7855330244">
-                          <Phone className="mr-2 w-5 h-5" /> Call 785-533-0244
-                        </a>
-                      </Button>
-                      <Button size="lg" variant="outline" className="h-14 flex-1 text-lg font-bold" asChild>
-                        <a href={`mailto:Info@allwindowdoorparts.com?subject=Pricing Request: ${product.sku}&body=Hi, I'd like pricing for SKU ${product.sku} (${product.name}). Quantity needed: `}>
-                          Email for Quote
-                        </a>
-                      </Button>
-                    </div>
+                    <p className="text-slate-600 text-sm">Email us your SKU and quantity for pricing — we respond within 1 business day.</p>
+                    <Button size="lg" className="h-14 w-full text-lg font-bold shadow-sm" asChild>
+                      <a href={`mailto:info@allwindowdoorparts.com?subject=Quote Request: ${product.sku}&body=Hi, I'd like pricing for SKU ${product.sku} (${product.name}).%0A%0AQuantity needed: %0AAdditional notes: `}>
+                        <Mail className="mr-2 w-5 h-5" aria-hidden="true" /> Email info@allwindowdoorparts.com
+                      </a>
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-4">
@@ -385,7 +378,7 @@ export default function ProductDetail() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
                     <Wrench className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                     <p className="text-sm text-blue-800">
-                      Need exact dimensions or specs? <Link href="/parts-identification" className="font-bold underline">Contact our experts</Link> or call <a href="tel:+17855330244" className="font-bold underline">785-533-0244</a> — we'll help you confirm the right part.
+                      Need exact dimensions or specs? <Link href="/parts-identification" className="font-bold underline">Use our Free Parts ID</Link> or <a href="mailto:info@allwindowdoorparts.com" className="font-bold underline">email our experts</a> — we'll confirm the right part.
                     </p>
                   </div>
                 </div>
@@ -424,8 +417,8 @@ export default function ProductDetail() {
               <p className="text-sm italic">Note: Special order and custom-cut weatherstripping are non-returnable.</p>
 
               <div className="mt-6 bg-slate-50 border rounded-lg px-4 py-3 flex items-center gap-3">
-                <Phone className="w-4 h-4 text-primary shrink-0" />
-                <p className="text-sm text-slate-700">Questions about your order? Call us at <a href="tel:+17855330244" className="font-bold text-primary">785-533-0244</a> or email <a href="mailto:Info@allwindowdoorparts.com" className="font-bold text-primary">Info@allwindowdoorparts.com</a></p>
+                <Mail className="w-4 h-4 text-primary shrink-0" />
+                <p className="text-sm text-slate-700">Questions about your order? Email us at <a href="mailto:info@allwindowdoorparts.com" className="font-bold text-primary">info@allwindowdoorparts.com</a> — we respond within 1 business day.</p>
               </div>
             </TabsContent>
           </Tabs>

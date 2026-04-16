@@ -1,7 +1,7 @@
 import { useCart } from "@/lib/cart";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, PackageCheck, Phone } from "lucide-react";
+import { ShoppingCart, PackageCheck, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
 
@@ -53,7 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>
             {isCallForPricing ? (
-              <span className="text-sm font-bold text-primary block">Call for Pricing</span>
+              <span className="text-sm font-bold text-primary block">Email for Details</span>
             ) : isSale ? (
               <div className="flex flex-col">
                 <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
@@ -80,8 +80,8 @@ export function ProductCard({ product }: ProductCardProps) {
               className="rounded-full w-10 h-10 shrink-0 shadow-sm"
               asChild
             >
-              <a href="tel:7855330244" aria-label="Call for pricing">
-                <Phone className="w-4 h-4" />
+              <a href="mailto:info@allwindowdoorparts.com" aria-label="Email for details">
+                <Mail className="w-4 h-4" />
               </a>
             </Button>
           ) : (

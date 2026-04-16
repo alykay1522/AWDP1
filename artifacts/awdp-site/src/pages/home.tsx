@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Phone } from "lucide-react";
+import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
@@ -199,10 +199,10 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Hero phone nudge */}
+            {/* Hero email nudge */}
             <p className="mt-6 text-slate-400 text-sm flex items-center gap-2">
-              <Phone className="w-4 h-4" aria-hidden="true" />
-              Prefer to call? <a href="tel:+17855330244" className="text-blue-300 font-bold hover:text-white transition-colors">785-533-0244</a>
+              <Mail className="w-4 h-4" aria-hidden="true" />
+              Questions? Email <a href="mailto:info@allwindowdoorparts.com" className="text-blue-300 font-bold hover:text-white transition-colors">info@allwindowdoorparts.com</a>
             </p>
           </div>
         </div>
@@ -384,8 +384,8 @@ export default function Home() {
                   <Link href="/parts-identification">Upload a Photo Now</Link>
                 </Button>
                 <Button size="lg" variant="ghost" className="w-fit text-white border border-white/30 hover:bg-white/10 h-12 px-8 text-base" asChild>
-                  <a href="tel:+17855330244">
-                    <Phone className="w-4 h-4 mr-2" aria-hidden="true" /> Call 785-533-0244
+                  <a href="mailto:info@allwindowdoorparts.com">
+                    <Mail className="w-4 h-4 mr-2" aria-hidden="true" /> Email Us
                   </a>
                 </Button>
               </div>
@@ -521,7 +521,7 @@ export default function Home() {
             <p className="text-slate-500 mb-4 text-sm">Have a question before you order? We're here to help.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild variant="outline" className="font-bold">
-                <a href="tel:+17855330244"><Phone className="w-4 h-4 mr-2" aria-hidden="true" /> 785-533-0244</a>
+                <a href="mailto:info@allwindowdoorparts.com"><Mail className="w-4 h-4 mr-2" aria-hidden="true" /> info@allwindowdoorparts.com</a>
               </Button>
               <Button asChild className="font-bold">
                 <Link href="/parts-identification"><PackageSearch className="w-4 h-4 mr-2" aria-hidden="true" /> Free Parts ID</Link>
