@@ -29,3 +29,9 @@ id = "mzvkI_4zeu4JnETxPVvCt"
 uri = "file://attached_assets/awdp_rename_all_12_batches.csv"
 type = "table"
 title = "AWDP Master Rename Map – All 12 Batches (5,326 rows)"
+
+[[outputs]]
+id = "VDu43EwnbZEAs302QPBcg"
+uri = "file://attached_assets/zero_price_products.csv"
+type = "table"
+title = "All $0.00 Products (26,893 items)"
