@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { ShoppingCart, PackageCheck, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
+import awdpLogo from "@assets/logo_1775503261746.png";
 
 const CATEGORY_SNIPPETS: Record<string, string> = {
   "Window Balances":                   "Replacement sash balance for smooth, reliable window operation.",
@@ -56,6 +57,15 @@ export function ProductCard({ product }: ProductCardProps) {
           src={product.imageUrl}
           alt={product.name}
           className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+        />
+        <img
+          src={awdpLogo}
+          alt=""
+          aria-hidden="true"
+          width="48"
+          height="48"
+          loading="lazy"
+          className="absolute bottom-2 right-2 w-10 h-10 object-contain pointer-events-none select-none"
         />
       </Link>
 

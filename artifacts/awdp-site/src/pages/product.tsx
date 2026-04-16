@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
+import awdpLogo from "@assets/logo_1775503261746.png";
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -215,6 +216,15 @@ export default function ProductDetail() {
                   Sale - Save ${savings.toFixed(2)}
                 </div>
               )}
+              <img
+                src={awdpLogo}
+                alt=""
+                aria-hidden="true"
+                width="64"
+                height="64"
+                loading="eager"
+                className="absolute bottom-4 right-4 w-14 h-14 object-contain pointer-events-none select-none"
+              />
             </div>
 
             {/* Product Info */}
