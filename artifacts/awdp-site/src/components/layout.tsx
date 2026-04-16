@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState, useRef } from "react";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,27 @@ import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
 
+const SHOP_CATEGORIES = [
+  ["Window Balances",               "Window+Balances"],
+  ["Window Hardware",               "Window+Hardware"],
+  ["Sash Hardware",                 "Sash+Hardware"],
+  ["Door Hardware",                 "Door+Hardware"],
+  ["Weatherstrip & Glazing",        "Window+Glazing+and+Weatherstrip"],
+  ["Screen Hardware & Accessories", "Screen+Hardware+and+Accessories"],
+  ["Other Hardware",                "Other+Hardware"],
+] as const;
+
+const SHOP_BY_PROBLEM = [
+  ["Window won't stay open",    "balance"],
+  ["Window hard to crank",      "operator"],
+  ["Window won't lock",         "lock"],
+  ["Drafty window or door",     "weatherstripping"],
+  ["Sliding door hard to open", "roller"],
+  ["Screen frame damaged",      "screen frame"],
+  ["Broken tilt latch",         "tilt latch"],
+  ["Window sash falls out",     "pivot bar"],
+] as const;
+
 export function Layout({ children }: { children: ReactNode }) {
   const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
   const [, setLocation] = useLocation();
@@ -21,6 +42,11 @@ export function Layout({ children }: { children: ReactNode }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Nav search autocomplete
+  const [navSuggestions, setNavSuggestions]       = useState<string[]>([]);
+  const [navSuggestionsOpen, setNavSuggestionsOpen] = useState(false);
+  const navSuggDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ORDER_MINIMUM = 50;
   const belowMinimum = totalPrice < ORDER_MINIMUM && items.length > 0;
@@ -72,8 +98,27 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleNavSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (navSuggDebounce.current) clearTimeout(navSuggDebounce.current);
+    if (val.length >= 2) {
+      navSuggDebounce.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/products/search-suggestions?q=${encodeURIComponent(val)}`);
+          const data: string[] = await res.json();
+          setNavSuggestions(data);
+          setNavSuggestionsOpen(data.length > 0);
+        } catch { /* ignore */ }
+      }, 280);
+    } else {
+      setNavSuggestions([]);
+      setNavSuggestionsOpen(false);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setNavSuggestionsOpen(false);
     if (searchQuery.trim()) {
       setLocation(`/shop?search=${encodeURIComponent(searchQuery)}`);
     }
@@ -104,7 +149,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <nav className="flex items-center gap-5 font-semibold text-primary-foreground">
                 <Link href="/" className="hover:text-accent transition-colors">Home</Link>
 
-                {/* Shop Parts with category dropdown */}
+                {/* Shop Parts with mega-menu dropdown */}
                 <div
                   className="relative"
                   onMouseEnter={() => {
@@ -112,7 +157,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     setShopDropdownOpen(true);
                   }}
                   onMouseLeave={() => {
-                    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 120);
+                    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 150);
                   }}
                 >
                   <Link
@@ -124,34 +169,84 @@ export function Layout({ children }: { children: ReactNode }) {
                     Shop Parts
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${shopDropdownOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                   </Link>
+
                   {shopDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 py-2 z-50 text-sm">
-                      <Link
-                        href="/shop"
-                        className="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:bg-primary/5 hover:text-primary font-bold border-b border-slate-100 mb-1 transition-colors"
-                        onClick={() => setShopDropdownOpen(false)}
-                      >
-                        All Parts (35,000+)
-                      </Link>
-                      {[
-                        ["Window Balances",               "Window+Balances"],
-                        ["Window Hardware",               "Window+Hardware"],
-                        ["Sash Hardware",                 "Sash+Hardware"],
-                        ["Door Hardware",                 "Door+Hardware"],
-                        ["Weatherstrip & Glazing",        "Window+Glazing+and+Weatherstrip"],
-                        ["Screen Hardware & Accessories", "Screen+Hardware+and+Accessories"],
-                        ["Other Hardware",                "Other+Hardware"],
-                      ].map(([label, cat]) => (
-                        <Link
-                          key={cat}
-                          href={`/shop?category=${cat}`}
-                          className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-primary/5 hover:text-primary transition-colors"
-                          onClick={() => setShopDropdownOpen(false)}
-                        >
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
-                          {label}
-                        </Link>
-                      ))}
+                    <div className="absolute top-full left-0 mt-2 w-[680px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-3 gap-0 divide-x divide-slate-100">
+
+                        {/* Column 1: By Category */}
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">By Category</p>
+                          <Link
+                            href="/shop"
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-800 hover:bg-primary/5 hover:text-primary font-bold rounded-lg mb-1 transition-colors"
+                            onClick={() => setShopDropdownOpen(false)}
+                          >
+                            All 35,000+ Parts
+                          </Link>
+                          {SHOP_CATEGORIES.map(([label, cat]) => (
+                            <Link
+                              key={cat}
+                              href={`/shop?category=${cat}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setShopDropdownOpen(false)}
+                            >
+                              <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {label}
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Column 2: Shop by Problem */}
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
+                          {SHOP_BY_PROBLEM.map(([problem, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setShopDropdownOpen(false)}
+                            >
+                              <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {problem}
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Column 3: Shop by Brand + Quick links */}
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Brand</p>
+                          {[
+                            ["Truth/EntryGard",  "Truth"],
+                            ["Andersen",         "Andersen"],
+                            ["Pella",            "Pella"],
+                            ["Milgard",          "Milgard"],
+                            ["Marvin",           "Marvin"],
+                            ["Amesbury",         "Amesbury"],
+                            ["Caldwell",         "Caldwell"],
+                          ].map(([label, brand]) => (
+                            <Link
+                              key={brand}
+                              href={`/shop?search=${encodeURIComponent(brand)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setShopDropdownOpen(false)}
+                            >
+                              <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {label}
+                            </Link>
+                          ))}
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <Link
+                              href="/parts-identification"
+                              className="flex items-center gap-2 px-3 py-2.5 text-sm bg-red-50 text-red-700 hover:bg-red-100 font-bold rounded-lg transition-colors"
+                              onClick={() => setShopDropdownOpen(false)}
+                            >
+                              <PackageSearch className="w-4 h-4 shrink-0" aria-hidden="true" />
+                              Free Parts ID — We Help Find It
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -163,17 +258,43 @@ export function Layout({ children }: { children: ReactNode }) {
                 <Link href="/contact" className="hover:text-accent transition-colors">Contact</Link>
               </nav>
 
-              <form onSubmit={handleSearch} className="flex-1 max-w-sm relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/60 group-focus-within:text-accent transition-colors" aria-hidden="true" />
-                <Input
-                  type="search"
-                  aria-label="Search parts by SKU, brand, or name"
-                  placeholder="Search by SKU, brand, or part..."
-                  className="w-full pl-9 bg-white/10 border-white/20 text-primary-foreground placeholder:text-primary-foreground/50 focus-visible:bg-white/20 focus-visible:ring-accent"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </form>
+              {/* Desktop search with autocomplete */}
+              <div className="flex-1 max-w-sm relative">
+                <form onSubmit={handleSearch} className="group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/60 group-focus-within:text-accent transition-colors z-10" aria-hidden="true" />
+                  <Input
+                    type="search"
+                    aria-label="Search parts by SKU, brand, or name"
+                    aria-autocomplete="list"
+                    aria-expanded={navSuggestionsOpen}
+                    placeholder="Search by SKU, brand, or part..."
+                    className="w-full pl-9 bg-white/10 border-white/20 text-primary-foreground placeholder:text-primary-foreground/50 focus-visible:bg-white/20 focus-visible:ring-accent"
+                    value={searchQuery}
+                    onChange={(e) => handleNavSearchChange(e.target.value)}
+                    onFocus={() => { if (navSuggestions.length > 0) setNavSuggestionsOpen(true); }}
+                    onBlur={() => setTimeout(() => setNavSuggestionsOpen(false), 150)}
+                  />
+                </form>
+                {navSuggestionsOpen && navSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-slate-100 py-1 z-50 text-sm">
+                    {navSuggestions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        className="w-full text-left px-4 py-2.5 text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors flex items-center gap-2"
+                        onMouseDown={() => {
+                          setSearchQuery(s);
+                          setNavSuggestionsOpen(false);
+                          setLocation(`/shop?search=${encodeURIComponent(s)}`);
+                        }}
+                      >
+                        <Search className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Phone - desktop */}
@@ -181,7 +302,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <Phone className="w-4 h-4" aria-hidden="true" /> 785-533-0244
             </a>
 
-            {/* Mobile: site name + icons */}
+            {/* Mobile: phone */}
             <div className="md:hidden flex items-center gap-2 text-primary-foreground font-bold text-sm">
               <Phone className="w-4 h-4" aria-hidden="true" />
               <a href="tel:785-533-0244">785-533-0244</a>
@@ -240,6 +361,13 @@ export function Layout({ children }: { children: ReactNode }) {
                                 </div>
                               </div>
                             </div>
+                            <button
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-muted-foreground hover:text-destructive transition-colors shrink-0 self-start mt-1"
+                              aria-label={`Remove ${item.name} from cart`}
+                            >
+                              &times;
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -270,6 +398,27 @@ export function Layout({ children }: { children: ReactNode }) {
                           </p>
                         </div>
                       )}
+
+                      {/* Trust strip */}
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-2 border border-slate-100 rounded-lg p-3 bg-slate-50">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <span>Veteran Owned</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <PackageSearch className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <span>Free Parts ID</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <Phone className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <span>Expert Phone Support</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <span>Secure Checkout</span>
+                        </div>
+                      </div>
+
                       <Button
                         className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                         onClick={handleCheckout}

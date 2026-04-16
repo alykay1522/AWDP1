@@ -25,16 +25,28 @@ const CATEGORIES = [
 ];
 
 const ACTION_TABS = [
-  { id: "price",       label: "Set Price",     icon: DollarSign },
-  { id: "price-pct",   label: "Adjust Price %", icon: DollarSign },
-  { id: "category",    label: "Category",      icon: Tag },
-  { id: "stock",       label: "Stock Status",  icon: Package },
-  { id: "desc-append", label: "Append Description", icon: FileText },
-  { id: "desc-set",      label: "Set Description",    icon: FileText },
-  { id: "variant-group", label: "Variant Group",      icon: Layers },
-  { id: "variant-label", label: "Variant Label",      icon: Layers },
-  { id: "delete",        label: "Delete",             icon: Trash2 },
+  { id: "price",        label: "Set Price",        icon: DollarSign },
+  { id: "price-pct",    label: "Adjust Price %",   icon: DollarSign },
+  { id: "category",     label: "Category",         icon: Tag },
+  { id: "stock",        label: "Stock Status",     icon: Package },
+  { id: "desc-append",  label: "Append Description", icon: FileText },
+  { id: "desc-set",     label: "Set Description",  icon: FileText },
+  { id: "variant-group", label: "Variant Group",   icon: Layers },
+  { id: "variant-label", label: "Variant Label",   icon: Layers },
+  { id: "sku-validate", label: "Validate SKUs",    icon: AlertTriangle },
+  { id: "delete",        label: "Delete",          icon: Trash2 },
 ] as const;
+
+const SKU_VALID_RE = /^[A-Za-z0-9._-]+$/;
+
+function getSkuIssues(sku: string): string[] {
+  const issues: string[] = [];
+  if (/\s/.test(sku)) issues.push("Contains spaces");
+  if (!SKU_VALID_RE.test(sku)) issues.push("Contains special characters");
+  if (sku.length < 3) issues.push("Too short (< 3 chars)");
+  if (sku.length > 64) issues.push("Too long (> 64 chars)");
+  return issues;
+}
 
 type ActionId = typeof ACTION_TABS[number]["id"];
 
@@ -445,6 +457,45 @@ export default function AdminBulkEditor() {
                 <p className="text-xs text-slate-400 mt-1">Shown on the product page variant picker. Leave blank to clear.</p>
               </div>
             )}
+            {activeAction === "sku-validate" && (() => {
+              const skusToCheck = selectAllMatching ? products : products.filter(p => selectedSkus.has(p.sku));
+              const issues = skusToCheck.map(p => ({ ...p, skuIssues: getSkuIssues(p.sku) })).filter(p => p.skuIssues.length > 0);
+              return (
+                <div className="flex-1">
+                  <div className="rounded-lg border bg-white p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                      <p className="text-sm font-bold text-slate-800">
+                        Validated {skusToCheck.length} selected SKU{skusToCheck.length !== 1 ? "s" : ""} — {issues.length === 0 ? "no issues found" : `${issues.length} issue${issues.length !== 1 ? "s" : ""} found`}
+                      </p>
+                    </div>
+                    {issues.length > 0 ? (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {issues.map(p => (
+                          <div key={p.sku} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-md px-3 py-2 text-xs">
+                            <span className="font-mono text-slate-700 shrink-0 font-bold">{p.sku}</span>
+                            <span className="text-slate-500 truncate">{p.name}</span>
+                            <div className="ml-auto flex gap-1 flex-wrap shrink-0">
+                              {p.skuIssues.map(issue => (
+                                <span key={issue} className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-semibold whitespace-nowrap">{issue}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-emerald-600 flex items-center gap-1.5">
+                        <Check className="w-4 h-4" /> All selected SKUs pass format validation.
+                      </p>
+                    )}
+                    {skusToCheck.length === 0 && (
+                      <p className="text-xs text-slate-400 mt-1">Select products above to validate their SKU format.</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {activeAction === "delete" && (
               <div className="flex-1">
                 {confirmDelete ? (
@@ -459,7 +510,8 @@ export default function AdminBulkEditor() {
               </div>
             )}
 
-            {/* Apply button */}
+            {/* Apply button — hidden for sku-validate */}
+            {activeAction !== "sku-validate" && (
             <Button
               onClick={handleApply}
               disabled={isApplying || (
@@ -481,6 +533,7 @@ export default function AdminBulkEditor() {
                 <><Check className="w-4 h-4 mr-2" /> Apply to {selectionCount.toLocaleString()} product{selectionCount !== 1 ? "s" : ""}</>
               )}
             </Button>
+            )}
             {confirmDelete && (
               <Button variant="ghost" onClick={() => setConfirmDelete(false)} className="text-slate-500">
                 Cancel

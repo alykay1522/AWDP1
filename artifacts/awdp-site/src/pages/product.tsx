@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera } from "lucide-react";
+import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 
@@ -115,6 +115,17 @@ export default function ProductDetail() {
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const savings = isSale ? originalPrice - price : 0;
 
+  const CATEGORY_INTROS: Record<string, string> = {
+    "Window Balances": "If your window won't stay open, slams shut, or feels too heavy to lift, the window balance is usually the cause. Balances wear out gradually — especially in older or frequently-used windows.",
+    "Window Hardware": "Difficulty opening or closing a casement or awning window often points to a worn operator. A stripped crank, seized mechanism, or cracked arm are common signs the operator needs replacing.",
+    "Sash Hardware": "Loose sash locks, broken tilt latches, or a sash that won't stay in place are common issues in double-hung windows. These parts are designed to be user-replaceable without removing the window.",
+    "Door Hardware": "A sliding glass door that sticks, drags, or jumps off the track usually has worn rollers. Replacing the roller assembly is one of the most effective repairs for a patio door.",
+    "Window Glazing and Weatherstrip": "Drafts, water infiltration, or rising heating and cooling bills are clear signs your weatherstripping has worn out. Most profiles pull out of the kerf channel and press back in — no tools required.",
+    "Screen Hardware and Accessories": "Torn screen fabric, bent frame sections, or missing hardware can usually be repaired piece by piece. You rarely need a whole new screen — just the parts that have failed.",
+    "Other Hardware": "Can't find your part in the standard categories? Many specialty and discontinued window and door parts are available here. Use our Free Parts ID service if you need help identifying an unusual or obsolete part.",
+  };
+  const categoryIntro = CATEGORY_INTROS[product.category] ?? null;
+
   const productAlt = `${product.name} — SKU ${product.sku} replacement window door part`;
 
   return (
@@ -175,6 +186,13 @@ export default function ProductDetail() {
 
             {/* Product Info */}
             <div className="flex flex-col">
+              {/* Category symptom intro */}
+              {categoryIntro && (
+                <div className="mb-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+                  <p className="text-sm text-blue-800 leading-relaxed">{categoryIntro}</p>
+                </div>
+              )}
+
               <div className="mb-2 flex items-center justify-between">
                 <span className="font-mono text-sm tracking-wider text-muted-foreground bg-slate-100 px-2 py-1 rounded">SKU: {product.sku}</span>
                 {product.inStock ? (
@@ -333,6 +351,9 @@ export default function ProductDetail() {
               {product.compatibleBrands && product.compatibleBrands.length > 0 && (
                 <TabsTrigger value="compatibility" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Compatibility</TabsTrigger>
               )}
+              {["Window Balances", "Window Hardware", "Door Hardware", "Window Glazing and Weatherstrip"].includes(product.category) && (
+                <TabsTrigger value="measure" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Measurement Guide</TabsTrigger>
+              )}
               <TabsTrigger value="shipping" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Shipping & Returns</TabsTrigger>
             </TabsList>
             
@@ -425,6 +446,80 @@ export default function ProductDetail() {
               </TabsContent>
             )}
             
+            {["Window Balances", "Window Hardware", "Door Hardware", "Window Glazing and Weatherstrip"].includes(product.category) && (
+              <TabsContent value="measure" className="mt-0 text-slate-600 space-y-6 max-w-3xl">
+                {{
+                  "Window Balances": (
+                    <>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Window Balance</h3>
+                      <p>Ordering the correct balance requires three measurements from your existing balance or sash:</p>
+                      <ol className="list-decimal pl-5 space-y-3 text-sm">
+                        <li><strong>Balance length</strong> — measure the full length of the existing balance tube or channel from end to end (in inches).</li>
+                        <li><strong>Sash weight</strong> — if using a block &amp; tackle or spiral balance, the tension must match the sash weight. Weigh the sash if possible, or note the tension stamp on the existing balance.</li>
+                        <li><strong>Stamp or part number</strong> — most balances have a stamp printed or embossed on the side. Include this when using our Free Parts ID service.</li>
+                      </ol>
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
+                        Not sure? Send us a photo of the balance and the open window channel — our experts will identify the correct replacement free of charge.
+                      </div>
+                    </>
+                  ),
+                  "Window Hardware": (
+                    <>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure for a Replacement Operator</h3>
+                      <p>Casement and awning window operators vary by handing, arm style, and mounting pattern. To find the correct replacement:</p>
+                      <ol className="list-decimal pl-5 space-y-3 text-sm">
+                        <li><strong>Handing</strong> — stand inside facing the window. If the crank is on the right, it is a right-hand operator; left side means left-hand.</li>
+                        <li><strong>Arm style</strong> — note whether you have a single arm, split arm, or dual arm (parallel arms). Take a photo.</li>
+                        <li><strong>Mounting holes</strong> — measure the distance between mounting screw holes and compare to the new operator's spec sheet.</li>
+                        <li><strong>Brand</strong> — check the sill track or crank housing for a brand name or logo (Truth, EntryGard, Andersen, etc.).</li>
+                      </ol>
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
+                        When in doubt, photograph the old operator from the front and side and use our Free Parts ID — we match operators by photo every day.
+                      </div>
+                    </>
+                  ),
+                  "Door Hardware": (
+                    <>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Patio Door Roller</h3>
+                      <p>Roller replacement requires matching the wheel diameter, housing width, and mounting style:</p>
+                      <ol className="list-decimal pl-5 space-y-3 text-sm">
+                        <li><strong>Wheel diameter</strong> — remove the roller housing from the door bottom and measure the wheel diameter in millimeters or inches.</li>
+                        <li><strong>Housing dimensions</strong> — measure the overall length, width, and height of the housing assembly.</li>
+                        <li><strong>Wheel material</strong> — nylon, stainless steel, or tandem wheels each perform differently and are not interchangeable.</li>
+                        <li><strong>Door brand</strong> — look on the door frame header or stile for a manufacturer label.</li>
+                      </ol>
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
+                        A photo of the removed roller next to a coin for scale helps us identify it instantly. Use our Free Parts ID service before ordering.
+                      </div>
+                    </>
+                  ),
+                  "Window Glazing and Weatherstrip": (
+                    <>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Weatherstripping</h3>
+                      <p>Weatherstrip profiles are highly specific to window brand and installation type. Before ordering:</p>
+                      <ol className="list-decimal pl-5 space-y-3 text-sm">
+                        <li><strong>Profile type</strong> — identify if it is a kerf-in (press into slot), foam tape (self-adhesive), fin seal, or bulb style.</li>
+                        <li><strong>Kerf width</strong> — for kerf-in types, measure the slot width in the sash or frame (typically 3/32" or 1/8").</li>
+                        <li><strong>Overall height</strong> — measure the full fin height of the weatherstrip from root to tip.</li>
+                        <li><strong>Length needed</strong> — measure all four sides of the window or door opening in linear feet.</li>
+                      </ol>
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
+                        Send us a cross-section photo of the existing strip (cut a 1" piece with scissors) and we will match the profile for you — free.
+                      </div>
+                    </>
+                  ),
+                }[product.category]}
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t">
+                  <Link href="/parts-identification" className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
+                    <Camera className="w-4 h-4" /> Use Free Parts ID — Upload a Photo
+                  </Link>
+                  <a href="mailto:info@allwindowdoorparts.com" className="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:border-primary hover:text-primary font-medium px-5 py-2.5 rounded-lg text-sm transition-colors">
+                    <Mail className="w-4 h-4" /> Email Our Experts
+                  </a>
+                </div>
+              </TabsContent>
+            )}
+
             <TabsContent value="shipping" className="mt-0 text-slate-600 space-y-4 max-w-3xl">
               <h3 className="text-lg font-bold text-slate-900 mb-2">Shipping Information</h3>
               <p>Shipping costs are calculated at checkout based on your delivery address, package weight, and dimensions. We ship via UPS, FedEx, and/or USPS.</p>

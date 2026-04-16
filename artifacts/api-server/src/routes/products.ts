@@ -201,6 +201,19 @@ router.get("/products", async (req, res) => {
       );
     }
 
+    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : null;
+    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : null;
+    const inStockOnly = req.query.inStockOnly === "true";
+    if (minPrice !== null && !isNaN(minPrice)) {
+      conditions.push(sql`${productsTable.price}::numeric >= ${minPrice}`);
+    }
+    if (maxPrice !== null && !isNaN(maxPrice)) {
+      conditions.push(sql`${productsTable.price}::numeric <= ${maxPrice}`);
+    }
+    if (inStockOnly) {
+      conditions.push(eq(productsTable.inStock, true));
+    }
+
     const whereClause = and(...conditions);
 
     // Determine sort order

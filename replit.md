@@ -118,6 +118,13 @@ React + Vite e-commerce frontend for All Window Door Parts (allwindowdoorparts.c
 - URL params: `/shop?search=query&sort=newest&page=1`
 - Shop only shows products with a non-null imageUrl (5,868 of 35,051)
 - Contact: 785-533-0244, Info@allwindowdoorparts.com
+- **Shop sidebar filters**: price range (minPrice/maxPrice sliders) + in-stock toggle — wired to API
+- **Search autocomplete**: 280ms debounce, min 2 chars, dropdown on nav search + shop search
+- **Cart trust strip**: 2×2 icon grid in cart Sheet (Veteran Owned, Free Parts ID, Phone Support, Secure Checkout)
+- **Nav mega-menu**: 680px 3-column panel (By Category / Shop by Problem / Shop by Brand + Parts ID CTA)
+- **Product enrichment**: Category-specific symptom intro (7 categories); Measurement Guide tab (4 categories)
+- **SKU validator**: Admin bulk editor action tab — flags spaces, special chars, bad length (3–64 chars)
+- **Image batch processor**: Admin images page has ZIP upload + CSV matching (already existed)
 
 ### `scripts` (`@workspace/scripts`)
 
