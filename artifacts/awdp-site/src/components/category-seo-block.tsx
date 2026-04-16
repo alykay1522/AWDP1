@@ -140,6 +140,23 @@ function matchCategory(search: string | null, category: string | null): string |
   return null;
 }
 
+function GuideCallout({ headline, body, href }: { headline: string; body: string; href: string }) {
+  return (
+    <div className="mb-5 bg-slate-900 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="flex-1">
+        <p className="font-bold text-white mb-0.5">{headline}</p>
+        <p className="text-slate-400 text-sm">{body}</p>
+      </div>
+      <Link
+        href={href}
+        className="shrink-0 inline-flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 transition-colors font-bold text-sm px-4 py-2.5 rounded-lg whitespace-nowrap"
+      >
+        Read the Guide <ChevronRight className="w-4 h-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
 interface CategorySeoBlockProps {
   search?: string | null;
   category?: string | null;
@@ -168,22 +185,48 @@ export function CategorySeoBlock({ search, category }: CategorySeoBlockProps) {
 
       <p className="text-slate-600 leading-relaxed mb-8">{content.closingLine}</p>
 
-      {/* Guide callout — shown only for Window Balances */}
+      {/* Guide callouts — category-specific */}
       {(matched === "Window Balances" || matched === "Window Balances and Accessories") && (
-        <div className="mb-5 bg-slate-900 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex-1">
-            <p className="font-bold text-white mb-0.5">Not sure how to identify your balance type or measure it correctly?</p>
-            <p className="text-slate-400 text-sm">
-              Read our step-by-step guide — channel, spiral, coil, and specialty balances all covered, including measurement instructions and common mistakes.
-            </p>
-          </div>
-          <Link
-            href="/guides/window-balance"
-            className="shrink-0 inline-flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 transition-colors font-bold text-sm px-4 py-2.5 rounded-lg whitespace-nowrap"
-          >
-            Read the Guide <ChevronRight className="w-4 h-4" aria-hidden="true" />
-          </Link>
-        </div>
+        <GuideCallout
+          headline="Not sure how to identify your balance type or measure it correctly?"
+          body="Read our step-by-step guide — channel, spiral, coil, and specialty balances all covered, including measurement instructions and common mistakes."
+          href="/guides/window-balance"
+        />
+      )}
+      {matched === "Window Hardware" && (
+        <GuideCallout
+          headline="Not sure how to identify your casement or awning operator?"
+          body="Read our step-by-step guide — single arm, dual arm, dyad, scissor, and awning operators all covered, including arm measurement and brand clues."
+          href="/guides/window-operator"
+        />
+      )}
+      {matched === "Door Hardware" && (
+        <>
+          <GuideCallout
+            headline="Not sure how to identify your patio door roller?"
+            body="Read our guide — steel wheel, nylon wheel, and tandem rollers covered, with housing measurement instructions and common mistakes."
+            href="/guides/patio-door-roller"
+          />
+          <GuideCallout
+            headline="Not sure how to identify your door lock or mortise case?"
+            body="Read our guide — hook latches, mortise locks, multi-point systems, and entry door hardware covered, with faceplate and backset measurement instructions."
+            href="/guides/door-lock"
+          />
+        </>
+      )}
+      {matched === "Window Glazing and Weatherstrip" && (
+        <>
+          <GuideCallout
+            headline="Not sure how to identify your weatherstripping profile?"
+            body="Read our guide — kerf, bulb, foam, fin seal, and OEM profiles all covered, including measurement instructions and shape-matching tips."
+            href="/guides/weatherstripping"
+          />
+          <GuideCallout
+            headline="Not sure how to identify your glazing bead?"
+            body="Read our guide — snap-in vinyl, kerf-in, aluminum, and OEM-specific bead profiles covered, with measurement instructions and common mistakes."
+            href="/guides/glazing-bead"
+          />
+        </>
       )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">

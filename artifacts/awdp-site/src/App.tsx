@@ -19,6 +19,11 @@ import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
 import Policies from "@/pages/policies";
 import GuideWindowBalance from "@/pages/guide-window-balance";
+import GuidePatioDoorRoller from "@/pages/guide-patio-door-roller";
+import GuideWeatherstripping from "@/pages/guide-weatherstripping";
+import GuideWindowOperator from "@/pages/guide-window-operator";
+import GuideDoorLock from "@/pages/guide-door-lock";
+import GuideGlazingBead from "@/pages/guide-glazing-bead";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -73,6 +78,11 @@ function AppContent() {
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
         <Route path="/guides/window-balance" component={GuideWindowBalance} />
+        <Route path="/guides/patio-door-roller" component={GuidePatioDoorRoller} />
+        <Route path="/guides/weatherstripping" component={GuideWeatherstripping} />
+        <Route path="/guides/window-operator" component={GuideWindowOperator} />
+        <Route path="/guides/door-lock" component={GuideDoorLock} />
+        <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
