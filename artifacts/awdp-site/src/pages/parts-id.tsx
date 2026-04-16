@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage } from "lucide-react";
+import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage, X } from "lucide-react";
 
 // The API schema definition
 const partsIdSchema = z.object({
