@@ -134,6 +134,8 @@ router.get("/admin/products", async (req, res) => {
     if (category) conditions.push(eq(productsTable.category, category));
     if (stockStr === "true")  conditions.push(eq(productsTable.inStock, true));
     if (stockStr === "false") conditions.push(eq(productsTable.inStock, false));
+    const zeroPrice = req.query.zeroPrice === "true";
+    if (zeroPrice) conditions.push(sql`${productsTable.price}::numeric = 0`);
 
     const where = conditions.length ? and(...conditions) : undefined;
 
@@ -592,6 +594,98 @@ router.delete("/admin/products/:sku", async (req, res) => {
 
     if (!deleted) return res.status(404).json({ error: "Product not found" });
     res.json({ deleted: true, sku });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/products/bulk-update
+// Body: { skus?: string[]; filter?: { search?:string; category?:string; zeroPrice?:boolean; inStock?:string }; updates: { ... } }
+router.post("/admin/products/bulk-update", async (req, res) => {
+  try {
+    const { skus, filter, updates } = req.body as {
+      skus?: string[];
+      filter?: { search?: string; category?: string; zeroPrice?: boolean; inStock?: string };
+      updates: {
+        price?: number;
+        priceAdjustPercent?: number;
+        category?: string;
+        inStock?: boolean;
+        descriptionSet?: string;
+        descriptionAppend?: string;
+      };
+    };
+
+    if (!updates || typeof updates !== "object") {
+      return res.status(400).json({ error: "updates object is required" });
+    }
+
+    const hasSkus   = Array.isArray(skus) && skus.length > 0;
+    const hasFilter = filter && typeof filter === "object";
+
+    if (!hasSkus && !hasFilter) {
+      return res.status(400).json({ error: "Provide either skus[] or a filter object" });
+    }
+
+    // Build WHERE clause
+    let whereClause: any;
+    if (hasSkus) {
+      whereClause = inArray(productsTable.sku, skus!);
+    } else {
+      const { ilike: iL, and: aN, or: oR, eq: eQ } = await import("drizzle-orm");
+      const conditions: any[] = [];
+      if (filter!.search) {
+        const s = filter!.search;
+        conditions.push(oR(iL(productsTable.name, `%${s}%`), iL(productsTable.sku, `%${s}%`)));
+      }
+      if (filter!.category) conditions.push(eQ(productsTable.category, filter!.category));
+      if (filter!.zeroPrice)  conditions.push(sql`${productsTable.price}::numeric = 0`);
+      if (filter!.inStock === "true")  conditions.push(eQ(productsTable.inStock, true));
+      if (filter!.inStock === "false") conditions.push(eQ(productsTable.inStock, false));
+      whereClause = conditions.length ? aN(...conditions) : sql`1=1`;
+    }
+
+    let updated = 0;
+
+    // ── Price percentage adjustment
+    if (updates.priceAdjustPercent !== undefined) {
+      const pct = Number(updates.priceAdjustPercent);
+      if (isNaN(pct)) return res.status(400).json({ error: "Invalid priceAdjustPercent" });
+      const multiplier = 1 + pct / 100;
+      const rows = await db
+        .update(productsTable)
+        .set({ price: sql`GREATEST(0, ROUND(${productsTable.price}::numeric * ${multiplier}, 2))` })
+        .where(and(whereClause, sql`${productsTable.price}::numeric > 0`))
+        .returning({ sku: productsTable.sku });
+      updated = rows.length;
+    }
+
+    // ── Regular field updates
+    const setFields: Record<string, unknown> = {};
+    if (updates.price !== undefined) {
+      const p = Number(updates.price);
+      if (!isNaN(p) && p >= 0) setFields.price = p.toFixed(2);
+    }
+    if (updates.category  !== undefined) setFields.category = updates.category;
+    if (updates.inStock   !== undefined) setFields.inStock  = Boolean(updates.inStock);
+    if (updates.descriptionSet !== undefined) setFields.description = updates.descriptionSet;
+
+    if (Object.keys(setFields).length > 0) {
+      const rows = await db.update(productsTable).set(setFields).where(whereClause).returning({ sku: productsTable.sku });
+      updated = rows.length;
+    }
+
+    // ── Append to description
+    if (updates.descriptionAppend && !updates.descriptionSet) {
+      const rows = await db
+        .update(productsTable)
+        .set({ description: sql`${productsTable.description} || ${updates.descriptionAppend}` })
+        .where(whereClause)
+        .returning({ sku: productsTable.sku });
+      updated = rows.length;
+    }
+
+    res.json({ updated, message: `${updated} product${updated === 1 ? "" : "s"} updated` });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

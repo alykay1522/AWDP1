@@ -30,6 +30,7 @@ import AdminContactsList from "@/pages/admin-contacts-list";
 import AdminPrices from "@/pages/admin-prices";
 import AdminSettings from "@/pages/admin-settings";
 import AdminImages from "@/pages/admin-images";
+import AdminBulkEditor from "@/pages/admin-bulk-editor";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function AppContent() {
         <Switch>
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/products/new" component={AdminNewProduct} />
+          <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
           <Route path="/admin/products" component={AdminProductsList} />
           <Route path="/admin/orders" component={AdminOrders} />
           <Route path="/admin/categories" component={AdminCategories} />

@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
-  ChevronRight, ExternalLink,
+  ChevronRight, ExternalLink, SlidersHorizontal,
 } from "lucide-react";
 
 interface NavItem {
@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
     children: [
       { href: "/admin/products", label: "All Products" },
       { href: "/admin/products/new", label: "Add New" },
+      { href: "/admin/products/bulk-editor", label: "Bulk Editor" },
     ],
   },
   { href: "/admin/orders", label: "Orders", icon: <ShoppingBag className="w-4 h-4" /> },
