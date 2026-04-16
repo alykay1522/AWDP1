@@ -1,0 +1,171 @@
+1. Information architecture and navigation
+Homepage focus is strong, but depth is buried:  
+Issue: Great positioning (“35,000+ parts”, veteran‑owned, free Parts ID), but deeper categories and education live mostly below the fold or on separate Group pages.
+Fix:
+
+Add top‑level nav buckets: “Window Parts”, “Door Parts”, “Shop by Brand”, “Shop by Problem”, “Free Parts ID”.
+
+Expose key categories in mega‑menu: balances, operators, rollers, locks, weatherstripping, screens.
+
+No cross‑site cohesion with Group catalog:  
+Issue: The Group site has massive brand/category depth that isn’t clearly surfaced from the main domain.
+Fix:
+
+Add a “Legacy & OEM Catalog” link pointing into the Group catalog.
+
+Standardize naming (e.g., “Truth/EntryGard”, “Andersen”, “Pella”) across both sites.
+
+2. Search, discovery, and “Shop by Problem”
+“Shop by Problem” is excellent but under‑leveraged:  
+Issue: The problem‑based tiles are clear (window won’t stay up, patio door hard to slide, etc.), but they likely just link to generic categories.
+Fix:
+
+Route each tile to pre‑filtered category pages (e.g., “Window Won’t Stay Up → balances only, sorted by popularity”).
+
+Add short explainer text at top of each problem page: “If your window drops, you almost always need a balance.”
+
+No advanced search / filters visible on main site:  
+Issue: For a 35k‑part catalog, basic search is not enough.
+Fix:
+
+Implement filters: brand, series/model, material, color, handing, length/size, price, in‑stock.
+
+Add search suggestions: “Truth EntryGard operator”, “Pella casement crank”, “patio door roller”.
+
+3. SEO and content
+Homepage copy is strong but repetitive and slightly messy:  
+Issue: Phrases like “35,000+ parts” and “hard‑to‑find” are repeated heavily; earlier you had duplicate paragraphs and awkward commas—those must stay cleaned up.
+Fix:
+
+Keep one strong hero paragraph; vary supporting language (“largest catalog of OEM and obsolete parts”, “legacy and discontinued hardware experts”).
+
+Ensure no duplicate blocks or repeated testimonials render again.
+
+Category and product SEO underutilized:  
+Issue: Group catalog pages show long lists with thin or generic descriptions and many $0.00 or placeholder prices.
+Fix:
+
+For each major category (balances, operators, rollers, weatherstripping, locks), add:
+
+Intro paragraph: what problems it solves, how to identify the part.
+
+FAQ block: “How do I measure?”, “What if it doesn’t fit?”, “Can you cross‑reference my old part number?”
+
+For products, use your Truth/EntryGard‑style template: symptoms, fitment, measurement, install notes, cross‑refs.
+
+Schema markup missing or minimal:  
+Issue: No visible JSON‑LD for Product, Organization, Breadcrumb, or FAQ on the main site.
+Fix:
+
+Add Organization schema on all pages.
+
+Add Product schema on product pages (price, availability, SKU, brand).
+
+Add BreadcrumbList on category/product pages.
+
+Add FAQPage schema to “Shop by Problem” and key category pages.
+
+4. Product data and pricing
+$0.00 and token prices in Group catalog:  
+Issue: Many items show $0.00 or $0.02 etc., clearly placeholders.
+Fix:
+
+Hide or mark these as “Special Order / Quote Required” instead of showing near‑zero prices.
+
+Apply your markup logic (highest scraped price + 10%) where you have real cost data.
+
+Ensure WooCommerce (or your store engine) never exposes $0.00 as a normal price.
+
+SKU consistency and structure:  
+Issue: Main site SKUs (AWDP‑…) look structured; Group catalog SKUs are mixed.
+Fix:
+
+Enforce your PROFITABLE cipher/encoding for all new SKUs.
+
+Add a SKU validator in admin and bulk editor.
+
+Map legacy SKUs to new AWDP SKUs via a cross‑reference table.
+
+Variant handling vs duplicates:  
+Issue: With so many brands and sizes, you’re at high risk of duplicate listings instead of variants.
+Fix:
+
+Normalize into single products with variants (color, handing, length, finish).
+
+Use your hybrid matching logic to merge near‑duplicates.
+
+5. Performance and Core Web Vitals
+Heavy imagery and no visible lazy loading:  
+Issue: Homepage and catalog rely on multiple product images and hero imagery; likely not all are lazy‑loaded or optimized.
+Fix:
+
+Convert product and hero images to WebP (and AVIF where possible).
+
+Add loading="lazy" to all non‑critical images.
+
+Use srcset and sizes for responsive delivery.
+
+Potential render‑blocking scripts and CSS:  
+Issue: Typical Woo/WordPress setups ship multiple JS/CSS bundles that hurt LCP and FID.
+Fix:
+
+Defer non‑critical JS; inline only what’s needed for above‑the‑fold.
+
+Purge unused CSS (Tailwind purge or CSSO/other minifier).
+
+Preload hero image and primary font.
+
+6. Trust, conversion, and UX
+Strong trust story, but not fully leveraged in checkout:  
+Issue: Veteran‑owned, 40+ years, free Parts ID are prominent on homepage but not guaranteed to be visible in cart/checkout.
+Fix:
+
+Add a “Why buy from us?” strip in cart/checkout: veteran‑owned, expert ID, obsolete parts, phone support.
+
+Add badges: secure checkout, fast shipping, free Parts ID.
+
+Shipping and returns clarity:  
+Issue: There’s a note about orders under $50 possibly needing extra shipping, but it’s easy to miss.
+Fix:
+
+Show a shipping cost estimate or clear policy near “Add to Cart”.
+
+Add a short FAQ: “What if the part doesn’t fit?”, “Do you accept returns on special orders?”
+
+Image branding and consistency:  
+Issue: Product images don’t consistently show your full‑color logo overlay and aspect ratios vary.
+Fix:
+
+Batch‑process images with your full‑color overlay (no watermarking/dimming).
+
+Standardize to a single aspect ratio (1:1 or 4:5) for all catalog images.
+
+7. Technical/admin
+Bulk management is essential at your scale:  
+Issue: With tens of thousands of SKUs (especially in the Group catalog), manual edits are not sustainable.
+Fix:
+
+Ensure your bulk editor can handle: price, category, attributes, visibility, SKU validation, image validation.
+
+Add logging for: upload failures, invalid SKUs, missing required attributes.
+
+Error handling and stability:  
+Issue: Historically you’ve had crashes around image upload and admin actions; at this scale, silent failures are expensive.
+Fix:
+
+Wrap admin and critical customer flows in error boundaries.
+
+Log stack traces server‑side with clear tags (UPLOAD_ERROR, SKU_ERROR, PRICE_ERROR).
+
+8. Priority roadmap (from this audit)
+Clean product data: remove/convert $0.00 and token prices; enforce SKU rules; merge duplicates.
+
+Upgrade discovery: filters, better search, deeper “Shop by Problem” routing.
+
+Implement schema + metadata: Product, Organization, Breadcrumb, FAQ; tighten titles/descriptions.
+
+Optimize performance: image optimization, lazy loading, JS/CSS deferral, LCP/CLS fixes.
+
+Strengthen conversion paths: trust badges, shipping clarity, checkout reassurance.
+
+Unify main + Group catalogs: clear links, consistent naming, cross‑reference mapping.
