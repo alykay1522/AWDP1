@@ -18,6 +18,7 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
 import Policies from "@/pages/policies";
+import GuideHub from "@/pages/guide-hub";
 import GuideWindowBalance from "@/pages/guide-window-balance";
 import GuidePatioDoorRoller from "@/pages/guide-patio-door-roller";
 import GuideWeatherstripping from "@/pages/guide-weatherstripping";
@@ -77,6 +78,7 @@ function AppContent() {
         <Route path="/about" component={About} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
+        <Route path="/guides" component={GuideHub} />
         <Route path="/guides/window-balance" component={GuideWindowBalance} />
         <Route path="/guides/patio-door-roller" component={GuidePatioDoorRoller} />
         <Route path="/guides/weatherstripping" component={GuideWeatherstripping} />

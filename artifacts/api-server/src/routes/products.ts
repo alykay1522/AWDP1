@@ -248,7 +248,7 @@ router.get("/categories", async (req, res) => {
     const counts = await db
       .select({ category: productsTable.category, count: count() })
       .from(productsTable)
-      .where(and(isNotNull(productsTable.imageUrl), priceAboveMin))
+      .where(and(isNotNull(productsTable.imageUrl), visiblePrice))
       .groupBy(productsTable.category);
 
     const countMap = new Map(counts.map((c) => [c.category, Number(c.count)]));
