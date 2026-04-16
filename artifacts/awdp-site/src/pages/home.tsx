@@ -190,7 +190,7 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-blue-300 font-semibold mb-6">Expert Parts Identification &amp; Nationwide Shipping</p>
 
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl leading-relaxed">
-              Over 40 years of industry experience. 35,000+ parts in stock. If they made it, we can find it — if we can't, you probably never will.
+              Over 40 years of industry experience. One of the largest replacement hardware catalogs in the country. If they made it, we can find it — if we can't, you probably never will.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -284,7 +284,7 @@ export default function Home() {
               <Link href="/shop?search=casement" className="text-primary font-semibold hover:underline">casement operator</Link>,{" "}
               <Link href="/shop?search=roller" className="text-primary font-semibold hover:underline">patio door roller</Link>, or hard-to-find{" "}
               <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
-              our catalog of 35,000+ parts covers virtually every make and model — including obsolete and discontinued hardware
+              our inventory covers virtually every make and model — including obsolete and discontinued hardware
               that nobody else stocks. Homeowners, contractors, and property managers across the country trust us to
               identify and deliver the exact part they need.
             </p>
@@ -435,7 +435,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Browse by Part Type</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Shop the most popular replacement hardware categories from our catalog of 35,000+ parts.</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Shop the most common replacement hardware categories — from everyday repairs to hard-to-find discontinued parts.</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

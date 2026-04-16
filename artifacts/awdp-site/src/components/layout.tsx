@@ -130,7 +130,12 @@ export function Layout({ children }: { children: ReactNode }) {
       <Link href="/" className="block w-full">
         <img
           src={logoBanner}
-          alt="All Window Door Parts"
+          alt="All Window Door Parts — Veteran Owned Replacement Window and Door Parts"
+          width="1200"
+          height="200"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
           style={{ width: "100%", height: "auto", display: "block" }}
         />
       </Link>

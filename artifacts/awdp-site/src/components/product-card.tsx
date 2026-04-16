@@ -42,7 +42,14 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <div className="p-4 md:p-5 flex flex-col flex-1">
-        <div className="text-xs text-muted-foreground mb-1 font-mono">{product.sku}</div>
+        <div className="flex items-center justify-between mb-1 gap-2">
+          <span className="text-xs text-muted-foreground font-mono truncate">{product.sku}</span>
+          {product.category && (
+            <span className="text-[10px] font-semibold text-primary bg-primary/8 border border-primary/15 px-1.5 py-0.5 rounded whitespace-nowrap shrink-0 uppercase tracking-wide">
+              {product.category.replace(" and ", " & ")}
+            </span>
+          )}
+        </div>
         
         <Link href={`/product/${product.sku}`}>
           <h3 className="font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[2.5rem]">
