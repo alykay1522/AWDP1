@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage, X } from "lucide-react";
+import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage, X, Loader2 } from "lucide-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { analytics } from "@/lib/analytics";
 
 // The API schema definition
 const partsIdSchema = z.object({
@@ -102,32 +104,35 @@ export default function PartsIdentification() {
   };
 
   const onSubmit = async (data: PartsIdFormValues) => {
-    // If we have an image, we need to convert it to base64
     if (selectedImage) {
       data.imageFileName = selectedImage.name;
-      
-      // We already have the base64 from the preview
       if (imagePreview) {
-        // Strip the data:image/jpeg;base64, part for the API
-        const base64Data = imagePreview.split(',')[1];
-        data.imageBase64 = base64Data;
+        // Send the full data URI so the server can validate MIME type
+        data.imageBase64 = imagePreview;
       }
     }
+
+    analytics.track("Parts ID Form Submitted", {
+      hasImage: !!selectedImage,
+      hasPhone: !!data.phone,
+      hasBrand: !!data.windowDoorBrand,
+    });
 
     submitPartsIdMutation.mutate(
       { data },
       {
-        onSuccess: (response) => {
+        onSuccess: () => {
+          analytics.track("Parts ID Submission Success");
           setIsSubmitted(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: "smooth" });
         },
         onError: () => {
           toast({
             title: "Submission failed",
-            description: "There was a problem submitting your request. Please try again or call us.",
-            variant: "destructive"
+            description: "There was a problem submitting your request. Please try again or email info@allwindowdoorparts.com.",
+            variant: "destructive",
           });
-        }
+        },
       }
     );
   };
@@ -286,11 +291,21 @@ export default function PartsIdentification() {
                     <h3 className="font-bold text-slate-900 text-lg">1. Upload a Photo (Required)</h3>
                     <p className="text-sm text-slate-500 mb-4">Take a clear, well-lit photo of the broken part. If possible, show it next to a ruler or tape measure.</p>
                   </div>
-                  
+
+                  <ErrorBoundary
+                    fallback={
+                      <div className="rounded-xl border-2 border-dashed border-red-300 bg-red-50 p-8 text-center">
+                        <p className="text-sm text-red-600 font-medium mb-2">Image preview failed to load.</p>
+                        <Button variant="outline" size="sm" onClick={() => { setImagePreview(null); setSelectedImage(null); }}>
+                          Clear &amp; try again
+                        </Button>
+                      </div>
+                    }
+                  >
                   <div 
                     className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
                       isDragging ? 'border-primary bg-primary/5' : 
-                      imagePreview ? 'border-slate-200 bg-slate-50' : 'border-slate-300 hover:border-primary/50 bg-slate-50'
+                      imagePreview ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300 hover:border-primary/50 bg-slate-50'
                     }`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -300,7 +315,7 @@ export default function PartsIdentification() {
                     <input 
                       type="file" 
                       id="photo-upload" 
-                      accept="image/*" 
+                      accept="image/jpeg,image/png,image/gif,image/webp"
                       className="hidden" 
                       onChange={handleImageChange}
                     />
@@ -308,7 +323,7 @@ export default function PartsIdentification() {
                     {imagePreview ? (
                       <div className="flex flex-col items-center">
                         <div className="relative w-full max-w-xs aspect-video bg-black/5 rounded-lg overflow-hidden mb-4 border">
-                          <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                          <img src={imagePreview} alt="Preview of uploaded part" className="w-full h-full object-contain" />
                           <Button 
                             variant="destructive" 
                             size="icon" 
@@ -323,21 +338,22 @@ export default function PartsIdentification() {
                             <X className="w-4 h-4" aria-hidden="true" />
                           </Button>
                         </div>
-                        <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
-                          <FileImage className="w-4 h-4 text-emerald-600" /> {selectedImage?.name}
+                        <p className="text-sm font-bold text-emerald-700 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Photo ready — {selectedImage?.name}
                         </p>
-                        <p className="text-xs text-primary mt-2 font-bold hover:underline">Click to change image</p>
+                        <p className="text-xs text-slate-500 mt-1">Click to change</p>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center pointer-events-none">
                         <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
                           <Camera className="w-8 h-8 text-slate-400" />
                         </div>
-                        <h4 className="font-bold text-slate-900 mb-1">Click to upload or drag & drop</h4>
-                        <p className="text-sm text-slate-500">SVG, PNG, JPG or GIF (max. 5MB)</p>
+                        <h4 className="font-bold text-slate-900 mb-1">Click to upload or drag &amp; drop</h4>
+                        <p className="text-sm text-slate-500">PNG, JPG, WebP, GIF — max 5 MB</p>
                       </div>
                     )}
                   </div>
+                  </ErrorBoundary>
                 </div>
 
                 <hr className="border-slate-100" />
@@ -453,10 +469,23 @@ export default function PartsIdentification() {
                   className="w-full h-14 text-lg font-bold shadow-md"
                   disabled={submitPartsIdMutation.isPending || (!selectedImage && !imagePreview)}
                 >
-                  {submitPartsIdMutation.isPending ? "Submitting..." : "Submit for Free Identification"}
+                  {submitPartsIdMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 w-5 h-5 animate-spin" aria-hidden="true" />
+                      Sending to our experts…
+                    </>
+                  ) : (
+                    "Submit for Free Identification"
+                  )}
                 </Button>
+
+                {submitPartsIdMutation.isPending && (
+                  <p className="text-center text-sm text-slate-500 mt-2">
+                    Uploading photo and sending request — please don't close this page.
+                  </p>
+                )}
                 
-                {!selectedImage && !imagePreview && (
+                {!selectedImage && !imagePreview && !submitPartsIdMutation.isPending && (
                   <p className="text-center text-sm text-destructive font-medium mt-2">
                     Please upload a photo of your part to submit.
                   </p>

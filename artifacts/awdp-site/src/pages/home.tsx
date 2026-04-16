@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
+import { analytics } from "@/lib/analytics";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -187,12 +188,22 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white border-0" asChild>
+              <Button
+                size="lg"
+                className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
+                asChild
+                onClick={() => analytics.track("CTA Clicked", { label: "Shop 35,000+ Parts", location: "hero" })}
+              >
                 <Link href="/shop">
                   Shop 35,000+ Parts <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
                 </Link>
               </Button>
-              <Button size="lg" className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 border-0 text-white" asChild>
+              <Button
+                size="lg"
+                className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 border-0 text-white shadow-md hover:shadow-lg transition-shadow"
+                asChild
+                onClick={() => analytics.track("CTA Clicked", { label: "Free Parts ID", location: "hero" })}
+              >
                 <Link href="/parts-identification">
                   <PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> Free Parts ID
                 </Link>
@@ -311,7 +322,12 @@ export default function Home() {
 
           <div className="mt-12 text-center">
             <p className="text-slate-400 mb-5">Not sure what's wrong? Our experts will diagnose it for free.</p>
-            <Button size="lg" className="bg-red-600 hover:bg-red-700 border-0 text-white h-12 px-8" asChild>
+            <Button
+              size="lg"
+              className="bg-red-600 hover:bg-red-700 border-0 text-white h-12 px-8 shadow-md hover:shadow-lg transition-shadow"
+              asChild
+              onClick={() => analytics.track("CTA Clicked", { label: "Upload a Photo — Free Parts ID", location: "shop_by_problem" })}
+            >
               <Link href="/parts-identification">
                 <PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> Upload a Photo — Free Parts ID
               </Link>
@@ -380,11 +396,16 @@ export default function Home() {
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-accent" aria-hidden="true" /> Specialists in obsolete and discontinued parts.</li>
               </ul>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="w-fit bg-red-600 hover:bg-red-700 text-white h-12 px-8 text-base shadow-lg border-0" asChild>
+                <Button
+                  size="lg"
+                  className="w-fit bg-red-600 hover:bg-red-700 text-white h-12 px-8 text-base shadow-lg border-0 hover:shadow-xl transition-shadow"
+                  asChild
+                  onClick={() => analytics.track("CTA Clicked", { label: "Upload a Photo Now", location: "parts_id_cta" })}
+                >
                   <Link href="/parts-identification">Upload a Photo Now</Link>
                 </Button>
                 <Button size="lg" variant="ghost" className="w-fit text-white border border-white/30 hover:bg-white/10 h-12 px-8 text-base" asChild>
-                  <a href="mailto:info@allwindowdoorparts.com">
+                  <a href="mailto:info@allwindowdoorparts.com" onClick={() => analytics.track("CTA Clicked", { label: "Email Us", location: "parts_id_cta" })}>
                     <Mail className="w-4 h-4 mr-2" aria-hidden="true" /> Email Us
                   </a>
                 </Button>

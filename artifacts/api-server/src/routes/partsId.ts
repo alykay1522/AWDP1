@@ -7,11 +7,31 @@ const router: IRouter = Router();
 
 router.post("/parts-identification", async (req, res) => {
   try {
-    const { name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName } = req.body;
+    const { name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64 } = req.body;
 
     if (!name || !email || !description) {
       res.status(400).json({ error: "validation_error", message: "Name, email, and description are required" });
       return;
+    }
+
+    // Server-side image validation
+    if (imageBase64) {
+      // Must be a valid data URI with image MIME type
+      const mimeMatch = (imageBase64 as string).match(/^data:([^;]+);base64,/);
+      if (mimeMatch) {
+        const mime = mimeMatch[1];
+        if (!mime.startsWith("image/")) {
+          res.status(400).json({ error: "validation_error", message: "Only image files (JPEG, PNG, WebP, GIF) are accepted." });
+          return;
+        }
+      }
+      // Guard against oversized payloads: base64 of a 10 MB file ≈ 13.3 MB chars
+      const MAX_BASE64_CHARS = Math.ceil(10 * 1024 * 1024 * (4 / 3));
+      const raw = (imageBase64 as string).replace(/^data:[^;]+;base64,/, "");
+      if (raw.length > MAX_BASE64_CHARS) {
+        res.status(400).json({ error: "validation_error", message: "Image must be smaller than 10 MB." });
+        return;
+      }
     }
 
     const ticketId = `AWDP-${Date.now().toString(36).toUpperCase()}`;
