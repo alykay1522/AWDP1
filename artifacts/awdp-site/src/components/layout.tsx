@@ -131,7 +131,7 @@ export function Layout({ children }: { children: ReactNode }) {
                         className="flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:bg-primary/5 hover:text-primary font-bold border-b border-slate-100 mb-1 transition-colors"
                         onClick={() => setShopDropdownOpen(false)}
                       >
-                        All Parts (5,800+)
+                        All Parts (35,000+)
                       </Link>
                       {[
                         ["Window Balances",               "Window+Balances"],
@@ -381,7 +381,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div className="space-y-4">
-              <img src={logo} alt="All Window Door Parts" className="h-16 w-auto bg-white/10 p-2 rounded-md object-contain" />
+              <img src={logo} alt="All Window Door Parts" loading="lazy" width="160" height="64" className="h-16 w-auto bg-white/10 p-2 rounded-md object-contain" />
               <p className="text-sm leading-relaxed mt-4 text-slate-400">
                 Your trusted source for replacement window and door hardware. Veteran owned and operated with over 40 years of industry experience.
               </p>
@@ -436,7 +436,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </ul>
               
               <div className="mt-8">
-                <img src={paypalImg} alt="Secure Payments by PayPal — Visa, Mastercard, Discover, American Express, No PayPal Account Needed" className="w-full max-w-[220px] rounded-md" />
+                <img src={paypalImg} alt="Secure Payments by PayPal — Visa, Mastercard, Discover, American Express, No PayPal Account Needed" loading="lazy" width="220" height="80" className="w-full max-w-[220px] rounded-md" />
               </div>
             </div>
           </div>
