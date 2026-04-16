@@ -505,6 +505,12 @@ export default function ProductDetail() {
                       <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
                         Not sure? Send us a photo of the balance and the open window channel — our experts will identify the correct replacement free of charge.
                       </div>
+                      <div className="bg-slate-900 rounded-lg px-4 py-3 flex items-center justify-between gap-4 mt-2">
+                        <p className="text-sm text-slate-300">Need full step-by-step identification help? Read our detailed guide — all balance types covered.</p>
+                        <Link href="/guides/window-balance" className="shrink-0 inline-flex items-center gap-1.5 bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
+                          Read the Guide <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                        </Link>
+                      </div>
                     </>
                   ),
                   "Window Hardware": (
@@ -520,20 +526,33 @@ export default function ProductDetail() {
                       <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
                         When in doubt, photograph the old operator from the front and side and use our Free Parts ID — we match operators by photo every day.
                       </div>
+                      <div className="bg-slate-900 rounded-lg px-4 py-3 flex items-center justify-between gap-4 mt-2">
+                        <p className="text-sm text-slate-300">Need help identifying your operator arm style or brand? Read our detailed guide — single arm, dual arm, dyad, and scissor operators all covered.</p>
+                        <Link href="/guides/window-operator" className="shrink-0 inline-flex items-center gap-1.5 bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
+                          Read the Guide <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                        </Link>
+                      </div>
                     </>
                   ),
                   "Door Hardware": (
                     <>
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Patio Door Roller</h3>
-                      <p>Roller replacement requires matching the wheel diameter, housing width, and mounting style:</p>
+                      <p>Roller replacement requires matching the wheel diameter, housing dimensions, and mounting style. All five measurements below are needed:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
-                        <li><strong>Wheel diameter</strong> — remove the roller housing from the door bottom and measure the wheel diameter in millimeters or inches.</li>
-                        <li><strong>Housing dimensions</strong> — measure the overall length, width, and height of the housing assembly.</li>
-                        <li><strong>Wheel material</strong> — nylon, stainless steel, or tandem wheels each perform differently and are not interchangeable.</li>
-                        <li><strong>Door brand</strong> — look on the door frame header or stile for a manufacturer label.</li>
+                        <li><strong>Wheel diameter</strong> — remove the roller housing from the door bottom and measure the wheel diameter (1", 1-1/4", or 1-1/2" are the most common).</li>
+                        <li><strong>Housing height, width, and length</strong> — measure all three housing dimensions separately. Two rollers with the same wheel size can have completely different housings.</li>
+                        <li><strong>Mounting hole spacing</strong> — measure center-to-center between the two mounting screw holes.</li>
+                        <li><strong>Wheel material</strong> — nylon, steel, or tandem wheels each serve different door types and are not interchangeable.</li>
+                        <li><strong>Door brand</strong> — look on the door frame header or stile for a manufacturer label. Check the roller body for any stamped initials or numbers.</li>
                       </ol>
                       <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
                         A photo of the removed roller next to a coin for scale helps us identify it instantly. Use our Free Parts ID service before ordering.
+                      </div>
+                      <div className="bg-slate-900 rounded-lg px-4 py-3 flex items-center justify-between gap-4 mt-2">
+                        <p className="text-sm text-slate-300">Need help identifying your roller type or housing shape? Read our detailed guide — steel, nylon, and tandem rollers all covered.</p>
+                        <Link href="/guides/patio-door-roller" className="shrink-0 inline-flex items-center gap-1.5 bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
+                          Read the Guide <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                        </Link>
                       </div>
                     </>
                   ),
@@ -542,13 +561,19 @@ export default function ProductDetail() {
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Weatherstripping</h3>
                       <p>Weatherstrip profiles are highly specific to window brand and installation type. Before ordering:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
-                        <li><strong>Profile type</strong> — identify if it is a kerf-in (press into slot), foam tape (self-adhesive), fin seal, or bulb style.</li>
-                        <li><strong>Kerf width</strong> — for kerf-in types, measure the slot width in the sash or frame (typically 3/32" or 1/8").</li>
-                        <li><strong>Overall height</strong> — measure the full fin height of the weatherstrip from root to tip.</li>
+                        <li><strong>Profile type</strong> — identify if it is kerf-in (T-barb into slot), bulb seal, foam tape (adhesive-backed), or fin/pile weatherstripping.</li>
+                        <li><strong>Kerf width</strong> — for kerf-in types, measure the slot width in the sash or frame (typically 1/8" or 3/16" — these are not interchangeable).</li>
+                        <li><strong>Overall height and width</strong> — measure from an undamaged section, never from a flattened or worn area.</li>
                         <li><strong>Length needed</strong> — measure all four sides of the window or door opening in linear feet.</li>
                       </ol>
                       <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-800">
-                        Send us a cross-section photo of the existing strip (cut a 1" piece with scissors) and we will match the profile for you — free.
+                        Send us a cross-section photo of the existing strip (cut a clean 1–2" piece) and we will match the profile for you — free.
+                      </div>
+                      <div className="bg-slate-900 rounded-lg px-4 py-3 flex items-center justify-between gap-4 mt-2">
+                        <p className="text-sm text-slate-300">Need help identifying your weatherstrip profile type? Read our detailed guide — kerf, bulb, foam, fin seal, and OEM profiles all covered.</p>
+                        <Link href="/guides/weatherstripping" className="shrink-0 inline-flex items-center gap-1.5 bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs px-3 py-2 rounded-lg transition-colors whitespace-nowrap">
+                          Read the Guide <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                        </Link>
                       </div>
                     </>
                   ),
