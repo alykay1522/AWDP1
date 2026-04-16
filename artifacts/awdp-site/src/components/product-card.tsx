@@ -31,7 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
 
   const price = Number(product.price);
-  const isCallForPricing = price < 50;
+  const isCallForPricing = !product.price || price === 0 || isNaN(price);
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const snippet = getCategorySnippet(product.category, product.description);
