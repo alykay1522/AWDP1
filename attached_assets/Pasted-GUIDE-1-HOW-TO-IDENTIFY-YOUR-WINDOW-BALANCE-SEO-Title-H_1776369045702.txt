@@ -1,0 +1,122 @@
+GUIDE 1 — HOW TO IDENTIFY YOUR WINDOW BALANCE
+SEO Title
+How to Identify Your Window Balance — Channel, Block & Tackle, Spiral, Constant Force
+
+Meta Description
+Learn how to identify your window balance in minutes. Step‑by‑step guide for channel balances, block & tackle, spiral balances, and constant force coils. Includes measurement instructions and common mistakes.
+
+H1
+How to Identify Your Window Balance
+
+Intro
+Window won’t stay up? Drops suddenly? Hard to lift?
+You’re almost certainly dealing with a worn or broken window balance.
+This guide shows you exactly how to identify the correct replacement — even if your balance has no label or part number.
+
+Step 1 — Remove the Balance From the Window
+You cannot identify a balance while it’s still installed.
+
+You’ll need:
+
+Flat screwdriver
+
+Phillips screwdriver
+
+Gloves (recommended)
+
+Remove the sash, then remove the balance from the track.
+
+Step 2 — Identify Your Balance Type
+There are four main balance types:
+
+1. Channel Balance (Block & Tackle)
+Metal U‑shaped channel
+
+Nylon top and bottom fittings
+
+Common in vinyl and aluminum windows
+
+2. Spiral Balance
+Long metal tube
+
+Spiral rod at the end
+
+Common in older wood windows
+
+3. Constant Force Coil Balance
+Flat stainless steel coil
+
+Mounted in a plastic housing
+
+Common in modern vinyl windows
+
+4. Hybrid / Specialty Balances
+Twin coil assemblies
+
+Block & tackle with integrated shoes
+
+Brand‑specific systems
+
+Step 3 — Measure Your Balance Correctly
+Channel Balance
+Measure metal channel only (not the fittings)
+
+Example: 28" channel → order “28” series”
+
+Spiral Balance
+Measure tube length only
+
+Identify color tip (red, blue, green, black)
+
+Coil Balance
+Look for stamped numbers on the coil (e.g., “5”, “5.5”, “6”)
+
+Count the number of coils in the assembly
+
+Step 4 — Identify Your Fittings (Critical)
+For channel balances, the top and bottom nylon fittings determine the correct replacement.
+
+Look for:
+
+Winged vs. non‑winged
+
+Hook vs. clip
+
+Shoe width (typically 1", 1‑1/4", or 1‑3/8")
+
+Step 5 — Look for Stamped Numbers
+Common stamps include:
+
+2830
+
+2740
+
+2950
+
+3850
+
+These indicate the weight range, not the length.
+
+Common Mistakes to Avoid
+Measuring the entire balance including fittings
+
+Ordering by window size instead of balance size
+
+Ignoring the shoe width
+
+Assuming all balances are interchangeable
+
+If Your Balance Looks Like This → Go Here
+U‑shaped metal channel → Channel Balances
+
+Metal tube with spiral rod → Spiral Balances
+
+Flat stainless coil → Coil Balances
+
+Plastic block with integrated shoe → Specialty Balances
+
+Conversion Block
+Still unsure?
+Upload photos to our Free Parts Identification Service and our experts will match your balance for you.
+
+FAQ Schema (JSON‑LD)

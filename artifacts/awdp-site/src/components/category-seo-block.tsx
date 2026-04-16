@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { PackageSearch, CheckCircle2 } from "lucide-react";
+import { PackageSearch, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CategorySeoContent {
@@ -167,6 +167,24 @@ export function CategorySeoBlock({ search, category }: CategorySeoBlockProps) {
       </ul>
 
       <p className="text-slate-600 leading-relaxed mb-8">{content.closingLine}</p>
+
+      {/* Guide callout — shown only for Window Balances */}
+      {(matched === "Window Balances" || matched === "Window Balances and Accessories") && (
+        <div className="mb-5 bg-slate-900 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="font-bold text-white mb-0.5">Not sure how to identify your balance type or measure it correctly?</p>
+            <p className="text-slate-400 text-sm">
+              Read our step-by-step guide — channel, spiral, coil, and specialty balances all covered, including measurement instructions and common mistakes.
+            </p>
+          </div>
+          <Link
+            href="/guides/window-balance"
+            className="shrink-0 inline-flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 transition-colors font-bold text-sm px-4 py-2.5 rounded-lg whitespace-nowrap"
+          >
+            Read the Guide <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
+        </div>
+      )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <PackageSearch className="w-8 h-8 text-blue-600 shrink-0" aria-hidden="true" />

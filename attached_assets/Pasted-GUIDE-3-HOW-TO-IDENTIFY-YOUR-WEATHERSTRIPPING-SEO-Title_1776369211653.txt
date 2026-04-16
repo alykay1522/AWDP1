@@ -1,0 +1,105 @@
+GUIDE 3 — HOW TO IDENTIFY YOUR WEATHERSTRIPPING
+SEO Title
+How to Identify Your Weatherstripping — Kerf, Bulb, Foam, Fin Seal, OEM Profiles
+
+Meta Description
+Learn how to identify window and door weatherstripping by profile shape, kerf size, bulb diameter, fin type, and OEM fitment. Includes measurement instructions and common mistakes.
+
+H1
+How to Identify Your Weatherstripping
+
+Intro
+Drafts, rattling, or visible daylight around your window or door usually means the weatherstripping has worn out.
+This guide shows you how to identify the correct replacement — even if the original seal is flattened, brittle, or missing sections.
+
+Step 1 — Remove a Clean Sample
+Cut a 1–2 inch piece from an undamaged section.
+
+Avoid crushed or flattened areas — they distort the profile.
+
+Step 2 — Identify the Profile Type
+Most weatherstripping falls into one of these categories:
+
+1. Kerf-In Weatherstripping
+Has a T-shaped barb
+
+Press‑fits into a kerf slot
+
+Common on vinyl and wood windows
+
+2. Bulb Seal
+Round or teardrop‑shaped bulb
+
+Used on doors and casement windows
+
+3. Foam Seal
+Soft, compressible
+
+Often adhesive‑backed
+
+Used on older windows and storm panels
+
+4. Fin Seal (Pile Weatherstripping)
+Fuzzy pile with a center fin
+
+Used on sliding windows and patio doors
+
+5. OEM‑Specific Profiles
+Unique shapes for Andersen, Pella, Milgard, etc.
+
+Step 3 — Measure the Critical Dimensions
+Kerf Weatherstripping
+Kerf width (usually 1/8" or 3/16")
+
+Bulb diameter
+
+Overall height
+
+Bulb Seal
+Bulb diameter
+
+Base width
+
+Stem height
+
+Fin Seal
+Pile height (1/4", 5/16", 3/8")
+
+Base width
+
+Fin height
+
+Step 4 — Match the Profile Shape
+Lay the sample flat and compare the silhouette to:
+
+OEM diagrams
+
+Product photos
+
+Cross‑section drawings
+
+Shape is more important than color.
+
+Common Mistakes
+Measuring flattened or worn sections
+
+Ordering by door/window brand alone
+
+Ignoring kerf width
+
+Assuming “close enough” will seal properly
+
+If Your Seal Looks Like This → Go Here
+Fuzzy pile with fin → Fin Seal
+
+Round bulb with T‑barb → Kerf Bulb Seal
+
+Flat foam strip → Foam Weatherstripping
+
+Unique molded shape → OEM‑specific profiles
+
+Conversion Block
+Still unsure?
+Upload photos to our Free Parts Identification Service and our experts will match your weatherstripping for you.
+
+FAQ Schema (JSON‑LD)

@@ -1,0 +1,346 @@
+FAQ Schema (JSON‑LD)
+json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I measure weatherstripping?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Measure the profile from an undamaged section. For kerf seals, measure kerf width and bulb diameter. For fin seals, measure pile height and base width."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my weatherstripping is flattened?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Flattened seals distort the shape. Cut a clean sample from an intact area or upload photos to our Free Parts ID Service."
+      }
+    }
+  ]
+}
+🪟 GUIDE 4 — HOW TO IDENTIFY YOUR WINDOW OPERATOR (CRANK)
+SEO Title
+How to Identify Your Window Operator — Casement & Awning Crank Identification Guide
+
+Meta Description
+Identify your casement or awning window operator by arm style, link length, mounting hole pattern, and brand clues. Includes measurement instructions and common mistakes.
+
+H1
+How to Identify Your Window Operator
+
+Intro
+If your casement or awning window won’t open, won’t close fully, or the crank spins freely, the operator is worn.
+This guide shows you how to identify the correct replacement.
+
+Step 1 — Remove the Operator Cover
+Most covers snap off or are held by one screw.
+
+Step 2 — Identify the Operator Type
+1. Casement Operator
+Opens sideways
+
+Has one or two arms
+
+Common brands: Truth/EntryGard, Andersen, Pella
+
+2. Awning Operator
+Opens upward
+
+Usually a single straight arm
+
+Step 3 — Identify the Arm Style
+Common arm types:
+
+Single Arm
+
+Dual Arm
+
+Dyad Arm
+
+Split Arm
+
+Scissor Arm
+
+Step 4 — Measure the Arms
+Critical measurements:
+
+Arm length (pivot to tip)
+
+Link length
+
+Offset angle
+
+Mounting hole spacing
+
+Step 5 — Look for Brand Clues
+Truth/EntryGard operators often have:
+
+Stamped numbers (e.g., “45054”, “45251”)
+
+Distinctive gear housings
+
+Specific arm shapes
+
+Andersen and Pella have unique mounting patterns.
+
+Common Mistakes
+Measuring only the long arm
+
+Ignoring the link arm
+
+Ordering by handle style instead of operator style
+
+Assuming all dual‑arm operators are interchangeable
+
+If Your Operator Looks Like This → Go Here
+Two arms with a gear housing → Dual Arm
+
+One straight arm → Single Arm
+
+Two arms that scissor open → Scissor Operator
+
+Short link arm with offset → Dyad Operator
+
+Conversion Block
+Still unsure?
+Upload photos to our Free Parts Identification Service and our experts will match your operator for you.
+
+FAQ Schema (JSON‑LD)
+json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I measure a window operator?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Measure the arm length, link length, and mounting hole spacing. These determine the correct replacement."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my operator has no markings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most operators can be identified by arm style and mounting pattern. Upload photos to our Free Parts ID Service for expert help."
+      }
+    }
+  ]
+}
+🔒 GUIDE 5 — HOW TO IDENTIFY YOUR DOOR LOCK / HANDLESET
+SEO Title
+How to Identify Your Door Lock — Sliding, Patio, and Entry Door Lock Identification Guide
+
+Meta Description
+Identify your sliding door lock or entry door handleset by faceplate shape, screw spacing, mortise depth, and latch style. Includes measurement instructions and brand clues.
+
+H1
+How to Identify Your Door Lock
+
+Intro
+If your door won’t latch, won’t lock, or the handle feels loose, the lock or mortise case may be worn.
+This guide shows you how to identify the correct replacement.
+
+Step 1 — Identify the Door Type
+Sliding Patio Door
+
+Swinging Patio Door
+
+Entry Door
+
+Each uses different lock hardware.
+
+Step 2 — Remove the Lock or Faceplate
+You must remove the lock to measure it accurately.
+
+Step 3 — Identify the Lock Style
+Sliding Door Locks
+Hook latch
+
+Mortise lock
+
+Surface‑mounted lock
+
+Multi‑point lock
+
+Swinging Door Locks
+Lever latch
+
+Deadbolt
+
+Multi‑point system
+
+Step 4 — Measure the Critical Dimensions
+Faceplate height
+
+Faceplate width
+
+Screw hole spacing
+
+Backset (distance from edge to spindle)
+
+Mortise depth
+
+Latch style (hook, tongue, deadbolt)
+
+Step 5 — Look for Brand Clues
+Common brands:
+
+Andersen
+
+Pella
+
+Milgard
+
+Truth
+
+Hoppe (multi‑point)
+
+Common Mistakes
+Measuring only the faceplate
+
+Ignoring backset
+
+Ordering by door brand alone
+
+Assuming all mortise locks are interchangeable
+
+If Your Lock Looks Like This → Go Here
+Hook latch → Sliding door mortise lock
+
+Tall multi‑point strip → Multi‑point lock
+
+Short rectangular case → Standard mortise lock
+
+Surface‑mounted latch → Surface lock
+
+Conversion Block
+Still unsure?
+Upload photos to our Free Parts Identification Service and our experts will match your lock for you.
+
+FAQ Schema (JSON‑LD)
+json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I measure a door lock?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Measure faceplate height, width, screw spacing, backset, and mortise depth. These determine the correct replacement."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my lock has no markings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most locks can be identified by faceplate shape and backset. Upload photos to our Free Parts ID Service for expert help."
+      }
+    }
+  ]
+}
+🪟 GUIDE 6 — HOW TO IDENTIFY YOUR GLAZING BEAD
+SEO Title
+How to Identify Your Glazing Bead — Vinyl, Aluminum, and OEM Window Bead Identification Guide
+
+Meta Description
+Identify your glazing bead by profile shape, leg height, kerf width, and OEM fitment. Includes measurement instructions and common mistakes.
+
+H1
+How to Identify Your Glazing Bead
+
+Intro
+If your window glass rattles, leaks air, or the bead is cracked or missing, you need a replacement glazing bead.
+This guide shows you how to identify the correct profile.
+
+Step 1 — Remove a Clean Sample
+Use a putty knife to gently pry out a 2–3 inch section.
+
+Step 2 — Identify the Profile Type
+Common glazing bead styles:
+
+Snap‑in vinyl bead
+
+Kerf‑in bead
+
+Aluminum bead
+
+OEM‑specific molded profiles
+
+Step 3 — Measure the Critical Dimensions
+Profile height
+
+Profile width
+
+Kerf width (if applicable)
+
+Leg height
+
+Glass thickness (single, double, tempered)
+
+Step 4 — Match the Profile Shape
+Lay the bead flat and compare the silhouette to:
+
+OEM diagrams
+
+Product photos
+
+Cross‑section drawings
+
+Shape match is the #1 factor.
+
+Common Mistakes
+Measuring a warped or cracked sample
+
+Ordering by window brand alone
+
+Ignoring kerf width
+
+Assuming “close enough” will snap in
+
+If Your Bead Looks Like This → Go Here
+Flat top with T‑barb → Kerf‑in bead
+
+Rounded top with snap legs → Snap‑in vinyl bead
+
+Rigid metal strip → Aluminum bead
+
+Unique molded shape → OEM‑specific bead
+
+Conversion Block
+Still unsure?
+Upload photos to our Free Parts Identification Service and our experts will match your glazing bead for you.
+
+FAQ Schema (JSON‑LD)
+json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I measure glazing bead?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Measure profile height, width, kerf width, and leg height from a clean, undamaged sample. These determine the correct replacement."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my glazing bead is brittle or cracked?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cut a clean section from an intact area or upload photos to our Free Parts ID Service for expert help."
+      }
+    }
+  ]
+}

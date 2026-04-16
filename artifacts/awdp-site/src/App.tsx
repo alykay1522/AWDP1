@@ -18,6 +18,7 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import CheckoutSuccess from "@/pages/checkout-success";
 import Policies from "@/pages/policies";
+import GuideWindowBalance from "@/pages/guide-window-balance";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -71,6 +72,7 @@ function AppContent() {
         <Route path="/about" component={About} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
+        <Route path="/guides/window-balance" component={GuideWindowBalance} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
