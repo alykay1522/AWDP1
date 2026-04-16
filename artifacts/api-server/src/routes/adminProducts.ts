@@ -613,6 +613,8 @@ router.post("/admin/products/bulk-update", async (req, res) => {
         inStock?: boolean;
         descriptionSet?: string;
         descriptionAppend?: string;
+        variantGroupId?: string;
+        variantLabel?: string;
       };
     };
 
@@ -666,9 +668,11 @@ router.post("/admin/products/bulk-update", async (req, res) => {
       const p = Number(updates.price);
       if (!isNaN(p) && p >= 0) setFields.price = p.toFixed(2);
     }
-    if (updates.category  !== undefined) setFields.category = updates.category;
-    if (updates.inStock   !== undefined) setFields.inStock  = Boolean(updates.inStock);
-    if (updates.descriptionSet !== undefined) setFields.description = updates.descriptionSet;
+    if (updates.category       !== undefined) setFields.category       = updates.category;
+    if (updates.inStock        !== undefined) setFields.inStock        = Boolean(updates.inStock);
+    if (updates.descriptionSet !== undefined) setFields.description    = updates.descriptionSet;
+    if (updates.variantGroupId !== undefined) setFields.variantGroupId = updates.variantGroupId;
+    if (updates.variantLabel   !== undefined) setFields.variantLabel   = updates.variantLabel;
 
     if (Object.keys(setFields).length > 0) {
       const rows = await db.update(productsTable).set(setFields).where(whereClause).returning({ sku: productsTable.sku });

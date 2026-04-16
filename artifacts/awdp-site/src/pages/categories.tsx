@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { useGetCategories, getGetCategoriesQueryKey } from "@workspace/api-client-react";
 import { PageSeo } from "@/components/page-seo";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { CatalogSeoBlock } from "@/components/category-seo-block";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -140,19 +141,60 @@ export default function Categories() {
         path="/categories"
         description="Browse 35,000+ window and door replacement parts by category: casement operators, sash balances, patio door rollers, sash locks, weatherstripping, glazing seals, and screen hardware. Veteran-owned, 40+ years experience."
         keywords="window parts categories, door hardware categories, window balances, casement operators, sash hardware, door rollers, weatherstripping, screen hardware"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: "Window & Door Parts Categories",
-          description: "Browse replacement parts for windows and doors organized by hardware category.",
-          url: "https://www.allwindowdoorparts.com/categories",
-          provider: {
-            "@type": "Organization",
-            name: "All Window Door Parts",
-            url: "https://www.allwindowdoorparts.com",
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Window & Door Parts Categories",
+            description: "Browse replacement parts for windows and doors organized by hardware category.",
+            url: "https://www.allwindowdoorparts.com/categories",
+            provider: {
+              "@type": "Organization",
+              name: "All Window Door Parts",
+              url: "https://www.allwindowdoorparts.com",
+            },
           },
-        }}
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "How do I identify my window or door part?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Upload a photo using our free Parts ID service and our experts with 40+ years of experience will identify it for you — free, no obligation.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What brands of window and door parts do you carry?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "We carry parts compatible with Andersen, Pella, Truth, Marvin, Weather Shield, Milgard, Jeld-Wen, and many other major window and door manufacturers.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Do you carry discontinued or hard-to-find parts?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. We specialize in hard-to-find, obsolete, and discontinued window and door hardware. With 40+ years of industry experience, we can often source parts that other suppliers cannot.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What if the part does not fit?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "We help you exchange it for the correct part at no additional cost. Contact us at Info@allwindowdoorparts.com or 785-533-0244.",
+                },
+              },
+            ],
+          },
+        ] as object[]}
       />
+      <Breadcrumb items={[{ label: "Parts Categories" }]} />
 
       {/* Hero */}
       <div className="bg-primary text-white py-16 md:py-24">

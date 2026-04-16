@@ -1,5 +1,6 @@
 import { Shield, Truck, RefreshCcw, Lock, Zap, PackageCheck, AlertTriangle } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Link } from "wouter";
 
 export default function Policies() {
@@ -10,6 +11,7 @@ export default function Policies() {
         description="Shipping policy, return policy, and security guarantee for All Window Door Parts. UPS, FedEx, and USPS shipping. SSL-secured checkout."
         path="/policies"
       />
+      <Breadcrumb items={[{ label: "Store Policies" }]} />
 
       <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
 

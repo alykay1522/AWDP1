@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage, X, Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { analytics } from "@/lib/analytics";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 // The API schema definition
 const partsIdSchema = z.object({
@@ -254,6 +255,7 @@ export default function PartsIdentification() {
           }
         ] as unknown as object}
       />
+      <Breadcrumb items={[{ label: "Free Parts Identification" }]} />
       {/* Hero Section */}
       <section className="bg-primary text-white py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1994&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>

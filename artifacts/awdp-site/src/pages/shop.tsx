@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { PageSeo } from "@/components/page-seo";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { CategorySeoBlock } from "@/components/category-seo-block";
 import { useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
@@ -21,7 +22,84 @@ const CATEGORIES = [
   "Other Hardware",
 ];
 
+const CATEGORY_META: Record<string, { title: string; description: string }> = {
+  "Window Balances": {
+    title: "Replacement Window Balances | Channel, Block & Tackle, Spiral — Fast Shipping",
+    description: "Shop replacement window balances for vinyl, aluminum, and wood windows. Block & tackle, spiral, constant force, and specialty balances. Fast shipping and expert support.",
+  },
+  "Door Hardware": {
+    title: "Patio Door Rollers | Sliding Door Replacement Wheels — Veteran Owned",
+    description: "Find the correct patio door rollers for sliding glass doors. Stainless steel, tandem, nylon, and precision rollers. Identify your part with our free Parts ID service.",
+  },
+  "Window Hardware": {
+    title: "Casement & Awning Window Operators | Truth, EntryGard, Andersen",
+    description: "Shop casement and awning window operators from Truth, EntryGard, Andersen, Pella, and more. Left/right handing, split arms, dual arms, and specialty operators.",
+  },
+  "Window Glazing and Weatherstrip": {
+    title: "Weatherstripping for Windows & Doors | Kerf, Foam, Bulb, Fin Seal",
+    description: "Replace worn weatherstripping to stop drafts and improve efficiency. Kerf, bulb, fin seal, foam, and OEM-specific profiles.",
+  },
+  "Sash Hardware": {
+    title: "Sash Hardware — Locks, Lifts, Keepers & Tilt Latches",
+    description: "Shop sash locks, sash lifts, tilt latches, keepers, and pivot bars for double-hung and single-hung windows. Veteran-owned, 40+ years experience.",
+  },
+  "Screen Hardware and Accessories": {
+    title: "Window Screen Hardware & Frame Parts | Splines, Corners, Frames",
+    description: "Replacement screen hardware including spline, screen frame, corner connectors, screen pulls, and retainer. Fits most standard and custom screen frames.",
+  },
+  "Other Hardware": {
+    title: "Window & Door Hardware | Hinges, Pivot Bars & Specialty Parts",
+    description: "Hard-to-find window and door hardware including pivot bars, keeper plates, specialty hinges, and discontinued OEM parts. 35,000+ parts, veteran-owned.",
+  },
+};
+
+interface FAQ { q: string; a: string }
+
+function buildCategoryFAQs(category: string): FAQ[] {
+  const categorySpecific: Record<string, FAQ[]> = {
+    "Window Balances": [
+      { q: "What types of window balances do you carry?", a: "We carry block and tackle, spiral, constant force, channel, and specialty window balances for vinyl, aluminum, and wood windows." },
+      { q: "How do I know what balance tension or weight to order?", a: "The correct balance depends on your sash weight. Use our free Parts ID service with a photo if you need help selecting the right tension." },
+    ],
+    "Door Hardware": [
+      { q: "Do you carry patio door rollers?", a: "Yes. We carry stainless steel, tandem, nylon, and precision rollers for most sliding glass door brands." },
+      { q: "How do I identify the correct patio door roller?", a: "Send us a photo of your existing roller using our free Parts ID service and we will identify the correct replacement for you." },
+    ],
+    "Window Hardware": [
+      { q: "Do you carry casement window operators for Truth and EntryGard?", a: "Yes. We carry operators from Truth, EntryGard, Andersen, Pella, and many other manufacturers in both left and right hand configurations." },
+      { q: "What is the difference between a split arm and dual arm operator?", a: "Split arm operators have two hinged arms while dual arm operators have parallel arms. The right type depends on your window manufacturer and model." },
+    ],
+    "Window Glazing and Weatherstrip": [
+      { q: "What weatherstripping profiles do you carry?", a: "We carry kerf, bulb, fin seal, foam, and OEM-specific profiles for most window and door brands." },
+      { q: "How do I replace worn weatherstripping?", a: "Most weatherstripping removes by pulling from the kerf channel or removing foam tape, then pressing in the replacement. Send us a photo to confirm the correct profile." },
+    ],
+  };
+
+  const generic: FAQ[] = [
+    { q: "How do I identify my window part?", a: "Upload a photo using our free Parts ID service and our experts will identify it for you — free, no obligation." },
+    { q: "What if the part does not fit?", a: "We help you exchange it for the correct part at no additional cost. Contact us at Info@allwindowdoorparts.com or 785-533-0244." },
+    { q: "Do you ship replacement parts?", a: "Yes. We ship via UPS, FedEx, and USPS. Shipping is calculated at checkout. Some items may require distributor sourcing." },
+  ];
+
+  return [...(categorySpecific[category] ?? []), ...generic];
+}
+
+function buildFAQSchema(faqs: FAQ[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+}
+
 function buildPageMeta(search: string, category: string) {
+  if (category && CATEGORY_META[category]) {
+    return CATEGORY_META[category];
+  }
   if (category) {
     return {
       title: `${category} – Replacement Parts`,
@@ -99,9 +177,22 @@ export default function Shop() {
     ? `"${urlSearch}"`
     : null;
 
+  const breadcrumbItems = [
+    { label: "Shop Parts", href: "/shop" as const },
+    ...(urlCategory ? [{ label: urlCategory }] :
+       urlSearch  ? [{ label: `"${urlSearch}"` }] : []),
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-      <PageSeo title={seoTitle} path="/shop" description={seoDesc} />
+    <>
+      <Breadcrumb items={breadcrumbItems} />
+      <div className="container mx-auto px-4 py-8 md:py-12">
+      <PageSeo
+        title={seoTitle}
+        path="/shop"
+        description={seoDesc}
+        structuredData={urlCategory ? buildFAQSchema(buildCategoryFAQs(urlCategory)) : undefined}
+      />
 
       {/* Order minimum notice */}
       <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">
@@ -316,5 +407,6 @@ export default function Shop() {
         </div>
       </div>
     </div>
+    </>
   );
 }

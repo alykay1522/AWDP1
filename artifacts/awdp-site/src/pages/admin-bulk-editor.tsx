@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, X, CheckSquare, Square, ChevronLeft, ChevronRight,
   DollarSign, Tag, Package, FileText, Trash2, AlertTriangle,
-  Loader2, Check, Filter, SlidersHorizontal,
+  Loader2, Check, Filter, SlidersHorizontal, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,10 @@ const ACTION_TABS = [
   { id: "category",    label: "Category",      icon: Tag },
   { id: "stock",       label: "Stock Status",  icon: Package },
   { id: "desc-append", label: "Append Description", icon: FileText },
-  { id: "desc-set",    label: "Set Description",    icon: FileText },
-  { id: "delete",      label: "Delete",        icon: Trash2 },
+  { id: "desc-set",      label: "Set Description",    icon: FileText },
+  { id: "variant-group", label: "Variant Group",      icon: Layers },
+  { id: "variant-label", label: "Variant Label",      icon: Layers },
+  { id: "delete",        label: "Delete",             icon: Trash2 },
 ] as const;
 
 type ActionId = typeof ACTION_TABS[number]["id"];
@@ -107,7 +109,9 @@ export default function AdminBulkEditor() {
   const [pctValue, setPctValue]         = useState("");
   const [catValue, setCatValue]         = useState("");
   const [stockValue, setStockValue]     = useState<"true" | "false">("true");
-  const [descValue, setDescValue]       = useState("");
+  const [descValue, setDescValue]             = useState("");
+  const [variantGroupValue, setVariantGroupValue] = useState("");
+  const [variantLabelValue, setVariantLabelValue] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Query
@@ -217,6 +221,10 @@ export default function AdminBulkEditor() {
         return { ...target, updates: { descriptionAppend: descValue } };
       case "desc-set":
         return { ...target, updates: { descriptionSet: descValue } };
+      case "variant-group":
+        return { ...target, updates: { variantGroupId: variantGroupValue || null } };
+      case "variant-label":
+        return { ...target, updates: { variantLabel: variantLabelValue || null } };
       default:
         return null;
     }
@@ -407,6 +415,34 @@ export default function AdminBulkEditor() {
                     : "Text to append (e.g. contact CTA)…"}
                   className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+              </div>
+            )}
+            {activeAction === "variant-group" && (
+              <div className="flex-1 min-w-[260px] max-w-sm">
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">
+                  Variant Group ID <span className="font-normal text-slate-400">(leave blank to clear)</span>
+                </label>
+                <Input
+                  value={variantGroupValue}
+                  onChange={(e) => setVariantGroupValue(e.target.value)}
+                  placeholder="e.g. truth-casement-operator"
+                  className="bg-white"
+                />
+                <p className="text-xs text-slate-400 mt-1">Same ID links products as color/hand variants. Leave blank to remove from any group.</p>
+              </div>
+            )}
+            {activeAction === "variant-label" && (
+              <div className="flex-1 min-w-[220px] max-w-xs">
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">
+                  Variant Label <span className="font-normal text-slate-400">(e.g. "Left Hand", "White")</span>
+                </label>
+                <Input
+                  value={variantLabelValue}
+                  onChange={(e) => setVariantLabelValue(e.target.value)}
+                  placeholder="e.g. Left Hand, White, 36&quot;"
+                  className="bg-white"
+                />
+                <p className="text-xs text-slate-400 mt-1">Shown on the product page variant picker. Leave blank to clear.</p>
               </div>
             )}
             {activeAction === "delete" && (

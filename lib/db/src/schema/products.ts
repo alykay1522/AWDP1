@@ -17,6 +17,8 @@ export const productsTable = pgTable("products", {
   tags: json("tags").$type<string[]>().default([]),
   specifications: json("specifications").$type<Record<string, string>>().default({}),
   compatibleBrands: json("compatible_brands").$type<string[]>().default([]),
+  variantGroupId: text("variant_group_id"),  // shared identifier linking sibling variants
+  variantLabel: text("variant_label"),        // display label within the group, e.g. "Left Hand", "White"
   createdAt: timestamp("created_at").defaultNow(),
 });
 

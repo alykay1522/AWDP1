@@ -122,6 +122,41 @@ router.get("/products/search-suggestions", async (req, res) => {
   }
 });
 
+// GET /api/products/:sku/variants — sibling variants sharing the same variantGroupId
+router.get("/products/:sku/variants", async (req, res) => {
+  try {
+    const { sku } = req.params;
+    const [product] = await db
+      .select({ variantGroupId: productsTable.variantGroupId })
+      .from(productsTable)
+      .where(eq(productsTable.sku, sku))
+      .limit(1);
+
+    if (!product?.variantGroupId) {
+      res.json({ variants: [] });
+      return;
+    }
+
+    const variants = await db
+      .select({
+        sku: productsTable.sku,
+        name: productsTable.name,
+        variantLabel: productsTable.variantLabel,
+        price: productsTable.price,
+        inStock: productsTable.inStock,
+        imageUrl: productsTable.imageUrl,
+      })
+      .from(productsTable)
+      .where(eq(productsTable.variantGroupId, product.variantGroupId))
+      .orderBy(asc(productsTable.name));
+
+    res.json({ variants });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching product variants");
+    res.status(500).json({ error: "internal_error", message: "Failed to fetch variants" });
+  }
+});
+
 router.get("/products/:sku", async (req, res) => {
   try {
     const { sku } = req.params;

@@ -1,14 +1,21 @@
 import { useParams, Link } from "wouter";
 import { useGetProductBySku, getGetProductBySkuQueryKey, useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
 import { PageSeo } from "@/components/page-seo";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { useCart } from "@/lib/cart";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Home, ShoppingCart, Truck, ShieldCheck, Wrench, AlertCircle, PackageCheck, Mail, Camera } from "lucide-react";
+import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
+
+interface Variant {
+  sku: string; name: string; variantLabel: string | null;
+  price: string; inStock: boolean; imageUrl: string | null;
+}
 
 export default function ProductDetail() {
   const params = useParams();
@@ -54,6 +61,18 @@ export default function ProductDetail() {
   });
 
   const crossSellProducts = crossSellData?.products.filter(p => p.sku !== sku).slice(0, 4);
+
+  // Fetch sibling variants
+  const { data: variantsData } = useQuery({
+    queryKey: ["variants", sku],
+    queryFn: async () => {
+      const res = await fetch(`/api/products/${encodeURIComponent(sku!)}/variants`);
+      if (!res.ok) return { variants: [] };
+      return res.json() as Promise<{ variants: Variant[] }>;
+    },
+    enabled: !!sku,
+  });
+  const variants = variantsData?.variants ?? [];
 
   if (isLoading) {
     return (
@@ -126,34 +145,14 @@ export default function ProductDetail() {
               }
             } : {})
           },
-          {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home",  item: "https://www.allwindowdoorparts.com/" },
-              { "@type": "ListItem", position: 2, name: "Shop",  item: "https://www.allwindowdoorparts.com/shop" },
-              { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com/shop?search=${encodeURIComponent(product.category)}` },
-              { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com/product/${product.sku}` },
-            ]
-          }
-        ] as unknown as object}
+          ] as unknown as object}
       />
 
-      {/* Breadcrumbs */}
-      <div className="bg-white border-b py-3 text-sm">
-        <div className="container mx-auto px-4 flex items-center text-muted-foreground whitespace-nowrap overflow-x-auto hide-scrollbar">
-          <Link href="/" className="hover:text-primary flex items-center shrink-0">
-            <Home className="w-4 h-4" />
-            <span className="sr-only">Home</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 mx-2 shrink-0 opacity-50" />
-          <Link href="/shop" className="hover:text-primary shrink-0">Shop</Link>
-          <ChevronRight className="w-4 h-4 mx-2 shrink-0 opacity-50" />
-          <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-primary shrink-0">{product.category}</Link>
-          <ChevronRight className="w-4 h-4 mx-2 shrink-0 opacity-50" />
-          <span className="text-foreground font-medium truncate">{product.name}</span>
-        </div>
-      </div>
+      <Breadcrumb items={[
+        { label: "Shop Parts", href: "/shop" },
+        { label: product.category, href: `/shop?category=${encodeURIComponent(product.category)}` },
+        { label: product.name },
+      ]} />
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow-sm border p-6 md:p-10 mb-12">
@@ -207,8 +206,32 @@ export default function ProductDetail() {
               </div>
               
               {product.description && (
-                <div className="text-slate-600 mb-8 leading-relaxed">
+                <div className="text-slate-600 mb-6 leading-relaxed">
                   <p>{product.description}</p>
+                </div>
+              )}
+
+              {/* Variant picker */}
+              {variants.length > 1 && (
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-slate-700 mb-2">Available Variants</p>
+                  <div className="flex flex-wrap gap-2">
+                    {variants.map((v) => (
+                      <Link href={`/product/${encodeURIComponent(v.sku)}`} key={v.sku}>
+                        <button
+                          type="button"
+                          className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                            v.sku === sku
+                              ? "bg-primary text-white border-primary"
+                              : "bg-white text-slate-700 border-slate-300 hover:border-primary hover:text-primary"
+                          }`}
+                          aria-current={v.sku === sku ? "true" : undefined}
+                        >
+                          {v.variantLabel ?? v.sku}
+                        </button>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
 

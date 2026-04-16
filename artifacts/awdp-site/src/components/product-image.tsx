@@ -25,6 +25,8 @@ export function ProductImage({ src, alt, className, placeholderClassName, loadin
     <img
       src={src}
       alt={alt}
+      width="400"
+      height="400"
       className={className}
       loading={loading}
       decoding="async"

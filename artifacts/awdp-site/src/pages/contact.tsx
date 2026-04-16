@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitContact } from "@workspace/api-client-react";
 import { PageSeo } from "@/components/page-seo";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -88,6 +89,7 @@ export default function Contact() {
           },
         }}
       />
+      <Breadcrumb items={[{ label: "Contact Us" }]} />
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">Contact Us</h1>
