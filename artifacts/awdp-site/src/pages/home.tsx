@@ -389,6 +389,156 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How to Identify Your Part — Guide Hub Module */}
+      <section className="py-16 md:py-24 bg-white border-t border-slate-200">
+        <div className="container mx-auto px-4">
+
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider mb-4">
+              <PackageSearch className="w-4 h-4" aria-hidden="true" /> Part Identification Center
+            </div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">
+              🧩 Not Sure What Part You Have?
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              Identify your window or door part in minutes — even if you don't know what it's called.
+            </p>
+          </div>
+
+          {/* Body + feature list */}
+          <div className="max-w-3xl mx-auto mb-12 text-center">
+            <p className="text-slate-600 text-base leading-relaxed mb-6">
+              Most homeowners don't know the name of the part they're trying to replace — and that's normal. Our Part Identification Center walks you through the six most common hardware types with clear photos, step-by-step identification, measurement instructions, and quick lookup tables so you order the right part the first time.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-2 text-sm text-slate-700 text-left max-w-xl mx-auto">
+              {[
+                "Clear photos and diagrams",
+                "Step-by-step identification",
+                "Measurement instructions",
+                "Common mistakes to avoid",
+                '"If it looks like this → go here" quick lookup',
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" aria-hidden="true" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3×2 Guide card grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            {[
+              {
+                emoji: "⚖️",
+                title: "Window Balance",
+                desc: "Identify channel, spiral, and coil balances with correct measurements.",
+                href: "/guides/window-balance",
+                color: "hover:border-blue-400",
+                iconBg: "bg-blue-50 group-hover:bg-blue-600",
+                iconText: "text-blue-600 group-hover:text-white",
+              },
+              {
+                emoji: "🚪",
+                title: "Patio Door Roller",
+                desc: "Identify steel, nylon, and tandem rollers with correct measurements.",
+                href: "/guides/patio-door-roller",
+                color: "hover:border-amber-400",
+                iconBg: "bg-amber-50 group-hover:bg-amber-600",
+                iconText: "text-amber-600 group-hover:text-white",
+              },
+              {
+                emoji: "🧵",
+                title: "Weatherstripping",
+                desc: "Match kerf, bulb, fin seal, and OEM profiles by shape and size.",
+                href: "/guides/weatherstripping",
+                color: "hover:border-emerald-400",
+                iconBg: "bg-emerald-50 group-hover:bg-emerald-600",
+                iconText: "text-emerald-600 group-hover:text-white",
+              },
+              {
+                emoji: "🔧",
+                title: "Window Operator (Crank)",
+                desc: "Identify single-arm, dual-arm, dyad, and scissor operators.",
+                href: "/guides/window-operator",
+                color: "hover:border-violet-400",
+                iconBg: "bg-violet-50 group-hover:bg-violet-600",
+                iconText: "text-violet-600 group-hover:text-white",
+              },
+              {
+                emoji: "🔒",
+                title: "Door Lock / Mortise Hardware",
+                desc: "Measure faceplate, backset, and latch style to find the right lock.",
+                href: "/guides/door-lock",
+                color: "hover:border-rose-400",
+                iconBg: "bg-rose-50 group-hover:bg-rose-600",
+                iconText: "text-rose-600 group-hover:text-white",
+              },
+              {
+                emoji: "🪟",
+                title: "Glazing Bead",
+                desc: "Match snap-in, kerf-in, and OEM bead profiles by cross-section.",
+                href: "/guides/glazing-bead",
+                color: "hover:border-sky-400",
+                iconBg: "bg-sky-50 group-hover:bg-sky-600",
+                iconText: "text-sky-600 group-hover:text-white",
+              },
+            ].map(({ emoji, title, desc, href, color, iconBg, iconText }) => (
+              <Link
+                key={title}
+                href={href}
+                className={`group bg-white p-5 rounded-xl border shadow-sm hover:shadow-md transition-all flex flex-col gap-3 ${color}`}
+                onClick={() => analytics.track("Guide Card Clicked", { title, location: "homepage_guide_module" })}
+              >
+                <div className={`w-11 h-11 rounded-lg flex items-center justify-center text-xl transition-colors ${iconBg}`}>
+                  <span role="img" aria-label={title}>{emoji}</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug mb-1 group-hover:text-primary transition-colors">{title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{desc}</p>
+                </div>
+                <span className="text-primary text-xs font-semibold group-hover:underline mt-auto">
+                  Read the guide &rarr;
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Secondary CTA — View the full hub */}
+          <div className="text-center mb-0">
+            <Button variant="outline" className="font-bold" asChild>
+              <Link
+                href="/guides"
+                onClick={() => analytics.track("CTA Clicked", { label: "View All Identification Guides", location: "homepage_guide_module" })}
+              >
+                View All Identification Guides <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+
+        </div>
+
+        {/* Full-width dark CTA strip */}
+        <div className="bg-slate-900 mt-16">
+          <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-white font-semibold text-base text-center sm:text-left">
+              📤 Still not sure? Upload photos — our experts will identify your part for free.
+            </p>
+            <Button
+              size="lg"
+              className="bg-red-600 hover:bg-red-700 text-white border-0 h-12 px-8 shrink-0 shadow-md hover:shadow-lg transition-shadow"
+              asChild
+              onClick={() => analytics.track("CTA Clicked", { label: "Start Free Parts ID", location: "homepage_guide_module_cta" })}
+            >
+              <Link href="/parts-identification">
+                <PackageSearch className="mr-2 w-4 h-4" aria-hidden="true" /> Start Free Parts ID
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Parts ID CTA */}
       <section className="py-16 md:py-24 bg-slate-50">
         <div className="container mx-auto px-4">
