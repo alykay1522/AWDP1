@@ -58,7 +58,7 @@ const organizationSchema = {
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Window & Door Hardware Parts",
-    numberOfItems: 35051,
+    numberOfItems: 35095,
   },
   knowsAbout: [
     "Casement window operators",

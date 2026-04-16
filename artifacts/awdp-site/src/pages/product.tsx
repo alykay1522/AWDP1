@@ -128,35 +128,68 @@ export default function ProductDetail() {
 
   const productAlt = `${product.name} — SKU ${product.sku} replacement window door part`;
 
+  const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+    "Window Balances": "replacement window balance for double-hung and single-hung windows. Balances provide the spring tension that holds the sash in any open position.",
+    "Window Hardware": "replacement casement or awning window hardware. Operators, hinges, and related components for proper window opening and closing.",
+    "Door Hardware": "replacement patio door or entry door hardware. Rollers, hinges, locks, and related components for smooth, secure door operation.",
+    "Sash Hardware": "replacement sash hardware for double-hung windows. Tilt latches, sash locks, keepers, and pivot hardware.",
+    "Window Glazing and Weatherstrip": "replacement weatherstripping or glazing seal. Stops drafts, prevents water infiltration, and restores energy efficiency.",
+    "Screen Hardware and Accessories": "replacement screen hardware. Frame components, spline, rollers, and accessories for window and door screens.",
+    "Other Hardware": "specialty window or door replacement hardware part.",
+  };
+
+  const isGenericDesc = !product.description || product.description.toLowerCase().includes("email us photos");
+  const categoryDesc = CATEGORY_DESCRIPTIONS[product.category] ?? "window or door replacement hardware part";
+  const seoDescription = isGenericDesc
+    ? `Buy ${product.name} (SKU: ${product.sku}) — ${categoryDesc} In stock at All Window Door Parts. Veteran-owned, 40+ years experience. Free Parts ID service available.`
+    : `${product.name} (SKU: ${product.sku}) — ${product.description!.slice(0, 120)}`;
+
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    sku: product.sku,
+    mpn: product.sku,
+    category: product.category,
+    description: isGenericDesc
+      ? `${product.name} — ${categoryDesc}`
+      : product.description,
+    image: product.imageUrl ?? undefined,
+    itemCondition: "https://schema.org/NewCondition",
+    brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
+    seller: { "@type": "Organization", name: "All Window Door Parts", url: "https://www.allwindowdoorparts.com" },
+    ...(Number(product.price) > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: Number(product.price).toFixed(2),
+            priceCurrency: "USD",
+            availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            itemCondition: "https://schema.org/NewCondition",
+            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+            seller: { "@type": "Organization", name: "All Window Door Parts" },
+          },
+        }
+      : {
+          offers: {
+            "@type": "Offer",
+            availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            itemCondition: "https://schema.org/NewCondition",
+            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+            seller: { "@type": "Organization", name: "All Window Door Parts" },
+          },
+        }),
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <PageSeo
         title={`${product.name} — SKU ${product.sku}`}
         path={`/product/${product.sku}`}
-        description={`Buy ${product.name} (SKU: ${product.sku}) — ${product.category} replacement part. ${product.description ? product.description.slice(0, 100) + "…" : "In stock at All Window Door Parts. Veteran-owned, 40+ years experience. Email info@allwindowdoorparts.com."}`}
+        description={seoDescription}
         image={product.imageUrl ?? undefined}
         type="product"
-        structuredData={[
-          {
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: product.name,
-            sku: product.sku,
-            description: product.description ?? `${product.name} — window or door replacement part`,
-            image: product.imageUrl ?? undefined,
-            brand: { "@type": "Brand", name: product.supplier ?? "All Window Door Parts" },
-            ...(Number(product.price) > 0 ? {
-              offers: {
-                "@type": "Offer",
-                price: Number(product.price).toFixed(2),
-                priceCurrency: "USD",
-                availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-                url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
-                seller: { "@type": "Organization", name: "All Window Door Parts" }
-              }
-            } : {})
-          },
-          ] as unknown as object}
+        structuredData={[productSchema] as unknown as object}
       />
 
       <Breadcrumb items={[
@@ -223,7 +256,7 @@ export default function ProductDetail() {
                 )}
               </div>
               
-              {product.description && (
+              {product.description && !isGenericDesc && (
                 <div className="text-slate-600 mb-6 leading-relaxed">
                   <p>{product.description}</p>
                 </div>
@@ -354,6 +387,7 @@ export default function ProductDetail() {
               {["Window Balances", "Window Hardware", "Door Hardware", "Window Glazing and Weatherstrip"].includes(product.category) && (
                 <TabsTrigger value="measure" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Measurement Guide</TabsTrigger>
               )}
+              <TabsTrigger value="install" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Installation</TabsTrigger>
               <TabsTrigger value="shipping" className="text-base font-bold data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-6">Shipping & Returns</TabsTrigger>
             </TabsList>
             
@@ -519,6 +553,116 @@ export default function ProductDetail() {
                 </div>
               </TabsContent>
             )}
+
+            <TabsContent value="install" className="mt-0 text-slate-600 space-y-6 max-w-3xl">
+              {{
+                "Window Balances": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace a Window Balance</h3>
+                    <p className="text-sm">Most window balances can be replaced without tools in under 15 minutes. Here is the general process for double-hung windows:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Tilt the sash inward</strong> — unlock the sash, lift it slightly, and pull the top toward you to disengage the tilt-latch pivots.</li>
+                      <li><strong>Unhook the old balance</strong> — locate the balance shoe in the track and disengage the balance pin from the shoe. Slide the balance upward out of the channel.</li>
+                      <li><strong>Install the new balance</strong> — insert the top of the new balance into the channel and press the pin into the balance shoe. Ensure the stamp or tension rating matches the original.</li>
+                      <li><strong>Re-seat the sash</strong> — tilt the sash back into place and lock it. Test by raising and lowering the sash to confirm it holds position.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> Always replace both balances at the same time, even if only one has failed. Unequal tension causes the sash to rack and wear out the new balance faster.
+                    </div>
+                  </>
+                ),
+                "Window Hardware": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace a Casement Window Operator</h3>
+                    <p className="text-sm">Replacing a casement or awning window operator is a straightforward repair that restores full crank function:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Open the window fully</strong> — crank the window open to its maximum position to give yourself clearance.</li>
+                      <li><strong>Detach the sash arm</strong> — locate where the operator arm connects to the sash track. Slide the arm forward or press the release tab to disengage it.</li>
+                      <li><strong>Remove the old operator</strong> — unscrew the mounting screws (typically 2–4 screws on the sill or frame). Note the handing (left or right) before removal.</li>
+                      <li><strong>Install the new operator</strong> — align the mounting holes and secure with screws. Reconnect the sash arm to the track.</li>
+                      <li><strong>Test operation</strong> — crank the window open and closed several times to confirm smooth movement and proper seating.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> Photograph the old operator from the front and back before removal. The mounting pattern and arm style must match exactly.
+                    </div>
+                  </>
+                ),
+                "Door Hardware": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace a Patio Door Roller</h3>
+                    <p className="text-sm">Roller replacement is the most effective fix for a patio door that drags, sticks, or jumps off the track:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Lift the door off the track</strong> — turn the adjustment screws (usually on the bottom rail) counterclockwise to retract the rollers, then lift the door up and off the track.</li>
+                      <li><strong>Locate the roller housing</strong> — the roller assembly sits inside cavities in the bottom rail at each end of the door. Remove the cover screws to access it.</li>
+                      <li><strong>Replace the rollers</strong> — pull out the old roller housing and press or snap in the new assembly. Ensure the wheel spins freely.</li>
+                      <li><strong>Reinstall the door</strong> — hang the door back on the upper track first, then lower it onto the bottom track. Adjust the roller height with the adjustment screws until the door runs level and the gap is even.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> Clean the track thoroughly before installing new rollers. Debris in the track is the leading cause of premature roller wear.
+                    </div>
+                  </>
+                ),
+                "Sash Hardware": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace Sash Locks and Tilt Latches</h3>
+                    <p className="text-sm">Sash hardware replacement is one of the easiest window repairs — usually no special tools required:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Tilt latch replacement</strong> — press the old latch inward to compress it, then slide it out of the sash hole. Compress the new latch, insert it into the hole, and release. It should click into place.</li>
+                      <li><strong>Sash lock replacement</strong> — unscrew the mounting screws on the rail. Note how the lock cam aligns before removal. Install the new lock in the same position and secure with screws. Test that the cam engages the keeper correctly.</li>
+                      <li><strong>Keeper replacement</strong> — unscrew the keeper from the upper rail. Position the new keeper so the cam from the lower sash lock hits it squarely when locked.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> Match the cam height of the new sash lock to the old one. A cam that is too tall or too short will prevent the window from locking fully.
+                    </div>
+                  </>
+                ),
+                "Window Glazing and Weatherstrip": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace Window Weatherstripping</h3>
+                    <p className="text-sm">Most weatherstrip profiles are designed for simple field replacement without removing the window:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Remove the old strip</strong> — for kerf-in profiles, grip the fin and pull it straight out of the channel. For foam tape profiles, peel the backing and clean the surface with isopropyl alcohol before installing the new strip.</li>
+                      <li><strong>Measure and cut</strong> — measure each side of the window opening and cut the new weatherstrip to length with scissors or a utility knife. Miter the corners at 45° for a clean seal.</li>
+                      <li><strong>Install the new strip</strong> — for kerf profiles, press the fin firmly into the slot until fully seated. Work from one corner to the other without stretching. For foam tape, peel and press firmly along the entire length.</li>
+                      <li><strong>Test the seal</strong> — close the window and run your hand along the perimeter to feel for air gaps. Adjust the strip position as needed.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> Install weatherstrip at room temperature. Cold vinyl becomes brittle and may crack when pressed into the kerf. Store the new strip indoors overnight before installation in winter.
+                    </div>
+                  </>
+                ),
+                "Screen Hardware and Accessories": (
+                  <>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">How to Repair Window Screen Hardware</h3>
+                    <p className="text-sm">Screen hardware repairs can usually be completed in minutes with basic tools:</p>
+                    <ol className="list-decimal pl-5 space-y-3 text-sm">
+                      <li><strong>Spline replacement</strong> — use a spline roller to press the old spline out of the frame groove. Lay the new screen fabric over the frame, cut to size with a 1" overhang, then press the new spline into the groove starting at one corner.</li>
+                      <li><strong>Corner key replacement</strong> — flex the frame at the corner to pop the old corner key out. Insert the new corner key into both frame channels and press until fully seated.</li>
+                      <li><strong>Screen door roller replacement</strong> — remove the door from the track, unscrew the roller housing, swap in the new roller assembly, and reinstall. Adjust the height screws so the door slides evenly.</li>
+                    </ol>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      <strong>Tip:</strong> When re-screening, pull the fabric slightly taut — but not stretched — before pressing the spline. Overstretching causes the screen to bow and the frame to distort.
+                    </div>
+                  </>
+                ),
+              }[product.category] ?? (
+                <>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">Installation Help</h3>
+                  <p className="text-sm">Installation steps vary by part type and window or door model. If you need guidance specific to this part, our experts are happy to help before you purchase.</p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
+                    Upload a photo of your window or door and the part you are replacing using our Free Parts ID service — our team will confirm fit and provide installation guidance.
+                  </div>
+                </>
+              )}
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t">
+                <Link href="/parts-identification" className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
+                  <Camera className="w-4 h-4" /> Use Free Parts ID — Upload a Photo
+                </Link>
+                <a href="mailto:info@allwindowdoorparts.com" className="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:border-primary hover:text-primary font-medium px-5 py-2.5 rounded-lg text-sm transition-colors">
+                  <Mail className="w-4 h-4" /> Email Our Experts
+                </a>
+              </div>
+            </TabsContent>
 
             <TabsContent value="shipping" className="mt-0 text-slate-600 space-y-4 max-w-3xl">
               <h3 className="text-lg font-bold text-slate-900 mb-2">Shipping Information</h3>
