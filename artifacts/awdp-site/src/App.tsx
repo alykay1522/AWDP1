@@ -38,6 +38,7 @@ import AdminPrices from "@/pages/admin-prices";
 import AdminSettings from "@/pages/admin-settings";
 import AdminImages from "@/pages/admin-images";
 import AdminBulkEditor from "@/pages/admin-bulk-editor";
+import AdminCsvImport from "@/pages/admin-csv-import";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ function AppContent() {
           <Route path="/admin/images" component={AdminImages} />
           <Route path="/admin/prices" component={AdminPrices} />
           <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/admin/csv-import" component={AdminCsvImport} />
           <Route component={NotFound} />
         </Switch>
       </AdminLayout>

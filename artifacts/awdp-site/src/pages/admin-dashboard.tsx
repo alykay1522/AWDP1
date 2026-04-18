@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import {
   Package, ShoppingBag, DollarSign, Clock, Wrench, MessageSquare,
   TrendingUp, PlusCircle, Settings, FolderTree, ChevronRight,
-  ImageIcon, Tag, Loader2, CheckCircle2, AlertCircle,
+  ImageIcon, Tag, Loader2, CheckCircle2, AlertCircle, Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
@@ -149,6 +149,7 @@ export default function AdminDashboard() {
     { label: "View Orders", icon: <ShoppingBag className="w-4 h-4" />, href: "/admin/orders", color: "bg-white border hover:bg-slate-50" },
     { label: "Manage Categories", icon: <FolderTree className="w-4 h-4" />, href: "/admin/categories", color: "bg-white border hover:bg-slate-50" },
     { label: "Site Settings", icon: <Settings className="w-4 h-4" />, href: "/admin/settings", color: "bg-white border hover:bg-slate-50" },
+    { label: "CSV Import", icon: <Upload className="w-4 h-4" />, href: "/admin/csv-import", color: "bg-teal-600 text-white hover:bg-teal-700" },
   ];
 
   return (

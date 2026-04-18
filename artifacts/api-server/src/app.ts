@@ -9,6 +9,7 @@ import adminProductsRouter from "./routes/adminProducts";
 import adminSettingsRouter from "./routes/adminSettings";
 import adminImagesRouter from "./routes/adminImages";
 import adminGenerateRouter from "./routes/adminGenerate";
+import adminCsvImportRouter from "./routes/adminCsvImport";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import sitemapRouter from "./routes/sitemap";
@@ -73,6 +74,7 @@ app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);
 app.use("/api", adminImagesRouter);
 app.use("/api", adminGenerateRouter);
+app.use("/api/admin/csv-import", adminCsvImportRouter);
 
 // Sitemap at root (not under /api so search engines can reach it)
 app.use(sitemapRouter);
