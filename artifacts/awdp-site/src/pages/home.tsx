@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine } from "lucide-react";
+import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine, ChevronDown, Phone } from "lucide-react";
+import { useState } from "react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
@@ -148,6 +149,90 @@ const faqSchema = {
   ],
 };
 
+const FAQ_ITEMS = [
+  {
+    q: "How does the Free Parts Identification service work?",
+    a: "Send us photos of the part you need to Info@allwindowdoorparts.com or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.",
+  },
+  {
+    q: "Do you carry obsolete or discontinued window and door parts?",
+    a: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 35,000+ parts in our catalog, if they made it, we can almost always find it.",
+  },
+  {
+    q: "What brands of window and door hardware do you carry?",
+    a: "We carry parts for most major manufacturers including Truth Hardware (EntryGard, Encore, Maxim, Dyad, Ranger), Andersen, Pella, Marvin, Wright Products, Prime Line, Rusco, and many more — including obscure regional and custom brands.",
+  },
+  {
+    q: "How do I find the right window balance size?",
+    a: "For channel balances, measure the channel length inside the window frame from the top sill to the bottom of the channel and match it to the nearest standard size. For spiral tube balances, measure the tube length. If you're unsure, use our Free Parts ID service — send us a photo and we'll identify the exact replacement.",
+  },
+  {
+    q: "What is the minimum order amount?",
+    a: "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing.",
+  },
+  {
+    q: "How long does shipping take?",
+    a: "Standard shipping takes 3–5 business days from the ship date via UPS, FedEx, and USPS. Some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
+  },
+  {
+    q: "Do you ship window and door parts nationwide?",
+    a: "Yes — we ship to all 50 states. Shipping costs are calculated at checkout based on your delivery address, package weight, and dimensions.",
+  },
+];
+
+function FaqSection() {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <section className="py-16 md:py-24 bg-white border-t border-slate-200" aria-labelledby="faq-heading">
+      <div className="container mx-auto px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 id="faq-heading" className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-3">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-slate-500 text-lg">Quick answers about parts, ordering, and our Free Parts ID service.</p>
+          </div>
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            {FAQ_ITEMS.map((item, i) => (
+              <div key={i} className="bg-white">
+                <button
+                  type="button"
+                  aria-expanded={open === i}
+                  aria-controls={`faq-answer-${i}`}
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left text-slate-900 font-semibold hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => setOpen(open === i ? null : i)}
+                >
+                  <span className="text-base leading-snug">{item.q}</span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-primary shrink-0 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                {open === i && (
+                  <div id={`faq-answer-${i}`} className="px-6 pb-5 text-slate-600 leading-relaxed text-sm">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <p className="text-slate-500 text-sm mb-4">Still have questions? We're happy to help.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild variant="outline" className="font-bold">
+                <a href="mailto:info@allwindowdoorparts.com"><Mail className="w-4 h-4 mr-2" aria-hidden="true" />Email Us</a>
+              </Button>
+              <Button asChild className="font-bold bg-red-600 hover:bg-red-700 text-white border-0">
+                <Link href="/parts-identification"><PackageSearch className="w-4 h-4 mr-2" aria-hidden="true" />Free Parts ID</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const { data: featuredProducts, isLoading } = useGetFeaturedProducts({
     query: {
@@ -272,6 +357,36 @@ export default function Home() {
               <Truck className="w-8 h-8 text-primary mb-3" aria-hidden="true" />
               <h3 className="font-bold text-slate-900">Nationwide Shipping</h3>
               <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">Determined at Checkout</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Payment & Security Badge Strip */}
+      <section className="bg-slate-50 border-b border-slate-200 py-4">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-slate-500 font-semibold uppercase tracking-wide">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-green-600" aria-hidden="true" />
+              <span className="text-slate-700">SSL Secure Checkout</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal Accepted" width="37" height="23" className="rounded" />
+              <span className="text-slate-700">PayPal Accepted</span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <span className="font-bold text-slate-800">VISA</span>
+              <span className="font-bold text-blue-700">MC</span>
+              <span className="font-bold text-blue-500">DISC</span>
+              <span className="font-bold text-slate-600">AMEX</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" aria-hidden="true" />
+              <span className="text-slate-700">Veteran Owned &amp; Operated</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-primary" aria-hidden="true" />
+              <a href="tel:785-533-0244" className="text-primary font-bold hover:underline">785-533-0244</a>
             </div>
           </div>
         </div>
@@ -652,6 +767,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FaqSection />
 
       {/* Testimonials */}
       <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200">
