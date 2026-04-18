@@ -302,7 +302,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Shop by Problem</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">Don't know the part name? That's okay — tell us the problem and we'll point you to the fix.</p>
+            <p className="text-white max-w-2xl mx-auto text-lg">Don't know the part name? That's okay — tell us the problem and we'll point you to the fix.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -332,7 +332,7 @@ export default function Home() {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-slate-400 mb-5">Not sure what's wrong? Our experts will diagnose it for free.</p>
+            <p className="text-white mb-5">Not sure what's wrong? Our experts will diagnose it for free.</p>
             <Button
               size="lg"
               className="bg-red-600 hover:bg-red-700 border-0 text-white h-12 px-8 shadow-md hover:shadow-lg transition-shadow"
