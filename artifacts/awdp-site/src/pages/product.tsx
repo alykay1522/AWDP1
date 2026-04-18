@@ -8,10 +8,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight } from "lucide-react";
+import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight, CheckCircle2 } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
-import awdpLogo from "@assets/logo_1775503261746.png";
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -127,6 +126,93 @@ export default function ProductDetail() {
   };
   const categoryIntro = CATEGORY_INTROS[product.category] ?? null;
 
+  const FIXES_MAP: Record<string, string[]> = {
+    "Window Balances": [
+      "Window sash won't stay open — drops or slams shut",
+      "Window is too heavy or stiff to lift",
+      "Sash tilts or hangs unevenly when raised",
+      "Balance rattles or makes noise when moving the window",
+    ],
+    "Window Hardware": [
+      "Crank turns but the window won't open or close",
+      "Casement or awning window won't latch shut",
+      "Operator arm is bent, cracked, or seized",
+      "Crank handle spins freely without moving the sash",
+    ],
+    "Sash Hardware": [
+      "Window won't lock or latch properly",
+      "Tilt latch won't engage — sash falls inward",
+      "Sash rattles or feels loose in the frame",
+      "Keeper is broken or missing",
+    ],
+    "Door Hardware": [
+      "Sliding patio door is hard to open or close",
+      "Door drags or scrapes on the bottom track",
+      "Door jumps off the track during use",
+      "Door handle or lock is broken or stiff",
+    ],
+    "Window Glazing and Weatherstrip": [
+      "Cold drafts around windows or doors",
+      "Water infiltration around the sash or frame",
+      "Rising heating or cooling bills",
+      "Noise coming in around the window frame",
+    ],
+    "Screen Hardware and Accessories": [
+      "Screen falls out of the frame",
+      "Screen mesh is torn, sagging, or has holes",
+      "Screen door won't slide properly",
+      "Screen retainer clip or frame corner is broken",
+    ],
+    "Sash Hardware": [
+      "Window sash won't tilt in for cleaning",
+      "Tilt latch is broken or missing",
+      "Sash pivot bar is cracked or damaged",
+      "Sash shoe is cracked or stuck in the track",
+    ],
+  };
+
+  const FITMENT_MAP: Record<string, string[]> = {
+    "Window Balances": [
+      "Length of the existing balance (in inches, end to end)",
+      "Tension stamp or number printed on the balance",
+      "Balance type (spiral, block & tackle, constant force)",
+      "Window brand (Andersen, Pella, Marvin, etc.) if known",
+    ],
+    "Window Hardware": [
+      "Handing — left or right (stand inside, facing the window)",
+      "Arm style — single arm, dual arm, or split arm",
+      "Mounting hole spacing (center to center, in inches)",
+      "Window brand and any numbers stamped on the operator",
+    ],
+    "Sash Hardware": [
+      "Window brand and series if visible on the frame",
+      "Sash width — measured inside the frame opening",
+      "Tilt latch style (push-button, lever, or cam)",
+      "Color finish — white, bronze, or natural",
+    ],
+    "Door Hardware": [
+      "Wheel diameter (1\", 1-1/4\", or 1-1/2\" are most common)",
+      "Housing height, width, and length (all three)",
+      "Mounting hole spacing on the housing",
+      "Wheel material — nylon, steel, or tandem",
+    ],
+    "Window Glazing and Weatherstrip": [
+      "Profile type (kerf-in T-barb, bulb seal, foam tape, or pile)",
+      "Kerf slot width in the sash or frame (1/8\" vs 3/16\")",
+      "Overall height and width of the profile",
+      "Window brand — weatherstripping profiles are often brand-specific",
+    ],
+    "Screen Hardware and Accessories": [
+      "Frame material — aluminum or vinyl",
+      "Spline diameter if replacing spline",
+      "Corner key size and style",
+      "Screen door brand if applicable",
+    ],
+  };
+
+  const partFixes = FIXES_MAP[product.category] ?? null;
+  const fitmentChecklist = FITMENT_MAP[product.category] ?? null;
+
   const productAlt = `${product.name} — SKU ${product.sku} replacement window door part`;
 
   const CATEGORY_DESCRIPTIONS: Record<string, string> = {
@@ -216,15 +302,6 @@ export default function ProductDetail() {
                   Sale - Save ${savings.toFixed(2)}
                 </div>
               )}
-              <img
-                src={awdpLogo}
-                alt=""
-                aria-hidden="true"
-                width="64"
-                height="64"
-                loading="eager"
-                className="absolute bottom-4 right-4 w-14 h-14 object-contain pointer-events-none select-none"
-              />
             </div>
 
             {/* Product Info */}
@@ -269,6 +346,36 @@ export default function ProductDetail() {
               {product.description && !isGenericDesc && (
                 <div className="text-slate-600 mb-6 leading-relaxed">
                   <p>{product.description}</p>
+                </div>
+              )}
+
+              {/* This Part Fixes… */}
+              {partFixes && (
+                <div className="mb-5 border border-emerald-200 bg-emerald-50 rounded-xl px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-700 mb-3">This Part Fixes</p>
+                  <ul className="space-y-1.5">
+                    {partFixes.map((fix) => (
+                      <li key={fix} className="flex items-start gap-2.5 text-sm text-slate-700">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
+                        {fix}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Before ordering, confirm */}
+              {fitmentChecklist && (
+                <div className="mb-5 border border-amber-200 bg-amber-50 rounded-xl px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-3">Before Ordering, Confirm</p>
+                  <ul className="space-y-1.5">
+                    {fitmentChecklist.map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-sm text-slate-700">
+                        <span className="w-4 h-4 shrink-0 mt-0.5 flex items-center justify-center rounded-full border border-amber-400 text-amber-600 font-bold text-[10px]">!</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
@@ -384,6 +491,18 @@ export default function ProductDetail() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Full-width Upload a Photo CTA */}
+        <div className="rounded-2xl mb-8 overflow-hidden border border-red-200 bg-gradient-to-r from-red-700 to-red-900 text-white flex flex-col sm:flex-row items-center gap-6 px-8 py-7">
+          <Camera className="w-10 h-10 shrink-0 opacity-90" aria-hidden="true" />
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-xl font-bold mb-1">Still not sure this is the right part?</p>
+            <p className="text-red-200 text-sm">Upload a photo and our experts will confirm the correct part — free, no obligation, usually same business day.</p>
+          </div>
+          <Button asChild size="lg" className="bg-white text-red-800 hover:bg-red-50 font-bold shrink-0 border-0 shadow-md px-8">
+            <Link href="/parts-identification">Upload a Photo &rarr;</Link>
+          </Button>
         </div>
 
         {/* Detailed Info Tabs */}

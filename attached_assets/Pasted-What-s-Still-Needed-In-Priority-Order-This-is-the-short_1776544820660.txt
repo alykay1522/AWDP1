@@ -1,0 +1,135 @@
+What’s Still Needed (In Priority Order)
+This is the short, accurate list based on everything you’ve already completed.
+
+1️⃣ Fitment Notes on Every Product Page (High Impact)
+This is the single biggest conversion booster left.
+
+Every product should answer:
+
+What brands it fits
+
+What years/models it’s commonly used on
+
+What measurements must match
+
+What problems it fixes
+
+What to check before ordering
+
+This reduces returns, increases confidence, and makes AWDP feel like the expert in the industry.
+
+2️⃣ Measurement Diagrams (High Impact)
+Simple line drawings with arrows:
+
+Hole spacing
+
+Arm length
+
+Wheel diameter
+
+Kerf width
+
+Shoe type
+
+Track width
+
+These don’t need to be fancy — even basic SVGs or PNGs dramatically improve conversions.
+
+3️⃣ “This Part Fixes…” Section (Medium–High Impact)
+Add a small block on each product page:
+
+This part fixes:
+
+Window won’t stay up
+
+Crank spins but window won’t open
+
+Sliding door drags
+
+Drafts around frame
+
+Lock won’t latch
+
+People shop by symptom, not part name.
+
+4️⃣ Add “Still Not Sure? Upload a Photo” CTA on Every Product Page
+Link it directly to your new wizard.
+
+This catches the “I think this is the right part but I’m scared to order” crowd — which is most homeowners.
+
+5️⃣ Product Description Rewrite Pass (Once Scraper Data Is Imported)
+You already have:
+
+The scraper
+
+The CSV
+
+The import tool
+
+Next step is to rewrite descriptions using the scraped data, adding:
+
+Fitment notes
+
+Specs
+
+Tags
+
+Problem‑based language
+
+Compatibility notes
+
+This will fix duplicate content and improve SEO.
+
+6️⃣ Accessibility Phase 2 (Polish)
+You already fixed contrast.
+Next:
+
+Increase line height
+
+Increase mobile font sizes
+
+Add spacing between sections
+
+Improve button tap targets
+
+This makes the site feel more premium and easier to skim.
+
+7️⃣ Comparison Tables (Optional but Valuable)
+Especially for:
+
+Operators
+
+Rollers
+
+Balances
+
+Handles
+
+A simple 3‑column table helps customers choose the right variant.
+
+8️⃣ Homepage Polish (Optional)
+You’ve already done the heavy lifting.
+Next small improvements:
+
+Add micro‑copy under each category tile
+
+Add a “Top 10 Most Requested Parts” section
+
+Add a “Recently Identified Parts” carousel (auto‑generated from wizard submissions)
+
+🎯 Final Priority Order (If You Want the Fastest ROI)
+Fitment notes
+
+Measurement diagrams
+
+“This part fixes…” sections
+
+Photo‑upload CTA on product pages
+
+Description rewrite using scraped data
+
+Accessibility polish
+
+Comparison tables
+
+Homepage micro‑copy + polish
