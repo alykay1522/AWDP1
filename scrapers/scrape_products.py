@@ -1,0 +1,300 @@
+import re
+import csv
+import time
+from urllib.parse import urljoin, urlparse
+
+import requests
+from bs4 import BeautifulSoup
+
+START_URLS = [
+    "https://biltbestwindowparts.com",
+    "https://truthentrygard.com",
+    "https://www.oldachparts.com",
+]
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; AWDP-Scraper/1.0)"
+}
+
+# --- helpers -------------------------------------------------------------
+
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+def extract_rules(text: str):
+    """
+    Parse description text for:
+      - min_order_qty
+      - sold_in_pairs
+      - sold_in_packs
+      - min_lineal_feet
+      - unit_type
+      - notes_raw_rules (original rule snippets)
+    """
+    if not text:
+        return "", "", "", "", "", ""
+
+    lower = text.lower()
+    notes = []
+
+    # min order qty (generic)
+    min_order_qty = ""
+    m = re.search(r"(minimum order of|minimum order|min\.?\s*order)\s*(of\s*)?(\d+)", lower)
+    if m:
+        min_order_qty = m.group(3)
+        notes.append(m.group(0))
+
+    # sold in pairs
+    sold_in_pairs = ""
+    if "sold in pairs" in lower or "pair only" in lower or "pairs only" in lower:
+        sold_in_pairs = "yes"
+        notes.append("sold in pairs")
+    else:
+        sold_in_pairs = "no"
+
+    # sold in packs
+    sold_in_packs = ""
+    m_pack = re.search(r"(pack of|pk of|pkg of)\s*(\d+)", lower)
+    if m_pack:
+        sold_in_packs = f"pack_of_{m_pack.group(2)}"
+        notes.append(m_pack.group(0))
+
+    # min lineal feet / LF / sticks / lengths
+    min_lineal_feet = ""
+    unit_type = ""
+
+    # patterns like "minimum order of 4 lineal feet", "min 4 lf"
+    patterns_lf = [
+        r"(minimum order of|minimum|min\.?)\s*(\d+)\s*(lineal feet|lf|linear feet)",
+        r"(\d+)\s*(lineal feet|lf|linear feet)\s*minimum",
+    ]
+    for pat in patterns_lf:
+        m_lf = re.search(pat, lower)
+        if m_lf:
+            # number is either group 2 or 1 depending on pattern
+            nums = [g for g in m_lf.groups() if g and g.isdigit()]
+            if nums:
+                min_lineal_feet = nums[0]
+                unit_type = "lf"
+                notes.append(m_lf.group(0))
+                break
+
+    # patterns like "minimum 3 sticks at 8' each" – treat as LF if we can
+    m_sticks = re.search(r"minimum\s*(\d+)\s*sticks?\s*at\s*(\d+)\s*['ft]+", lower)
+    if not min_lineal_feet and m_sticks:
+        n = int(m_sticks.group(1))
+        l = int(m_sticks.group(2))
+        min_lineal_feet = str(n * l)
+        unit_type = "lf"
+        notes.append(m_sticks.group(0))
+
+    # generic "sold in X' lengths, Y length minimum"
+    m_lengths = re.search(r"(\d+)\s*['ft]+\s*lengths?,?\s*(\d+)\s*(length|piece|pc)\s*minimum", lower)
+    if not min_lineal_feet and m_lengths:
+        length_each = int(m_lengths.group(1))
+        qty_min = int(m_lengths.group(2))
+        min_lineal_feet = str(length_each * qty_min)
+        unit_type = "lf"
+        notes.append(m_lengths.group(0))
+
+    # fallback unit_type if not set
+    if not unit_type:
+        if sold_in_pairs == "yes":
+            unit_type = "pair"
+        elif sold_in_packs:
+            unit_type = "pack"
+        else:
+            unit_type = "each"
+
+    notes_raw_rules = "; ".join(dict.fromkeys(notes))  # dedupe while preserving order
+
+    return (
+        min_order_qty,
+        sold_in_pairs,
+        sold_in_packs,
+        min_lineal_feet,
+        unit_type,
+        notes_raw_rules,
+    )
+
+def is_same_domain(start_url, link):
+    try:
+        base = urlparse(start_url).netloc.replace("www.", "")
+        target = urlparse(link).netloc.replace("www.", "")
+        return base == target or target == ""
+    except Exception:
+        return False
+
+def looks_like_product_url(url: str) -> bool:
+    """
+    Very generic heuristics for WooCommerce / product pages.
+    You can tighten this once you see actual URLs.
+    """
+    url = url.lower()
+    return any(
+        key in url
+        for key in [
+            "/product/",
+            "/shop/",
+            "product-category",
+            "window-part",
+            "door-part",
+        ]
+    )
+
+# --- crawling ------------------------------------------------------------
+
+def get_product_links(start_url: str, max_pages: int = 200):
+    visited = set()
+    to_visit = [start_url]
+    product_links = set()
+
+    while to_visit and len(visited) < max_pages:
+        url = to_visit.pop(0)
+        if url in visited:
+            continue
+        visited.add(url)
+
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=15)
+        except Exception:
+            continue
+
+        if resp.status_code != 200 or "text/html" not in resp.headers.get("Content-Type", ""):
+            continue
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # collect product-like links
+        for a in soup.find_all("a", href=True):
+            href = urljoin(url, a["href"])
+            if not is_same_domain(start_url, href):
+                continue
+            if looks_like_product_url(href):
+                product_links.add(href)
+            # basic site crawl
+            if href not in visited and len(visited) + len(to_visit) < max_pages:
+                to_visit.append(href)
+
+        time.sleep(0.2)
+
+    return sorted(product_links)
+
+def parse_product_page(url: str, source_site: str):
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=20)
+    except Exception:
+        return None
+
+    if resp.status_code != 200:
+        return None
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # title
+    title = ""
+    for sel in [
+        "h1.product_title",
+        "h1.entry-title",
+        "h1",
+    ]:
+        el = soup.select_one(sel)
+        if el and el.get_text(strip=True):
+            title = el.get_text(strip=True)
+            break
+
+    # description
+    desc_candidates = []
+    for sel in [
+        "div.woocommerce-product-details__short-description",
+        "div.product-short-description",
+        "div.entry-content",
+        "div.product-description",
+        "div.summary",
+    ]:
+        el = soup.select_one(sel)
+        if el:
+            desc_candidates.append(el.get_text(" ", strip=True))
+
+    if not desc_candidates:
+        ps = soup.find_all("p")
+        desc_candidates.append(" ".join(p.get_text(" ", strip=True) for p in ps))
+
+    description_raw = clean_text(" ".join(desc_candidates))
+    (
+        min_order_qty,
+        sold_in_pairs,
+        sold_in_packs,
+        min_lineal_feet,
+        unit_type,
+        notes_raw_rules,
+    ) = extract_rules(description_raw)
+
+    return {
+        "product_title": title,
+        "source_site": source_site,
+        "product_url": url,
+        "description_clean": description_raw,
+        "min_order_qty": min_order_qty,
+        "sold_in_pairs": sold_in_pairs,
+        "sold_in_packs": sold_in_packs,
+        "min_lineal_feet": min_lineal_feet,
+        "unit_type": unit_type,
+        "notes_raw_rules": notes_raw_rules,
+    }
+
+# --- main ----------------------------------------------------------------
+
+def main():
+    rows = []
+    seen_keys = set()  # dedupe by (source_site, product_title)
+
+    for start in START_URLS:
+        print(f"Scanning: {start}")
+        product_links = get_product_links(start)
+        print(f"  Found {len(product_links)} candidate product URLs")
+
+        source_site = urlparse(start).netloc.replace("www.", "")
+
+        for link in product_links:
+            data = parse_product_page(link, source_site)
+            if not data:
+                continue
+
+            key = (data["source_site"], data["product_title"])
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+
+            rows.append(data)
+            print(f"  Parsed: {data['product_title'][:60]}")
+
+            time.sleep(0.2)
+
+    fieldnames = [
+        "product_title",
+        "source_site",
+        "product_url",
+        "description_clean",
+        "min_order_qty",
+        "sold_in_pairs",
+        "sold_in_packs",
+        "min_lineal_feet",
+        "unit_type",
+        "notes_raw_rules",
+    ]
+
+    out_file = "scrapers/awdp_products_scraped.csv"
+    with open(out_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+    print(f"\nWrote {len(rows)} products to {out_file}")
+
+if __name__ == "__main__":
+    main()
