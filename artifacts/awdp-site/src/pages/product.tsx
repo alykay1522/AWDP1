@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight, CheckCircle2 } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
+import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } from "@/components/measurement-diagrams";
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -141,9 +142,9 @@ export default function ProductDetail() {
     ],
     "Sash Hardware": [
       "Window won't lock or latch properly",
-      "Tilt latch won't engage — sash falls inward",
+      "Tilt latch won't engage or is broken — sash falls inward",
       "Sash rattles or feels loose in the frame",
-      "Keeper is broken or missing",
+      "Window sash won't tilt in for cleaning",
     ],
     "Door Hardware": [
       "Sliding patio door is hard to open or close",
@@ -162,12 +163,6 @@ export default function ProductDetail() {
       "Screen mesh is torn, sagging, or has holes",
       "Screen door won't slide properly",
       "Screen retainer clip or frame corner is broken",
-    ],
-    "Sash Hardware": [
-      "Window sash won't tilt in for cleaning",
-      "Tilt latch is broken or missing",
-      "Sash pivot bar is cracked or damaged",
-      "Sash shoe is cracked or stuck in the track",
     ],
   };
 
@@ -614,6 +609,7 @@ export default function ProductDetail() {
                 {{
                   "Window Balances": (
                     <>
+                      <BalanceDiagram />
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Window Balance</h3>
                       <p>Ordering the correct balance requires three measurements from your existing balance or sash:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
@@ -634,6 +630,7 @@ export default function ProductDetail() {
                   ),
                   "Window Hardware": (
                     <>
+                      <OperatorDiagram />
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure for a Replacement Operator</h3>
                       <p>Casement and awning window operators vary by handing, arm style, and mounting pattern. To find the correct replacement:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
@@ -655,6 +652,7 @@ export default function ProductDetail() {
                   ),
                   "Door Hardware": (
                     <>
+                      <RollerDiagram />
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Patio Door Roller</h3>
                       <p>Roller replacement requires matching the wheel diameter, housing dimensions, and mounting style. All five measurements below are needed:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
@@ -677,6 +675,7 @@ export default function ProductDetail() {
                   ),
                   "Window Glazing and Weatherstrip": (
                     <>
+                      <WeatherstripDiagram />
                       <h3 className="text-lg font-bold text-slate-900 mb-1">How to Measure Your Weatherstripping</h3>
                       <p>Weatherstrip profiles are highly specific to window brand and installation type. Before ordering:</p>
                       <ol className="list-decimal pl-5 space-y-3 text-sm">
