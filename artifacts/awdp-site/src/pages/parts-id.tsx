@@ -6,20 +6,18 @@ import { useSubmitPartsId } from "@workspace/api-client-react";
 import { PageSeo } from "@/components/page-seo";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, UploadCloud, CheckCircle2, Search, Camera, Wrench, AlertCircle, FileImage, X, Loader2 } from "lucide-react";
+import { Shield, UploadCloud, CheckCircle2, Camera, X, Loader2, ChevronRight, ChevronLeft, Home, DoorOpen, Wind, Grid2x2, Layers } from "lucide-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { analytics } from "@/lib/analytics";
 import { Breadcrumb } from "@/components/breadcrumb";
 
-// The API schema definition
 const partsIdSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
-  description: z.string().min(10, "Please provide some details about the part or where it came from"),
+  description: z.string().min(10, "Please describe the part or problem"),
   windowDoorBrand: z.string().optional(),
   windowDoorAge: z.string().optional(),
   imageBase64: z.string().optional(),
@@ -28,7 +26,27 @@ const partsIdSchema = z.object({
 
 type PartsIdFormValues = z.infer<typeof partsIdSchema>;
 
+const PART_TYPES = [
+  { id: "casement",    label: "Casement Window",      Icon: Home,      desc: "Side-hinged, crank to open" },
+  { id: "double-hung", label: "Double-Hung Window",   Icon: Layers,    desc: "Top & bottom sashes slide" },
+  { id: "sliding",     label: "Sliding Window",       Icon: Wind,      desc: "Sash slides left or right" },
+  { id: "patio-door",  label: "Patio / Sliding Door", Icon: DoorOpen,  desc: "Sliding glass door" },
+  { id: "entry-door",  label: "Entry Door",           Icon: DoorOpen,  desc: "Hinged exterior door" },
+  { id: "screen",      label: "Screen / Screen Door", Icon: Grid2x2,   desc: "Window or door screen" },
+  { id: "skylight",    label: "Skylight / Roof",      Icon: Camera,    desc: "Overhead window or vent" },
+  { id: "other",       label: "Other / Not Sure",     Icon: Shield,    desc: "We'll figure it out together" },
+];
+
+const AGE_OPTIONS = [
+  "Less than 5 years", "5–10 years", "10–20 years",
+  "20–30 years", "30+ years", "Unknown",
+];
+
+const TOTAL_STEPS = 4;
+
 export default function PartsIdentification() {
+  const [step, setStep] = useState(1);
+  const [partType, setPartType] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -36,90 +54,60 @@ export default function PartsIdentification() {
 
   const form = useForm<PartsIdFormValues>({
     resolver: zodResolver(partsIdSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      description: "",
-      windowDoorBrand: "",
-      windowDoorAge: "",
-    },
+    defaultValues: { name: "", email: "", phone: "", description: "", windowDoorBrand: "", windowDoorAge: "" },
   });
 
-  const submitPartsIdMutation = useSubmitPartsId();
+  const submitMutation = useSubmitPartsId();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
-    }
-  };
-
+  // ── image helpers ─────────────────────────────────────────────────────
   const processFile = (file: File) => {
-    // Check if it's an image
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload an image file (JPEG, PNG, etc).",
-        variant: "destructive"
-      });
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file type", description: "Please upload an image file (JPEG, PNG, etc).", variant: "destructive" });
       return;
     }
-
-    // Check size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB.",
-        variant: "destructive"
-      });
+      toast({ title: "File too large", description: "Please upload an image smaller than 5MB.", variant: "destructive" });
       return;
     }
-
     setSelectedImage(file);
-
-    // Create preview
     const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        setImagePreview(e.target.result as string);
-      }
-    };
+    reader.onload = (e) => { if (e.target?.result) setImagePreview(e.target.result as string); };
     reader.readAsDataURL(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]);
   };
 
-  const onSubmit = async (data: PartsIdFormValues) => {
-    if (selectedImage) {
-      data.imageFileName = selectedImage.name;
-      if (imagePreview) {
-        // Send the full data URI so the server can validate MIME type
-        data.imageBase64 = imagePreview;
-      }
+  // ── step navigation ───────────────────────────────────────────────────
+  const canAdvance = () => {
+    if (step === 1) return !!partType;
+    if (step === 2) return form.watch("description")?.length >= 10;
+    if (step === 3) return true; // photo optional
+    return true;
+  };
+
+  const advance = async () => {
+    if (step === 2) {
+      const ok = await form.trigger(["description"]);
+      if (!ok) return;
     }
+    if (step < TOTAL_STEPS) setStep(s => s + 1);
+  };
 
-    analytics.track("Parts ID Form Submitted", {
-      hasImage: !!selectedImage,
-      hasPhone: !!data.phone,
-      hasBrand: !!data.windowDoorBrand,
-    });
+  const back = () => { if (step > 1) setStep(s => s - 1); };
 
-    submitPartsIdMutation.mutate(
+  // ── submit ────────────────────────────────────────────────────────────
+  const onSubmit = async (data: PartsIdFormValues) => {
+    data.description = `[${partType}] ${data.description}`;
+    if (selectedImage && imagePreview) {
+      data.imageFileName = selectedImage.name;
+      data.imageBase64 = imagePreview;
+    }
+    analytics.track("Parts ID Wizard Submitted", { partType, hasImage: !!selectedImage });
+    submitMutation.mutate(
       { data },
       {
         onSuccess: () => {
@@ -128,417 +116,296 @@ export default function PartsIdentification() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         },
         onError: () => {
-          toast({
-            title: "Submission failed",
-            description: "There was a problem submitting your request. Please try again or email info@allwindowdoorparts.com.",
-            variant: "destructive",
-          });
+          toast({ title: "Submission failed", description: "Please try again or email info@allwindowdoorparts.com.", variant: "destructive" });
         },
       }
     );
   };
 
+  // ── success screen ────────────────────────────────────────────────────
   if (isSubmitted) {
     return (
-      <div className="container mx-auto px-4 py-20 max-w-3xl text-center">
-        <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8">
-          <CheckCircle2 className="w-12 h-12" />
+      <ErrorBoundary>
+        <PageSeo title="Request Submitted | All Window Door Parts" description="Your free parts identification request has been submitted." />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center py-16 px-4">
+          <div className="max-w-lg w-full text-center bg-white rounded-2xl shadow-lg p-10 border">
+            <div className="w-20 h-20 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h1 className="text-2xl font-serif font-bold text-slate-900 mb-3">You're all set!</h1>
+            <p className="text-slate-600 mb-2">We received your request and will identify your part — usually within 1 business day.</p>
+            <p className="text-slate-500 text-sm mb-8">Check your inbox for a confirmation email. If you have photos to add, reply to that email.</p>
+            <div className="bg-slate-50 rounded-xl p-4 text-left text-sm text-slate-600 mb-8 border">
+              <p className="font-semibold text-slate-800 mb-1">In the meantime, you can also reach us at:</p>
+              <p>📞 785-533-0244</p>
+              <p>✉️ Info@allwindowdoorparts.com</p>
+            </div>
+            <Button size="lg" onClick={() => window.location.href = "/"} className="w-full">Back to Home</Button>
+          </div>
         </div>
-        <h1 className="text-4xl font-serif font-bold text-slate-900 mb-6">Request Received!</h1>
-        <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-          Thank you for trusting All Window Door Parts. Our team of experts is reviewing your photo and details. 
-          We typically identify parts and respond via email within 1-2 business days with a direct link to purchase your exact replacement.
-        </p>
-        <div className="bg-slate-50 border rounded-xl p-6 md:p-8 text-left max-w-xl mx-auto mb-10">
-          <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><AlertCircle className="w-5 h-5 text-primary" /> What happens next?</h3>
-          <ol className="space-y-4 text-slate-600">
-            <li className="flex gap-3">
-              <span className="font-bold text-primary">1.</span>
-              Our 40+ year veterans inspect your photos against thousands of known hardware profiles.
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-primary">2.</span>
-              We find the exact match (or the modern functional equivalent if your part is obsolete).
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-primary">3.</span>
-              You receive an email with the part name, price, and a simple 1-click link to order.
-            </li>
-          </ol>
-        </div>
-        <Button size="lg" onClick={() => window.location.href = "/shop"}>Continue Shopping</Button>
-      </div>
+      </ErrorBoundary>
     );
   }
 
+  // ── progress bar ──────────────────────────────────────────────────────
+  const progress = ((step - 1) / TOTAL_STEPS) * 100;
+
+  const stepLabels = ["Part Type", "Describe It", "Add a Photo", "Your Info"];
+
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <ErrorBoundary>
       <PageSeo
-        title="Free Parts Identification — Can't Find Your Part?"
-        path="/parts-identification"
-        description="Can't identify your window or door part? Submit photos and a description — our experts with 40+ years of experience will identify it for you. Free, no-obligation service from All Window Door Parts."
-        keywords="window part identification, door part identification, free parts ID, identify window hardware, mystery window part, find replacement window part"
-        structuredData={[
-          {
-            "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Free Parts Identification Service",
-            provider: {
-              "@type": "LocalBusiness",
-              name: "All Window Door Parts",
-              url: "https://www.allwindowdoorparts.com",
-              telephone: "+17855330244",
-            },
-            serviceType: "Window and Door Parts Identification",
-            description: "Send us photos of your window or door hardware and our experts with 40+ years of experience will identify the exact replacement part needed — free with no obligation.",
-            offers: {
-              "@type": "Offer",
-              price: "0",
-              priceCurrency: "USD",
-              description: "Free parts identification service — no charge, no obligation",
-            },
-            areaServed: { "@type": "Country", name: "United States" },
-          },
-          {
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: [
-              {
-                "@type": "Question",
-                name: "How does the Free Parts Identification service work?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Upload clear photos of your window or door part along with a brief description and any brand or age information you know. Our experts — with 40+ years of experience — will identify the exact replacement part and contact you with the answer. The service is completely free with no obligation to purchase."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "What types of parts can you identify?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "We identify all types of window and door hardware including sash balances, casement operators, tilt latches, patio door rollers, hinges, locks, handles, weatherstripping, and obsolete or discontinued parts from the 1970s, 80s, and 90s. If it's a window or door part, we can almost certainly identify it."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "How long does it take to get an answer?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Most part identification requests are answered within 1–2 business days. For urgent needs, you can also call us directly at 785-533-0244."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "Is the parts identification service really free?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Yes — 100% free, no strings attached, and no obligation to buy anything. We offer this service because we want to help homeowners, contractors, and property managers find the right part the first time."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "What photos should I send for the best results?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Take photos in good lighting. Place a ruler or coin next to the part for scale. Show the broken or worn area clearly. If you see any stamped numbers, manufacturer logos, or model numbers on the part, photograph those too — they help us identify the part quickly and accurately."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "Can you help with obsolete or discontinued parts?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Absolutely — that's one of our specialties. We carry or know the modern replacements for thousands of discontinued parts from major manufacturers. Even if your window is 40–50 years old, there's a good chance we can find a compatible replacement."
-                }
-              }
-            ]
-          }
-        ] as unknown as object}
+        title="Free Parts Identification | All Window Door Parts"
+        description="Can't find your part? Send us a photo and description — our experts identify any window or door part for free, usually within 1 business day."
       />
-      <Breadcrumb items={[{ label: "Free Parts Identification" }]} />
-      {/* Hero Section */}
-      <section className="bg-primary text-white py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1994&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>
-        <div className="container mx-auto px-4 relative z-10 max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-bold shadow-md mb-8 uppercase tracking-wider">
-            <Shield className="w-4 h-4" /> Free Service • No Obligation
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6">
-            Not Sure What Part You Need?
-          </h1>
-          <p className="text-xl md:text-2xl text-blue-100 mb-2 font-medium">
-            We'll Help You Figure It Out — FREE!
-          </p>
-          <p className="text-lg text-blue-200 mt-6 max-w-2xl mx-auto">
-            Send us pictures of your needed parts. Our team with decades of industry experience will identify it and send you a link to buy the exact replacement parts or upgrade &ndash; completely free.
-          </p>
+
+      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Free Parts ID" }]} />
+
+      {/* Header */}
+      <div className="bg-primary text-white py-10 px-4 text-center">
+        <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
+          <Shield className="w-3.5 h-3.5" /> FREE SERVICE — NO CHARGE EVER
         </div>
-      </section>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">Find My Part — Free</h1>
+        <p className="text-primary-foreground/80 max-w-xl mx-auto text-lg">
+          Answer 4 quick questions and we'll identify your exact part — usually within 1 business day.
+        </p>
+      </div>
 
-      <div className="container mx-auto px-4 -mt-10 relative z-20 max-w-5xl">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          
-          {/* Main Form Area */}
-          <div className="lg:col-span-3 bg-white rounded-2xl shadow-xl border p-6 md:p-10">
-            <h2 className="text-2xl font-serif font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <Search className="w-6 h-6 text-primary" /> Start Identification Request
-            </h2>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                
-                {/* Photo Upload Section */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg">1. Upload a Photo (Required)</h3>
-                    <p className="text-sm text-slate-500 mb-4">Take a clear, well-lit photo of the broken part. If possible, show it next to a ruler or tape measure.</p>
+      {/* Step indicator */}
+      <div className="bg-white border-b border-slate-200 sticky top-[72px] z-40">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-2">
+            {stepLabels.map((label, i) => {
+              const n = i + 1;
+              const isActive = step === n;
+              const isDone = step > n;
+              return (
+                <div key={n} className="flex flex-col items-center flex-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-1 transition-colors
+                    ${isDone ? "bg-emerald-500 text-white" : isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400"}`}>
+                    {isDone ? <CheckCircle2 className="w-4 h-4" /> : n}
                   </div>
-
-                  <ErrorBoundary
-                    fallback={
-                      <div className="rounded-xl border-2 border-dashed border-red-300 bg-red-50 p-8 text-center">
-                        <p className="text-sm text-red-600 font-medium mb-2">Image preview failed to load.</p>
-                        <Button variant="outline" size="sm" onClick={() => { setImagePreview(null); setSelectedImage(null); }}>
-                          Clear &amp; try again
-                        </Button>
-                      </div>
-                    }
-                  >
-                  <div 
-                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-                      isDragging ? 'border-primary bg-primary/5' : 
-                      imagePreview ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300 hover:border-primary/50 bg-slate-50'
-                    }`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => document.getElementById('photo-upload')?.click()}
-                  >
-                    <input 
-                      type="file" 
-                      id="photo-upload" 
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      className="hidden" 
-                      onChange={handleImageChange}
-                    />
-                    
-                    {imagePreview ? (
-                      <div className="flex flex-col items-center">
-                        <div className="relative w-full max-w-xs aspect-video bg-black/5 rounded-lg overflow-hidden mb-4 border">
-                          <img src={imagePreview} alt="Preview of uploaded part" className="w-full h-full object-contain" />
-                          <Button 
-                            variant="destructive" 
-                            size="icon" 
-                            aria-label="Remove uploaded image"
-                            className="absolute top-2 right-2 w-8 h-8 rounded-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setImagePreview(null);
-                              setSelectedImage(null);
-                            }}
-                          >
-                            <X className="w-4 h-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                        <p className="text-sm font-bold text-emerald-700 flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Photo ready — {selectedImage?.name}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">Click to change</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center pointer-events-none">
-                        <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
-                          <Camera className="w-8 h-8 text-slate-400" />
-                        </div>
-                        <h4 className="font-bold text-slate-900 mb-1">Click to upload or drag &amp; drop</h4>
-                        <p className="text-sm text-slate-500">PNG, JPG, WebP, GIF — max 5 MB</p>
-                      </div>
-                    )}
-                  </div>
-                  </ErrorBoundary>
+                  <span className={`text-xs hidden sm:block ${isActive ? "text-primary font-semibold" : isDone ? "text-emerald-600" : "text-slate-400"}`}>
+                    {label}
+                  </span>
                 </div>
-
-                <hr className="border-slate-100" />
-
-                {/* Details Section */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg">2. Part Details</h3>
-                    <p className="text-sm text-slate-500 mb-4">Tell us everything you know. The more info, the faster we find it.</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="windowDoorBrand"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Window/Door Brand (if known)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. Andersen, Pella, unknown" {...field} className="bg-slate-50" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="windowDoorAge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Approximate Age</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. 15 years, installed in 2005" {...field} className="bg-slate-50" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description of the part and issue <span className="text-destructive">*</span></FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="What is this part? Where does it go? What is broken? Are there any numbers stamped on it?" 
-                            className="min-h-[120px] bg-slate-50" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <hr className="border-slate-100" />
-
-                {/* Contact Section */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-lg">3. Where should we send the match?</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name <span className="text-destructive">*</span></FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} className="bg-slate-50" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address <span className="text-destructive">*</span></FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="john@example.com" {...field} className="bg-slate-50" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem className="md:w-1/2">
-                        <FormLabel>Phone Number (Optional)</FormLabel>
-                        <FormControl>
-                          <Input type="tel" placeholder="(555) 123-4567" {...field} className="bg-slate-50" />
-                        </FormControl>
-                        <FormDescription>We'll only call if we need more info to find your part.</FormDescription>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="w-full h-14 text-lg font-bold shadow-md"
-                  disabled={submitPartsIdMutation.isPending || (!selectedImage && !imagePreview)}
-                >
-                  {submitPartsIdMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 w-5 h-5 animate-spin" aria-hidden="true" />
-                      Sending to our experts…
-                    </>
-                  ) : (
-                    "Submit for Free Identification"
-                  )}
-                </Button>
-
-                {submitPartsIdMutation.isPending && (
-                  <p className="text-center text-sm text-slate-500 mt-2">
-                    Uploading photo and sending request — please don't close this page.
-                  </p>
-                )}
-                
-                {!selectedImage && !imagePreview && !submitPartsIdMutation.isPending && (
-                  <p className="text-center text-sm text-destructive font-medium mt-2">
-                    Please upload a photo of your part to submit.
-                  </p>
-                )}
-              </form>
-            </Form>
+              );
+            })}
           </div>
-
-          {/* Sidebar Trust Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-primary text-white p-8 rounded-2xl shadow-lg">
-              <Shield className="w-12 h-12 text-accent mb-4" />
-              <h3 className="text-2xl font-serif font-bold mb-4">Why use our free service?</h3>
-              <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
-                  <div>
-                    <strong className="block text-lg">Save Time & Money</strong>
-                    <span className="text-blue-100 text-sm">Don't guess and order the wrong part. Let us get it right the first time.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
-                  <div>
-                    <strong className="block text-lg">Access to Obsolete Parts</strong>
-                    <span className="text-blue-100 text-sm">We know the modern replacements for discontinued parts from the 70s, 80s, and 90s.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
-                  <div>
-                    <strong className="block text-lg">Veteran Expertise</strong>
-                    <span className="text-blue-100 text-sm">Our staff has literally seen it all. 40+ years in the window and door business.</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white border rounded-2xl p-8 text-center shadow-sm">
-              <Wrench className="w-10 h-10 text-slate-300 mx-auto mb-4" />
-              <h3 className="font-bold text-slate-900 mb-2">Photo Tips for Success</h3>
-              <ul className="text-sm text-slate-600 space-y-2 text-left bg-slate-50 p-4 rounded-lg">
-                <li>• Take photos in good lighting</li>
-                <li>• Place a ruler or coin next to it for scale</li>
-                <li>• Show the broken area clearly</li>
-                <li>• Look for stamped numbers/logos and photograph them</li>
-              </ul>
-            </div>
+          <div className="w-full bg-slate-100 rounded-full h-1.5">
+            <div className="bg-primary h-1.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Wizard body */}
+      <div className="min-h-[60vh] bg-slate-50 py-10 px-4">
+        <div className="max-w-2xl mx-auto">
+
+          {/* ── STEP 1: Part Type ── */}
+          {step === 1 && (
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 text-center">What type of window or door?</h2>
+              <p className="text-slate-500 text-center mb-8">Pick the closest match — not sure is totally fine.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {PART_TYPES.map(({ id, label, Icon, desc }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setPartType(id)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all hover:shadow-md
+                      ${partType === id
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-slate-200 bg-white hover:border-primary/40"}`}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${partType === id ? "bg-primary text-white" : "bg-slate-100 text-slate-500"}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="font-semibold text-slate-900 text-sm leading-tight mb-1">{label}</div>
+                    <div className="text-xs text-slate-400 leading-snug">{desc}</div>
+                    {partType === id && (
+                      <div className="mt-2 flex items-center gap-1 text-primary text-xs font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Selected
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: Describe ── */}
+          {step === 2 && (
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 text-center">Describe the part or problem</h2>
+              <p className="text-slate-500 text-center mb-8">The more detail, the faster we can identify it. Photos welcome in step 3.</p>
+              <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-2">
+                    Describe the part or what's broken <span className="text-red-500">*</span>
+                  </label>
+                  <Textarea
+                    {...form.register("description")}
+                    rows={5}
+                    placeholder={`e.g. "The crank handle on my casement window broke off. The window is about 15 years old. The operator has a worm gear style and the arm is about 7 inches long."`}
+                    className="resize-none text-base"
+                  />
+                  {form.formState.errors.description && (
+                    <p className="text-red-500 text-sm mt-1">{form.formState.errors.description.message}</p>
+                  )}
+                  <p className="text-xs text-slate-400 mt-1">Describe color, size, material, how it broke — anything helps.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">Window / Door Brand</label>
+                    <Input
+                      {...form.register("windowDoorBrand")}
+                      placeholder="e.g. Andersen, Pella, Marvin…"
+                      className="text-base"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Check the frame or any stickers for a brand name.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">Approximate Age</label>
+                    <select
+                      {...form.register("windowDoorAge")}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-base focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Select age…</option>
+                      {AGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 3: Photo ── */}
+          {step === 3 && (
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 text-center">Add a photo <span className="text-slate-400 font-normal text-xl">(optional but very helpful)</span></h2>
+              <p className="text-slate-500 text-center mb-8">A clear photo of the broken part — even just with your phone — cuts identification time in half.</p>
+              <div className="bg-white rounded-2xl border shadow-sm p-6">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Uploaded part" className="w-full max-h-72 object-contain rounded-xl border bg-slate-50" />
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedImage(null); setImagePreview(null); }}
+                      className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full border shadow flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors"
+                    >
+                      <X className="w-4 h-4 text-slate-500" />
+                    </button>
+                    <p className="text-sm text-emerald-600 font-semibold mt-3 flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4" /> {selectedImage?.name} uploaded
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
+                      ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
+                    onClick={() => document.getElementById("photo-upload")?.click()}
+                  >
+                    <Camera className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-slate-700 font-semibold mb-1">Drop a photo here or click to browse</p>
+                    <p className="text-sm text-slate-400">JPEG, PNG, HEIC — max 5 MB</p>
+                    <input id="photo-upload" type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
+                  </div>
+                )}
+                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+                  <strong>Tips for a great photo:</strong> Good lighting, close-up of the part number/label if visible, show any damage clearly.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 4: Contact ── */}
+          {step === 4 && (
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2 text-center">Almost done — how do we reach you?</h2>
+              <p className="text-slate-500 text-center mb-8">We'll email you the part match and a direct link to order. No spam, ever.</p>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">Full Name <span className="text-red-500">*</span></label>
+                    <Input {...form.register("name")} placeholder="Your name" className="text-base" />
+                    {form.formState.errors.name && <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">Email Address <span className="text-red-500">*</span></label>
+                    <Input {...form.register("email")} type="email" placeholder="you@example.com" className="text-base" />
+                    {form.formState.errors.email && <p className="text-red-500 text-sm mt-1">{form.formState.errors.email.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">Phone <span className="text-slate-400 font-normal">(optional)</span></label>
+                    <Input {...form.register("phone")} type="tel" placeholder="(555) 555-5555" className="text-base" />
+                    <p className="text-xs text-slate-400 mt-1">We may call for tricky identifications — only if you provide it.</p>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-slate-50 rounded-xl border p-4 mb-6 text-sm text-slate-600 space-y-1">
+                  <p className="font-semibold text-slate-800 mb-2">Your request summary:</p>
+                  <p>🪟 <strong>Type:</strong> {PART_TYPES.find(t => t.id === partType)?.label}</p>
+                  {form.watch("windowDoorBrand") && <p>🏷️ <strong>Brand:</strong> {form.watch("windowDoorBrand")}</p>}
+                  {form.watch("windowDoorAge") && <p>📅 <strong>Age:</strong> {form.watch("windowDoorAge")}</p>}
+                  <p>📝 <strong>Description:</strong> {form.watch("description")?.slice(0, 80)}{(form.watch("description")?.length ?? 0) > 80 ? "…" : ""}</p>
+                  {selectedImage && <p>📷 <strong>Photo:</strong> {selectedImage.name}</p>}
+                </div>
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full text-lg py-6 font-bold"
+                  disabled={submitMutation.isPending}
+                >
+                  {submitMutation.isPending ? (
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting…</>
+                  ) : (
+                    <><UploadCloud className="w-5 h-5 mr-2" /> Submit Free Parts ID Request</>
+                  )}
+                </Button>
+                <p className="text-center text-xs text-slate-400 mt-3">
+                  Free service. No obligation. We respond within 1 business day.
+                </p>
+              </form>
+            </div>
+          )}
+
+          {/* Navigation buttons */}
+          {step < 4 && (
+            <div className="flex justify-between mt-8">
+              <Button variant="outline" onClick={back} disabled={step === 1} className="gap-2">
+                <ChevronLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button onClick={advance} disabled={!canAdvance()} className="gap-2 px-8">
+                Next <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+          {step === 4 && (
+            <div className="mt-4">
+              <Button variant="outline" onClick={back} className="gap-2">
+                <ChevronLeft className="w-4 h-4" /> Back
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom trust strip */}
+      <div className="bg-white border-t py-8 px-4">
+        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-6 text-center text-sm text-slate-500">
+          <div><Shield className="w-6 h-6 mx-auto text-primary mb-1" /><p className="font-semibold text-slate-700">Always Free</p><p>No charge, ever</p></div>
+          <div><CheckCircle2 className="w-6 h-6 mx-auto text-emerald-500 mb-1" /><p className="font-semibold text-slate-700">Expert ID</p><p>40+ years experience</p></div>
+          <div><Camera className="w-6 h-6 mx-auto text-amber-500 mb-1" /><p className="font-semibold text-slate-700">Fast Response</p><p>Usually 1 business day</p></div>
+        </div>
+      </div>
+    </ErrorBoundary>
   );
 }
