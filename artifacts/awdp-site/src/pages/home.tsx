@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail } from "lucide-react";
+import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
@@ -593,14 +593,20 @@ export default function Home() {
             <p className="text-slate-500 max-w-2xl mx-auto text-lg">Shop the most common replacement hardware categories — from everyday repairs to hard-to-find discontinued parts.</p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {[
-              { name: "Casement Operators",  href: "/shop?search=casement",                            Icon: Wrench,            desc: "Open & close casement windows" },
-              { name: "Patio Door Rollers",  href: "/shop?search=roller",                              Icon: Move,              desc: "Sliding door roller replacements" },
-              { name: "Window Balances",     href: "/shop?search=balance",                             Icon: SlidersHorizontal, desc: "Keep double-hung windows up" },
-              { name: "Weatherstripping",    href: "/shop?category=Window+Glazing+and+Weatherstrip",  Icon: Wind,              desc: "Stop drafts and air leaks" },
-              { name: "Door Hinges",         href: "/shop?search=hinge",                               Icon: Layers,            desc: "Door hinge replacements" },
-              { name: "Window Handles",      href: "/shop?search=handle",                              Icon: Key,               desc: "Handles and operator hardware" },
+              { name: "Casement Operators",        href: "/shop?search=casement",                           Icon: Wrench,            desc: "Roto-Gear, dual-arm & awning operators" },
+              { name: "Window Balances",            href: "/shop?search=balance",                            Icon: SlidersHorizontal, desc: "Spiral, block-and-tackle, constant force" },
+              { name: "Window Locks & Latches",     href: "/shop?search=lock",                               Icon: Lock,              desc: "Cam locks, sash locks, tilt latches" },
+              { name: "Weatherstripping & Seals",   href: "/shop?category=Window+Glazing+and+Weatherstrip",  Icon: Wind,              desc: "Pile, bulb, foam & kerf seal strips" },
+              { name: "Glazing Bead",               href: "/shop?search=glazing",                            Icon: Box,               desc: "Vinyl, aluminum & PVC bead profiles" },
+              { name: "Patio Door Rollers",         href: "/shop?search=roller",                             Icon: Move,              desc: "Steel, nylon & tandem roller sets" },
+              { name: "Window & Door Hinges",       href: "/shop?search=hinge",                              Icon: RotateCcw,         desc: "Casement, awning & friction hinges" },
+              { name: "Screens & Screen Hardware",  href: "/shop?category=Screen+Hardware+and+Accessories",  Icon: LayoutGrid,        desc: "Frames, spline, corners & screen kits" },
+              { name: "Jambliners",                 href: "/shop?search=jambliner",                          Icon: PanelLeft,         desc: "Wood window retrofit jamb-liner kits" },
+              { name: "Door Sweeps",                href: "/shop?search=sweep",                              Icon: ArrowDownToLine,   desc: "Under-door seals & Air-Tite strips" },
+              { name: "Door Hardware",              href: "/shop?search=handle",                             Icon: Key,               desc: "Handle sets, locksets & entry hardware" },
+              { name: "Sash Hardware",              href: "/shop?category=Sash+Hardware",                    Icon: Layers,            desc: "Tilt latches, keepers & sash locks" },
             ].map(({ name, href, Icon, desc }) => (
               <Link key={name} href={href} className="bg-white p-5 rounded-xl border shadow-sm hover:shadow-md hover:border-primary transition-all text-center group">
                 <div className="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors mb-3">
