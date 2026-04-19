@@ -17,7 +17,10 @@ router.post("/admin/login", (req: Request, res: Response) => {
 
   (req.session as any).adminAuthenticated = true;
   req.session.save((err) => {
-    if (err) return res.status(500).json({ error: "Session error" });
+    if (err) {
+      console.error("Session save error:", err);
+      return res.status(500).json({ error: "Session error" });
+    }
     return res.json({ ok: true });
   });
 });

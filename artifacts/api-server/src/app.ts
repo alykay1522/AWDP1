@@ -17,6 +17,7 @@ import { requireAdmin } from "./middleware/requireAdmin";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import sitemapRouter from "./routes/sitemap";
+import { pool } from "@workspace/db";
 
 const PgSession = connectPgSimple(session);
 
@@ -70,9 +71,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(
   session({
     store: new PgSession({
-      conString: process.env.DATABASE_URL,
+      pool,
       tableName: "admin_sessions",
-      createTableIfMissing: true,
     }),
     name: "awdp_admin",
     secret: process.env.SESSION_SECRET || "change-me-in-production",
