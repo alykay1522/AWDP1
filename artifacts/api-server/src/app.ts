@@ -23,6 +23,8 @@ const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
+// Trust Replit's reverse proxy so secure cookies work over HTTPS
+app.set("trust proxy", 1);
 
 // Stripe webhook MUST be registered before express.json() — needs raw Buffer body
 app.post(
