@@ -20,7 +20,7 @@ const websiteSchema = {
   "@id": `${BASE_URL}/#website`,
   name: "All Window Door Parts",
   url: BASE_URL,
-  description: "Veteran-owned supplier of 35,000+ window and door replacement parts with over 40 years of industry experience.",
+  description: "Veteran-owned supplier of 4,000+ in-stock window and door replacement parts with over 40 years of industry experience.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -61,7 +61,7 @@ const organizationSchema = {
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Window & Door Hardware Parts",
-    numberOfItems: 35095,
+    numberOfItems: 4009,
   },
   knowsAbout: [
     "Casement window operators",
@@ -95,7 +95,7 @@ const faqSchema = {
       name: "Do you carry obsolete or discontinued window and door parts?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 35,000+ parts in our catalog, if they made it, we can almost always find it. Our Free Parts ID service helps us locate even the most obscure parts.",
+        text: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 4,000+ in-stock parts, if they made it, we can almost always find it. Our Free Parts ID service helps us locate even the most obscure parts.",
       },
     },
     {
@@ -156,7 +156,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you carry obsolete or discontinued window and door parts?",
-    a: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 35,000+ parts in our catalog, if they made it, we can almost always find it.",
+    a: "Yes — we specialize in hard-to-find, obsolete, and brand-specific parts. With over 40 years of experience and 4,000+ in-stock parts, if they made it, we can almost always find it.",
   },
   {
     q: "What brands of window and door hardware do you carry?",
@@ -245,7 +245,7 @@ export default function Home() {
       <PageSeo
         title="Window & Door Replacement Parts — Veteran Owned, 40+ Years Experience"
         path="/"
-        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 35,000+ replacement window &amp; door hardware parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
+        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 4,000+ in-stock replacement window &amp; door hardware parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
         keywords="window replacement parts, door hardware parts, casement window operator, window sash balance, patio door roller, window lock, weatherstripping, sash keeper, tilt latch, window hardware, door hardware, veteran owned"
         structuredData={[websiteSchema, organizationSchema, faqSchema] as unknown as object}
       />
@@ -288,10 +288,10 @@ export default function Home() {
                 size="lg"
                 className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
                 asChild
-                onClick={() => analytics.track("CTA Clicked", { label: "Shop 35,000+ Parts", location: "hero" })}
+                onClick={() => analytics.track("CTA Clicked", { label: "Shop 4,000+ Parts", location: "hero" })}
               >
                 <Link href="/shop">
-                  Shop 35,000+ Parts <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
+                  Shop 4,000+ Parts <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
                 </Link>
               </Button>
               <Button
@@ -320,7 +320,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {[
-              { value: "35,000+", label: "Parts in Catalog" },
+              { value: "4,000+", label: "Parts in Stock" },
               { value: "40+",     label: "Years Experience" },
               { value: "100%",    label: "Veteran Owned" },
               { value: "Free",    label: "Parts ID Service" },

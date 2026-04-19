@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   orderMinimum: "50",
   bannerEnabled: "false",
   bannerText: "",
-  metaDescription: "All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 35,000+ window and door parts.",
+  metaDescription: "All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 4,000+ in-stock window and door parts.",
   freeShippingThreshold: "0",
   taxRate: "0",
 };

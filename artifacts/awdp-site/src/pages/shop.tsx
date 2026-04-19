@@ -49,7 +49,7 @@ const CATEGORY_META: Record<string, { title: string; description: string }> = {
   },
   "Other Hardware": {
     title: "Window & Door Hardware | Hinges, Pivot Bars & Specialty Parts",
-    description: "Hard-to-find window and door hardware including pivot bars, keeper plates, specialty hinges, and discontinued OEM parts. 35,000+ parts, veteran-owned.",
+    description: "Hard-to-find window and door hardware including pivot bars, keeper plates, specialty hinges, and discontinued OEM parts. 4,000+ in-stock parts, veteran-owned.",
   },
 };
 
@@ -109,12 +109,12 @@ function buildPageMeta(search: string, category: string) {
   if (search) {
     return {
       title: `"${search}" – Window & Door Parts`,
-      description: `Shop replacement parts matching "${search}" at All Window Door Parts. 35,000+ parts including hard-to-find and discontinued hardware. Veteran-owned, 40+ years experience.`,
+      description: `Shop replacement parts matching "${search}" at All Window Door Parts. 4,000+ in-stock parts including hard-to-find and discontinued hardware. Veteran-owned, 40+ years experience.`,
     };
   }
   return {
     title: "Shop Window & Door Parts",
-    description: "Browse 35,000+ window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout.",
+    description: "Browse 4,000+ in-stock window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout.",
   };
 }
 

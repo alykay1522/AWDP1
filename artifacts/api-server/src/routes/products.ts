@@ -188,8 +188,8 @@ router.get("/products", async (req, res) => {
     const rawSearch   = req.query.search   as string | undefined;
     const { search, category } = normalizeSearch(rawSearch, rawCategory);
 
-    // Hide products priced $0.01–$34.99 (either $0 "email for price" or >= $35 visible)
-    const conditions = [visiblePrice];
+    // Only show in-stock products; hide products priced $0.01–$34.99
+    const conditions = [eq(productsTable.inStock, true), visiblePrice];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {
       conditions.push(
@@ -203,15 +203,11 @@ router.get("/products", async (req, res) => {
 
     const minPrice = req.query.minPrice ? Number(req.query.minPrice) : null;
     const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : null;
-    const inStockOnly = req.query.inStockOnly === "true";
     if (minPrice !== null && !isNaN(minPrice)) {
       conditions.push(sql`${productsTable.price}::numeric >= ${minPrice}`);
     }
     if (maxPrice !== null && !isNaN(maxPrice)) {
       conditions.push(sql`${productsTable.price}::numeric <= ${maxPrice}`);
-    }
-    if (inStockOnly) {
-      conditions.push(eq(productsTable.inStock, true));
     }
 
     const whereClause = and(...conditions);
@@ -248,7 +244,7 @@ router.get("/categories", async (req, res) => {
     const counts = await db
       .select({ category: productsTable.category, count: count() })
       .from(productsTable)
-      .where(visiblePrice)
+      .where(and(eq(productsTable.inStock, true), visiblePrice))
       .groupBy(productsTable.category);
 
     const countMap = new Map(counts.map((c) => [c.category, Number(c.count)]));

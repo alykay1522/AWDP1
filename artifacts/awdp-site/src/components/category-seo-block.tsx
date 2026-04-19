@@ -271,7 +271,7 @@ export function CatalogSeoBlock() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
-          { stat: "35,000+", label: "Parts in Catalog" },
+          { stat: "4,000+", label: "Parts in Stock" },
           { stat: "40+",     label: "Years Experience" },
           { stat: "100%",    label: "Veteran Owned" },
         ].map(({ stat, label }) => (

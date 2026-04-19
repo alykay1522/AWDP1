@@ -187,7 +187,7 @@ export function Layout({ children }: { children: ReactNode }) {
                             className="flex items-center gap-2 px-3 py-2 text-sm text-slate-800 hover:bg-primary/5 hover:text-primary font-bold rounded-lg mb-1 transition-colors"
                             onClick={() => setShopDropdownOpen(false)}
                           >
-                            All 35,000+ Parts
+                            All 4,000+ In-Stock Parts
                           </Link>
                           {SHOP_CATEGORIES.map(([label, cat]) => (
                             <Link

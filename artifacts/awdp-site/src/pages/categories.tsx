@@ -139,7 +139,7 @@ export default function Categories() {
       <PageSeo
         title="Window & Door Parts Categories — Browse by Type"
         path="/categories"
-        description="Browse 35,000+ window and door replacement parts by category: casement operators, sash balances, patio door rollers, sash locks, weatherstripping, glazing seals, and screen hardware. Veteran-owned, 40+ years experience."
+        description="Browse 4,000+ in-stock window and door replacement parts by category: casement operators, sash balances, patio door rollers, sash locks, weatherstripping, glazing seals, and screen hardware. Veteran-owned, 40+ years experience."
         keywords="window parts categories, door hardware categories, window balances, casement operators, sash hardware, door rollers, weatherstripping, screen hardware"
         structuredData={[
           {
@@ -199,7 +199,7 @@ export default function Categories() {
       {/* Hero */}
       <div className="bg-primary text-white py-16 md:py-24">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <p className="text-blue-200 uppercase tracking-widest text-sm font-semibold mb-4">35,000+ Replacement Parts</p>
+          <p className="text-blue-200 uppercase tracking-widest text-sm font-semibold mb-4">4,000+ In-Stock Parts</p>
           <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 leading-tight">
             Browse Hardware by Category
           </h1>
