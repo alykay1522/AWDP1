@@ -96,7 +96,6 @@ app.use("/api", (_req, res, next) => {
 // Public routes
 app.use("/api", router);
 app.use("/api", paypalRouter);
-app.use("/api", priceMonitorRouter);
 
 // Admin auth routes (login/logout/check — no auth required for these)
 app.use("/api", adminAuthRouter);
@@ -107,6 +106,7 @@ app.use("/api", adminOrdersRouter);
 app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);
 app.use("/api", adminImagesRouter);
+app.use("/api", priceMonitorRouter);
 app.use("/api", adminGenerateRouter);
 app.use("/api/admin/csv-import", adminCsvImportRouter);
 
