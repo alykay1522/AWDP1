@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Clock, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine, ChevronDown, Phone } from "lucide-react";
+import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine, ChevronDown, Phone } from "lucide-react";
 import { useState } from "react";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
@@ -371,7 +371,9 @@ export default function Home() {
               <span className="text-slate-700">SSL Secure Checkout</span>
             </div>
             <div className="flex items-center gap-2">
-              <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal Accepted" width="37" height="23" className="rounded" />
+              <span className="inline-flex items-center gap-1 bg-[#003087] text-white text-[10px] font-extrabold tracking-wide px-2 py-1 rounded">
+                Pay<span className="text-[#009cde]">Pal</span>
+              </span>
               <span className="text-slate-700">PayPal Accepted</span>
             </div>
             <div className="flex items-center gap-2 text-slate-600">

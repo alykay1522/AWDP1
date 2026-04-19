@@ -287,7 +287,7 @@ export default function Shop() {
       {/* Order minimum notice */}
       <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">
         <span className="text-amber-600 text-base leading-none" aria-hidden="true">!</span>
-        $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+        $50 order minimum — orders below $50 may require additional handling; we'll contact you first
       </div>
 
       <div className="flex gap-8 items-start">

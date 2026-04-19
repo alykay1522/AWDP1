@@ -225,7 +225,7 @@ export default function GuideHub() {
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Link href="/" className="hover:text-primary">Home</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-slate-700 font-medium">Part Identification Center</span>
+            <span className="text-slate-700 font-medium">Guide Hub</span>
           </nav>
         </div>
 
@@ -233,7 +233,7 @@ export default function GuideHub() {
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-10">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
             <PackageSearchIcon />
-            Part Identification Center
+            Guide Hub
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-3">
             How to Identify Your Window or Door Part

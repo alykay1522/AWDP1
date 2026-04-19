@@ -188,8 +188,8 @@ router.get("/products", async (req, res) => {
     const rawSearch   = req.query.search   as string | undefined;
     const { search, category } = normalizeSearch(rawSearch, rawCategory);
 
-    // Always require an image and hide products priced $0.01–$34.99
-    const conditions = [isNotNull(productsTable.imageUrl), visiblePrice];
+    // Hide products priced $0.01–$34.99 (either $0 "email for price" or >= $35 visible)
+    const conditions = [visiblePrice];
     if (category) conditions.push(eq(productsTable.category, category));
     if (search) {
       conditions.push(
@@ -248,7 +248,7 @@ router.get("/categories", async (req, res) => {
     const counts = await db
       .select({ category: productsTable.category, count: count() })
       .from(productsTable)
-      .where(and(isNotNull(productsTable.imageUrl), visiblePrice))
+      .where(visiblePrice)
       .groupBy(productsTable.category);
 
     const countMap = new Map(counts.map((c) => [c.category, Number(c.count)]));

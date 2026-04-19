@@ -485,18 +485,41 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
           
           {/* Mobile Search - visible only below md */}
-          <div className="md:hidden mt-3">
+          <div className="md:hidden mt-3 relative">
             <form onSubmit={handleSearch} className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" aria-hidden="true" />
               <Input
                 type="search"
                 aria-label="Search parts by SKU, brand, or name"
+                aria-autocomplete="list"
+                aria-expanded={navSuggestionsOpen}
                 placeholder="Search by SKU, brand..."
                 className="w-full pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleNavSearchChange(e.target.value)}
+                onFocus={() => { if (navSuggestions.length > 0) setNavSuggestionsOpen(true); }}
+                onBlur={() => setTimeout(() => setNavSuggestionsOpen(false), 150)}
               />
             </form>
+            {navSuggestionsOpen && navSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-slate-100 py-1 z-50 text-sm">
+                {navSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="w-full text-left px-4 py-2.5 text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors flex items-center gap-2"
+                    onMouseDown={() => {
+                      setSearchQuery(s);
+                      setNavSuggestionsOpen(false);
+                      setLocation(`/shop?search=${encodeURIComponent(s)}`);
+                    }}
+                  >
+                    <Search className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </header>
