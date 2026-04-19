@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/lib/cart";
 import { Layout } from "@/components/layout";
 import { AdminLayout } from "@/components/admin-layout";
+import { useAdminAuth } from "@/lib/useAdminAuth";
 import NotFound from "@/pages/not-found";
 
 // Public pages
@@ -27,6 +28,7 @@ import GuideDoorLock from "@/pages/guide-door-lock";
 import GuideGlazingBead from "@/pages/guide-glazing-bead";
 
 // Admin pages
+import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminProductsList from "@/pages/admin-products-list";
 import AdminNewProduct from "@/pages/admin-new-product";
@@ -42,29 +44,53 @@ import AdminCsvImport from "@/pages/admin-csv-import";
 
 const queryClient = new QueryClient();
 
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAdminAuth();
+  const [location] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-400 text-sm">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect to="/admin/login" />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppContent() {
   const [location] = useLocation();
-  const isAdmin = location.startsWith("/admin");
 
-  if (isAdmin) {
+  if (location === "/admin/login") {
+    return <AdminLogin />;
+  }
+
+  if (location.startsWith("/admin")) {
     return (
-      <AdminLayout>
-        <Switch>
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/products/new" component={AdminNewProduct} />
-          <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
-          <Route path="/admin/products" component={AdminProductsList} />
-          <Route path="/admin/orders" component={AdminOrders} />
-          <Route path="/admin/categories" component={AdminCategories} />
-          <Route path="/admin/parts-id" component={AdminPartsIdList} />
-          <Route path="/admin/contacts" component={AdminContactsList} />
-          <Route path="/admin/images" component={AdminImages} />
-          <Route path="/admin/prices" component={AdminPrices} />
-          <Route path="/admin/settings" component={AdminSettings} />
-          <Route path="/admin/csv-import" component={AdminCsvImport} />
-          <Route component={NotFound} />
-        </Switch>
-      </AdminLayout>
+      <AdminGuard>
+        <AdminLayout>
+          <Switch>
+            <Route path="/admin" component={AdminDashboard} />
+            <Route path="/admin/products/new" component={AdminNewProduct} />
+            <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
+            <Route path="/admin/products" component={AdminProductsList} />
+            <Route path="/admin/orders" component={AdminOrders} />
+            <Route path="/admin/categories" component={AdminCategories} />
+            <Route path="/admin/parts-id" component={AdminPartsIdList} />
+            <Route path="/admin/contacts" component={AdminContactsList} />
+            <Route path="/admin/images" component={AdminImages} />
+            <Route path="/admin/prices" component={AdminPrices} />
+            <Route path="/admin/settings" component={AdminSettings} />
+            <Route path="/admin/csv-import" component={AdminCsvImport} />
+            <Route component={NotFound} />
+          </Switch>
+        </AdminLayout>
+      </AdminGuard>
     );
   }
 

@@ -1,18 +1,24 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import paypalRouter from "./routes/paypal";
 import priceMonitorRouter from "./routes/priceMonitor";
+import adminAuthRouter from "./routes/adminAuth";
 import adminOrdersRouter from "./routes/adminOrders";
 import adminProductsRouter from "./routes/adminProducts";
 import adminSettingsRouter from "./routes/adminSettings";
 import adminImagesRouter from "./routes/adminImages";
 import adminGenerateRouter from "./routes/adminGenerate";
 import adminCsvImportRouter from "./routes/adminCsvImport";
+import { requireAdmin } from "./middleware/requireAdmin";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import sitemapRouter from "./routes/sitemap";
+
+const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
@@ -56,9 +62,30 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(cors({ credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Session middleware — uses PostgreSQL store for persistence across restarts
+app.use(
+  session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: "admin_sessions",
+      createTableIfMissing: true,
+    }),
+    name: "awdp_admin",
+    secret: process.env.SESSION_SECRET || "change-me-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: "lax",
+    },
+  })
+);
 
 // Disable HTTP caching on all API responses so browsers never serve stale data
 app.use("/api", (_req, res, next) => {
@@ -66,9 +93,16 @@ app.use("/api", (_req, res, next) => {
   next();
 });
 
+// Public routes
 app.use("/api", router);
 app.use("/api", paypalRouter);
 app.use("/api", priceMonitorRouter);
+
+// Admin auth routes (login/logout/check — no auth required for these)
+app.use("/api", adminAuthRouter);
+
+// All other /api/admin/* routes require authentication
+app.use("/api/admin", requireAdmin);
 app.use("/api", adminOrdersRouter);
 app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);

@@ -3,8 +3,9 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
-  ChevronRight, ExternalLink, SlidersHorizontal,
+  ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
 } from "lucide-react";
+import { useAdminLogout } from "@/lib/useAdminAuth";
 
 interface NavItem {
   href: string;
@@ -42,6 +43,7 @@ function isActive(path: string, href: string, exact?: boolean) {
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const logout = useAdminLogout();
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -98,6 +100,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           >
             <ExternalLink className="w-3.5 h-3.5" /> View Live Site
           </Link>
+          <button
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+            className="flex w-full items-center gap-2 text-xs text-slate-400 hover:text-red-400 transition-colors px-2 py-1.5 rounded hover:bg-slate-800"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Sign Out
+          </button>
         </div>
       </aside>
 
