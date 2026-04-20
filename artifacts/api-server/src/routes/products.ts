@@ -213,13 +213,16 @@ router.get("/products", async (req, res) => {
     const whereClause = and(...conditions);
 
     // Determine sort order
-    const orderBy = sort === "price-asc"  ? asc(productsTable.price)
-                  : sort === "price-desc" ? desc(productsTable.price)
-                  : sort === "name-asc"   ? asc(productsTable.name)
-                  : desc(productsTable.id); // default: newest
+    // Default "newest" puts imaged products first, then sorts by newest ID within each group
+    const hasImage = sql`CASE WHEN ${productsTable.imageUrl} IS NOT NULL AND ${productsTable.imageUrl} != '' THEN 0 ELSE 1 END`;
 
     const [products, totalResult] = await Promise.all([
-      db.select().from(productsTable).where(whereClause).orderBy(orderBy).limit(limit).offset(offset),
+      db.select().from(productsTable).where(whereClause).orderBy(
+        ...(sort === "price-asc"  ? [asc(productsTable.price)]
+          : sort === "price-desc" ? [desc(productsTable.price)]
+          : sort === "name-asc"   ? [asc(productsTable.name)]
+          : [hasImage, desc(productsTable.id)] as any) // default: images-first then newest
+      ).limit(limit).offset(offset),
       db.select({ count: count() }).from(productsTable).where(whereClause),
     ]);
 
