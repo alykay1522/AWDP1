@@ -77,9 +77,9 @@ router.post("/contact", async (req, res) => {
       message,
     });
 
-    forwardContactEmail({ name, email, phone, subject, message }).catch((err) => {
-      req.log.error({ err }, "Failed to forward contact email");
-    });
+    forwardContactEmail({ name, email, phone, subject, message })
+      .then(() => req.log.info("Contact email forwarded successfully"))
+      .catch((err) => req.log.error({ err }, "Failed to forward contact email"));
 
     res.json({
       success: true,
