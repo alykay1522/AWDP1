@@ -10,8 +10,8 @@ function createTransporter() {
   }
   return nodemailer.createTransport({
     host: "mail.allwindowdoorparts.com",
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
       user: FROM_ADDRESS,
       pass: password,
