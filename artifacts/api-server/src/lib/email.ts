@@ -1,9 +1,23 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+const FROM_ADDRESS = "info@allwindowdoorparts.com";
 const FORWARD_TO = "thepolak@wefixitusa.com";
-const FROM_ADDRESS = "noreply@allwindowdoorparts.com";
+
+function createTransporter() {
+  const password = process.env.EMAIL_APP_PASSWORD;
+  if (!password) {
+    throw new Error("EMAIL_APP_PASSWORD environment variable is not set");
+  }
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: FROM_ADDRESS,
+      pass: password,
+    },
+  });
+}
 
 export interface ContactSubmission {
   name: string;
@@ -60,8 +74,9 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
     </div>
   `;
 
-  await resend.emails.send({
-    from: FROM_ADDRESS,
+  const transporter = createTransporter();
+  await transporter.sendMail({
+    from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
     to: FORWARD_TO,
     replyTo: email,
     subject: subjectLine,

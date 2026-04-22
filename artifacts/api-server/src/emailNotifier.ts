@@ -1,15 +1,23 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 const OWNER_EMAILS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
-const FROM_EMAIL = "orders@allwindowdoorparts.com";
+const FROM_EMAIL = "info@allwindowdoorparts.com";
 
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.warn("[email] RESEND_API_KEY not set — skipping email");
+function createTransporter() {
+  const password = process.env.EMAIL_APP_PASSWORD;
+  if (!password) {
+    console.warn("[email] EMAIL_APP_PASSWORD not set — skipping email");
     return null;
   }
-  return new Resend(key);
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: FROM_EMAIL,
+      pass: password,
+    },
+  });
 }
 
 interface OrderItem {
@@ -188,39 +196,35 @@ function buildCustomerHtml(o: OrderEmailPayload): string {
 }
 
 export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
-  const resend = getResend();
-  if (!resend) return;
+  const transporter = createTransporter();
+  if (!transporter) return;
 
   const subject = `New Order ${payload.orderId} — $${payload.total}`;
 
-  // Send owner notification
-  const ownerResult = await resend.emails.send({
-    from: `All Window Door Parts Orders <${FROM_EMAIL}>`,
-    to: OWNER_EMAILS,
-    subject,
-    html: buildOwnerHtml(payload),
-  });
-
-  if (ownerResult.error) {
-    console.error("[email] Failed to send owner notification:", ownerResult.error);
-  } else {
-    console.log("[email] Owner notification sent:", ownerResult.data?.id);
+  try {
+    await transporter.sendMail({
+      from: `"All Window Door Parts Orders" <${FROM_EMAIL}>`,
+      to: OWNER_EMAILS,
+      subject,
+      html: buildOwnerHtml(payload),
+    });
+    console.log("[email] Owner notification sent");
+  } catch (err) {
+    console.error("[email] Failed to send owner notification:", err);
   }
 
-  // Send customer confirmation if we have their email
   if (payload.customerEmail) {
-    const customerResult = await resend.emails.send({
-      from: `All Window Door Parts <${FROM_EMAIL}>`,
-      to: [payload.customerEmail],
-      replyTo: OWNER_EMAIL,
-      subject: `Order Confirmation — ${payload.orderId}`,
-      html: buildCustomerHtml(payload),
-    });
-
-    if (customerResult.error) {
-      console.error("[email] Failed to send customer confirmation:", customerResult.error);
-    } else {
-      console.log("[email] Customer confirmation sent:", customerResult.data?.id);
+    try {
+      await transporter.sendMail({
+        from: `"All Window Door Parts" <${FROM_EMAIL}>`,
+        to: payload.customerEmail,
+        replyTo: FROM_EMAIL,
+        subject: `Order Confirmation — ${payload.orderId}`,
+        html: buildCustomerHtml(payload),
+      });
+      console.log("[email] Customer confirmation sent");
+    } catch (err) {
+      console.error("[email] Failed to send customer confirmation:", err);
     }
   }
 }
