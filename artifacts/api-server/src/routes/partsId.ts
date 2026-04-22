@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { partsIdRequestsTable, contactSubmissionsTable } from "@workspace/db/schema";
 import { randomUUID } from "crypto";
+import { forwardContactEmail } from "../lib/email.js";
 
 const router: IRouter = Router();
 
@@ -74,6 +75,10 @@ router.post("/contact", async (req, res) => {
       phone: phone || null,
       subject: subject || null,
       message,
+    });
+
+    forwardContactEmail({ name, email, phone, subject, message }).catch((err) => {
+      req.log.error({ err }, "Failed to forward contact email");
     });
 
     res.json({
