@@ -9,12 +9,15 @@ function createTransporter() {
     throw new Error("EMAIL_APP_PASSWORD environment variable is not set");
   }
   return nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "mail.allwindowdoorparts.com",
     port: 587,
     secure: false,
     auth: {
       user: FROM_ADDRESS,
       pass: password,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }

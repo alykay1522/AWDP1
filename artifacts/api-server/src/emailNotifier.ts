@@ -10,12 +10,15 @@ function createTransporter() {
     return null;
   }
   return nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "mail.allwindowdoorparts.com",
     port: 587,
     secure: false,
     auth: {
       user: FROM_EMAIL,
       pass: password,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }
