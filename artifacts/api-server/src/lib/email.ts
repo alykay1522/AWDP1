@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 const FROM_ADDRESS = "info@allwindowdoorparts.com";
 const CONTACT_RECIPIENTS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
-const PARTS_ID_RECIPIENTS = [FROM_ADDRESS, "alyshameade.1522@gmail.com"];
+const PARTS_ID_RECIPIENTS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
 
 function createTransporter() {
   const password = process.env.EMAIL_APP_PASSWORD;
