@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { partsIdRequestsTable, contactSubmissionsTable } from "@workspace/db/schema";
 import { randomUUID } from "crypto";
-import { forwardContactEmail } from "../lib/email.js";
+import { forwardContactEmail, forwardPartsIdEmail } from "../lib/email.js";
 
 const router: IRouter = Router();
 
@@ -48,6 +48,10 @@ router.post("/parts-identification", async (req, res) => {
       imageFileName: imageFileName || null,
       status: "pending",
     });
+
+    forwardPartsIdEmail({ ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName })
+      .then(() => req.log.info("Parts ID email forwarded successfully"))
+      .catch((err) => req.log.error({ err }, "Failed to forward parts ID email"));
 
     res.json({
       success: true,

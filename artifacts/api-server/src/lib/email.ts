@@ -87,6 +87,84 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
   });
 }
 
+export interface PartsIdSubmission {
+  ticketId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  description: string;
+  windowDoorBrand?: string | null;
+  windowDoorAge?: string | null;
+  imageFileName?: string | null;
+}
+
+export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promise<void> {
+  const { ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName } = submission;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 8px;">
+        New Parts Identification Request
+      </h2>
+      <p style="background: #f0f4ff; border-left: 4px solid #1e3a5f; padding: 10px 14px; margin: 0 0 16px; font-weight: bold;">
+        Ticket ID: ${escapeHtml(ticketId)}
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; width: 160px; vertical-align: top;">Name</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(name)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Email</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">
+            <a href="mailto:${escapeHtml(email)}" style="color: #1e3a5f;">${escapeHtml(email)}</a>
+          </td>
+        </tr>
+        ${phone ? `
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Phone</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">
+            <a href="tel:${escapeHtml(phone)}" style="color: #1e3a5f;">${escapeHtml(phone)}</a>
+          </td>
+        </tr>` : ""}
+        ${windowDoorBrand ? `
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Brand</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(windowDoorBrand)}</td>
+        </tr>` : ""}
+        ${windowDoorAge ? `
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Age</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(windowDoorAge)}</td>
+        </tr>` : ""}
+        ${imageFileName ? `
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Image</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(imageFileName)}</td>
+        </tr>` : ""}
+        <tr>
+          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Description</td>
+          <td style="padding: 8px 12px; white-space: pre-wrap;">${escapeHtml(description)}</td>
+        </tr>
+      </table>
+      <hr style="border: none; border-top: 1px solid #e8eaed; margin: 24px 0;" />
+      <p style="color: #666; font-size: 12px; margin: 0;">
+        Submitted via allwindowdoorparts.com parts identification form.<br/>
+        Reply directly to this email to respond to ${escapeHtml(name)}.
+      </p>
+    </div>
+  `;
+
+  const transporter = createTransporter();
+  await transporter.sendMail({
+    from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
+    to: FROM_ADDRESS,
+    replyTo: email,
+    subject: `Parts ID Request [${ticketId}] from ${name}`,
+    html,
+  });
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
