@@ -96,10 +96,11 @@ export interface PartsIdSubmission {
   windowDoorBrand?: string | null;
   windowDoorAge?: string | null;
   imageFileName?: string | null;
+  imageBase64?: string | null;
 }
 
 export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promise<void> {
-  const { ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName } = submission;
+  const { ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64 } = submission;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -156,12 +157,27 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
   `;
 
   const transporter = createTransporter();
+
+  // Build attachment from base64 image if provided
+  const attachments: Array<{ filename: string; content: string; encoding: string; contentType: string }> = [];
+  if (imageBase64) {
+    const match = imageBase64.match(/^data:([^;]+);base64,(.+)$/s);
+    if (match) {
+      const mimeType = match[1];
+      const base64Data = match[2];
+      const ext = mimeType.split("/")[1] ?? "jpg";
+      const filename = imageFileName ?? `photo.${ext}`;
+      attachments.push({ filename, content: base64Data, encoding: "base64", contentType: mimeType });
+    }
+  }
+
   await transporter.sendMail({
     from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
     to: FROM_ADDRESS,
     replyTo: email,
     subject: `Parts ID Request [${ticketId}] from ${name}`,
     html,
+    attachments,
   });
 }
 

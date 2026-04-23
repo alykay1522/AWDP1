@@ -49,7 +49,7 @@ router.post("/parts-identification", async (req, res) => {
       status: "pending",
     });
 
-    forwardPartsIdEmail({ ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName })
+    forwardPartsIdEmail({ ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64: imageBase64 || null })
       .then(() => req.log.info("Parts ID email forwarded successfully"))
       .catch((err) => req.log.error({ err }, "Failed to forward parts ID email"));
 
