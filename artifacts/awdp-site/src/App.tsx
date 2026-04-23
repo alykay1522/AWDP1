@@ -1,4 +1,5 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
@@ -41,6 +42,14 @@ import AdminSettings from "@/pages/admin-settings";
 import AdminImages from "@/pages/admin-images";
 import AdminBulkEditor from "@/pages/admin-bulk-editor";
 import AdminCsvImport from "@/pages/admin-csv-import";
+
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
 
 const queryClient = new QueryClient();
 
@@ -126,6 +135,7 @@ function App() {
         <CartProvider>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <ScrollToTop />
               <AppContent />
             </WouterRouter>
             <Toaster />
