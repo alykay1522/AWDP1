@@ -11,6 +11,25 @@ export default function About() {
         title="About Us — 40+ Years of Window & Door Expertise"
         path="/about"
         description="All Window Door Parts is a veteran-owned business with over 40 years of experience supplying window and door replacement parts to homeowners, contractors, and businesses across the USA."
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "All Window Door Parts",
+          "alternateName": "AllWindowDoorParts GROUP USA",
+          "description": "Veteran-owned supplier of replacement window and door hardware parts with over 40 years of industry experience. We specialize in hard-to-find, obsolete, and brand-specific parts.",
+          "url": "https://www.allwindowdoorparts.com",
+          "telephone": "+17855330244",
+          "email": "Info@allwindowdoorparts.com",
+          "image": "https://www.allwindowdoorparts.com/opengraph.jpg",
+          "foundingDate": "1984",
+          "areaServed": "USA",
+          "currenciesAccepted": "USD",
+          "paymentAccepted": "Credit Card, PayPal, Visa, MasterCard, Discover, American Express",
+          "openingHoursSpecification": [
+            { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "17:00" }
+          ],
+          "sameAs": ["https://www.allwindowdoorparts.com"]
+        }}
       />
       <Breadcrumb items={[{ label: "About Us" }]} />
       {/* Hero Section */}

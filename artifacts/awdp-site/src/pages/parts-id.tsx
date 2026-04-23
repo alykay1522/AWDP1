@@ -157,6 +157,28 @@ export default function PartsIdentification() {
       <PageSeo
         title="Free Parts Identification | All Window Door Parts"
         description="Can't find your part? Send us a photo and description — our experts identify any window or door part for free, usually within 1 business day."
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Free Parts Identification Service",
+          "provider": {
+            "@type": "LocalBusiness",
+            "name": "All Window Door Parts",
+            "telephone": "+17855330244",
+            "email": "Info@allwindowdoorparts.com",
+            "url": "https://www.allwindowdoorparts.com"
+          },
+          "description": "Send us a photo of your window or door hardware and our experts will identify the correct replacement part — free of charge, usually within 1 business day.",
+          "serviceType": "Parts Identification",
+          "areaServed": "USA",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "name": "Free Parts Identification"
+          }
+        }}
       />
 
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Free Parts ID" }]} />

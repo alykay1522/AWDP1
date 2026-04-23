@@ -118,14 +118,30 @@ export default function ProductDetail() {
 
   const CATEGORY_INTROS: Record<string, string> = {
     "Window Balances": "If your window won't stay open, slams shut, or feels too heavy to lift, the window balance is usually the cause. Balances wear out gradually — especially in older or frequently-used windows.",
-    "Window Hardware": "Difficulty opening or closing a casement or awning window often points to a worn operator. A stripped crank, seized mechanism, or cracked arm are common signs the operator needs replacing.",
+    "Window Hardware": "Difficulty opening or closing a casement or awning window often points to a worn operator or hinge. A stripped crank, seized mechanism, or cracked hinge arm are common signs the hardware needs replacing.",
     "Sash Hardware": "Loose sash locks, broken tilt latches, or a sash that won't stay in place are common issues in double-hung windows. These parts are designed to be user-replaceable without removing the window.",
-    "Door Hardware": "A sliding glass door that sticks, drags, or jumps off the track usually has worn rollers. Replacing the roller assembly is one of the most effective repairs for a patio door.",
     "Window Glazing and Weatherstrip": "Drafts, water infiltration, or rising heating and cooling bills are clear signs your weatherstripping has worn out. Most profiles pull out of the kerf channel and press back in — no tools required.",
     "Screen Hardware and Accessories": "Torn screen fabric, bent frame sections, or missing hardware can usually be repaired piece by piece. You rarely need a whole new screen — just the parts that have failed.",
     "Other Hardware": "Can't find your part in the standard categories? Many specialty and discontinued window and door parts are available here. Use our Free Parts ID service if you need help identifying an unusual or obsolete part.",
   };
-  const categoryIntro = CATEGORY_INTROS[product.category] ?? null;
+
+  // Door Hardware intro is name-sensitive — rollers vs. handles vs. hinges vs. locks
+  const getDoorHardwareIntro = (name: string): string => {
+    const n = name.toLowerCase();
+    if (n.includes("roller") || n.includes("wheel") || n.includes("tandem"))
+      return "A sliding glass door that sticks, drags, or jumps off the track usually has worn rollers. Replacing the roller assembly is one of the most effective repairs for a patio door.";
+    if (n.includes("handle") || n.includes("latch") || n.includes("mortise"))
+      return "A broken, stiff, or loose patio door handle or latch is a common repair. Replacing the handle set restores smooth, secure door operation and proper latching.";
+    if (n.includes("hinge") || n.includes("hinge arm") || n.includes("pivot"))
+      return "Worn or damaged door hinges can cause misalignment, sticking, or failure to close properly. Replacing the hinge assembly restores correct door swing and sealing.";
+    if (n.includes("lock") || n.includes("deadbolt") || n.includes("keeper") || n.includes("strike"))
+      return "A patio or entry door that won't lock securely is a safety issue. Replacing the lock set, keeper, or strike plate restores proper security.";
+    return "Patio and entry door hardware wears over time — rollers, handles, hinges, and locks all have a service life. Replacing the specific failed component is the most effective repair.";
+  };
+
+  const categoryIntro = product.category === "Door Hardware"
+    ? getDoorHardwareIntro(product.name)
+    : CATEGORY_INTROS[product.category] ?? null;
 
   const FIXES_MAP: Record<string, string[]> = {
     "Window Balances": [
@@ -271,7 +287,19 @@ export default function ProductDetail() {
         description={seoDescription}
         image={product.imageUrl ?? undefined}
         type="product"
-        structuredData={[productSchema] as unknown as object}
+        structuredData={[
+          productSchema,
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://www.allwindowdoorparts.com/" },
+              { "@type": "ListItem", position: 2, name: "Shop Parts", item: "https://www.allwindowdoorparts.com/shop" },
+              { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com/shop?category=${encodeURIComponent(product.category)}` },
+              { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com/product/${product.sku}` },
+            ],
+          },
+        ] as unknown as object}
       />
 
       <Breadcrumb items={[
@@ -440,15 +468,21 @@ export default function ProductDetail() {
                 </div>
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
-                  <div className="flex items-center gap-3">
-                    <Truck className="w-5 h-5 text-primary shrink-0" /> Shipping calculated at checkout — some items may require distributor sourcing
+                  <div className="flex items-center gap-3 text-emerald-700 font-semibold">
+                    <PackageCheck className="w-5 h-5 text-emerald-600 shrink-0" /> Usually ships within 1–3 business days
                   </div>
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-primary shrink-0" /> Genuine Replacement Part - Quality Guaranteed
+                    <Truck className="w-5 h-5 text-primary shrink-0" /> Shipping calculated at checkout
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-primary shrink-0" /> Genuine replacement part — quality guaranteed
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> 40+ years expertise — we verify compatibility
                   </div>
                   <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 font-semibold text-xs mt-1">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    $50 minimum on all orders &mdash; Anything below $50 will be cancelled
+                    Orders under $50 may require additional shipping charges — we'll contact you before processing
                   </div>
                 </div>
               </div>
@@ -815,8 +849,10 @@ export default function ProductDetail() {
               </ul>
               
               <h3 className="text-lg font-bold text-slate-900 mb-2 mt-8">Return Policy</h3>
-              <p>We accept returns on unused, uninstalled parts within 30 days of delivery. Parts must be in original packaging.</p>
-              <p className="text-sm italic">Note: Special order and custom-cut weatherstripping are non-returnable.</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-800">
+                <strong>Most items are special order and cannot be returned.</strong> Special order items are sourced specifically for your order through our national distribution network and are non-returnable and non-exchangeable. Custom-cut weatherstripping is also non-returnable.
+              </div>
+              <p className="mt-3 text-sm text-slate-600">If you are unsure whether a part qualifies as a special order, please contact us <strong>before purchasing</strong>. Our experts will confirm compatibility and ordering terms — <a href="mailto:info@allwindowdoorparts.com" className="text-primary font-semibold underline">info@allwindowdoorparts.com</a> or <a href="tel:+17855330244" className="text-primary font-semibold underline">785-533-0244</a>.</p>
 
               <div className="mt-6 bg-slate-50 border rounded-lg px-4 py-3 flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />

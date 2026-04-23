@@ -108,10 +108,19 @@ export default function Policies() {
               </div>
               <h2 className="text-2xl font-serif font-bold text-slate-900">Return Policy</h2>
             </div>
-            <p className="text-slate-700 leading-relaxed font-semibold">
-              SPECIAL ORDER ITEMS &mdash; which include most items shown and offered on our sites are not
-              returnable through the national distribution network.
-            </p>
+            <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-red-900 font-semibold mb-4">
+              <strong>Most items are special order and cannot be returned.</strong>
+            </div>
+            <div className="space-y-3 text-slate-700 leading-relaxed">
+              <p>
+                Special order items — which include most items shown and offered on our sites — are sourced specifically for your order through our national distribution network and are <strong>non-returnable and non-exchangeable</strong>.
+              </p>
+              <p>Custom-cut weatherstripping and any items cut-to-length are also non-returnable.</p>
+              <p>
+                If you are unsure whether an item is a special order, please contact us <strong>before purchasing</strong>. Our experts will confirm compatibility and let you know the ordering terms.
+              </p>
+              <p className="text-sm text-slate-500">Contact: <a href="mailto:info@allwindowdoorparts.com" className="text-primary font-semibold underline">info@allwindowdoorparts.com</a> or <a href="tel:+17855330244" className="text-primary font-semibold underline">785-533-0244</a></p>
+            </div>
           </section>
 
           {/* Security Notice */}
