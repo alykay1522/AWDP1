@@ -1,7 +1,7 @@
 import { useCart } from "@/lib/cart";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, PackageCheck, Mail } from "lucide-react";
+import { ShoppingCart, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
 
@@ -81,15 +81,15 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>
-            {isCallForPricing ? (
-              <span className="text-sm font-bold text-primary block">Email for Details</span>
-            ) : isSale ? (
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
-                <span className="text-xl font-bold text-accent">${price.toFixed(2)}</span>
-              </div>
-            ) : (
-              <span className="text-xl font-bold text-primary block">${price.toFixed(2)}</span>
+            {!isCallForPricing && (
+              isSale ? (
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-accent">${price.toFixed(2)}</span>
+                </div>
+              ) : (
+                <span className="text-xl font-bold text-primary block">${price.toFixed(2)}</span>
+              )
             )}
             {product.inStock ? (
               <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1 uppercase tracking-wider">
@@ -102,32 +102,19 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
           
-          {isCallForPricing ? (
-            <Button
-              size="icon"
-              variant="secondary"
-              className="rounded-full w-10 h-10 shrink-0 shadow-sm"
-              asChild
-            >
-              <a href="mailto:info@allwindowdoorparts.com" aria-label="Email for details">
-                <Mail className="w-4 h-4" />
-              </a>
-            </Button>
-          ) : (
-            <Button 
-              size="icon" 
-              variant="secondary"
-              className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
-              disabled={!product.inStock}
-              onClick={(e) => {
-                e.preventDefault();
-                addToCart(product);
-              }}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              <span className="sr-only">Add to Cart</span>
-            </Button>
-          )}
+          <Button 
+            size="icon" 
+            variant="secondary"
+            className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
+            disabled={!product.inStock || isCallForPricing}
+            onClick={(e) => {
+              e.preventDefault();
+              addToCart(product);
+            }}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            <span className="sr-only">Add to Cart</span>
+          </Button>
         </div>
       </div>
     </div>
