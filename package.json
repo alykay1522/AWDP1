@@ -16,5 +16,15 @@
   "dependencies": {
     "stripe": "^21.0.1",
     "stripe-replit-sync": "^1.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "yaml": ">=2.8.3",
+      "brace-expansion": ">=2.0.3",
+      "fast-xml-parser": ">=5.7.0",
+      "uuid": ">=14.0.0",
+      "@tootallnate/once": ">=3.0.1",
+      "esbuild": ">=0.25.0"
+    }
   }
 }
