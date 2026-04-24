@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { ordersTable } from "@workspace/db/schema";
-import { eq } from "drizzle-orm";
+import { ordersTable, productsTable } from "@workspace/db/schema";
+import { eq, inArray } from "drizzle-orm";
 import { getUncachableStripeClient } from "../stripeClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
@@ -10,10 +10,12 @@ const router = Router();
 
 const CartItemSchema = z.object({
   sku: z.string(),
-  name: z.string(),
-  price: z.number().positive(),
   quantity: z.number().int().positive(),
   imageUrl: z.string().optional(),
+  // name and price are accepted from the client but IGNORED — the server
+  // re-prices every item from the catalog before charging.
+  name: z.string().optional(),
+  price: z.number().optional(),
 });
 
 const CheckoutRequestSchema = z.object({
@@ -32,6 +34,50 @@ function generateOrderId(): string {
   return id;
 }
 
+/**
+ * Re-prices every cart item against the live catalog.
+ * Returns { verifiedItems } or throws an error string.
+ */
+async function serverPriceItems(
+  rawItems: Array<{ sku: string; quantity: number; imageUrl?: string }>,
+): Promise<Array<{ sku: string; name: string; price: number; quantity: number; imageUrl?: string }>> {
+  const skus = rawItems.map((i) => i.sku);
+
+  const dbProducts = await db
+    .select({
+      sku: productsTable.sku,
+      name: productsTable.name,
+      price: productsTable.price,
+      imageUrl: productsTable.imageUrl,
+    })
+    .from(productsTable)
+    .where(inArray(productsTable.sku, skus));
+
+  const productMap = new Map(dbProducts.map((p) => [p.sku, p]));
+
+  const missing = skus.filter((s) => !productMap.has(s));
+  if (missing.length > 0) {
+    throw new Error(`Unknown SKU(s): ${missing.join(", ")}`);
+  }
+
+  return rawItems.map((item) => {
+    const p = productMap.get(item.sku)!;
+    const price = parseFloat(p.price as string);
+    if (price <= 0) {
+      throw new Error(
+        `Item "${p.name}" (${item.sku}) is not available for online purchase. Please call 785-533-0244 for pricing.`,
+      );
+    }
+    return {
+      sku: p.sku,
+      name: p.name,
+      price,
+      quantity: item.quantity,
+      imageUrl: item.imageUrl ?? p.imageUrl ?? undefined,
+    };
+  });
+}
+
 // POST /api/checkout/session — Create a Stripe checkout session
 router.post("/checkout/session", async (req, res) => {
   try {
@@ -40,22 +86,27 @@ router.post("/checkout/session", async (req, res) => {
       return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
     }
 
-    const { items, customerEmail, successUrl, cancelUrl } = parsed.data;
+    const { items: rawItems, customerEmail, successUrl, cancelUrl } = parsed.data;
+
+    // Re-price every item from the catalog — ignore client-supplied prices
+    let items: Awaited<ReturnType<typeof serverPriceItems>>;
+    try {
+      items = await serverPriceItems(rawItems);
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
 
     const ORDER_MINIMUM = 50;
-    const subtotalCheck = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    if (subtotalCheck < ORDER_MINIMUM) {
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (subtotal < ORDER_MINIMUM) {
       return res.status(400).json({
-        error: `Order minimum is $${ORDER_MINIMUM.toFixed(2)}. Your cart total is $${subtotalCheck.toFixed(2)}.`,
+        error: `Order minimum is $${ORDER_MINIMUM.toFixed(2)}. Your cart total is $${subtotal.toFixed(2)}.`,
       });
     }
 
     const stripe = await getUncachableStripeClient();
-
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const orderId = generateOrderId();
 
-    // Build Stripe line items using price_data
     const lineItems = items.map((item) => ({
       price_data: {
         currency: "usd",
@@ -130,16 +181,16 @@ router.post("/checkout/session", async (req, res) => {
       cancel_url: `${baseUrl}/cart`,
     });
 
-    // Save order to DB in "pending" state
+    // Save order to DB in "pending" state using server-verified prices
     await db.insert(ordersTable).values({
       orderId,
       stripeSessionId: session.id,
       customerName: customerEmail?.split("@")[0] || "Customer",
       customerEmail: customerEmail || "",
       lineItems: items,
-      subtotal: String(subtotal.toFixed(2)),
+      subtotal: subtotal.toFixed(2),
       shippingCost: "0",
-      total: String(subtotal.toFixed(2)),
+      total: subtotal.toFixed(2),
       status: "pending",
     });
 
@@ -150,11 +201,16 @@ router.post("/checkout/session", async (req, res) => {
   }
 });
 
-// GET /api/checkout/order/:orderId — Get order status
+// GET /api/checkout/order/:orderId — Get order status (public, PII-free)
 router.get("/checkout/order/:orderId", async (req, res) => {
   try {
     const [order] = await db
-      .select()
+      .select({
+        orderId: ordersTable.orderId,
+        status: ordersTable.status,
+        createdAt: ordersTable.createdAt,
+        total: ordersTable.total,
+      })
       .from(ordersTable)
       .where(eq(ordersTable.orderId, req.params.orderId))
       .limit(1);
