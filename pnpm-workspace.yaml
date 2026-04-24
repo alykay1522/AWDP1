@@ -42,6 +42,14 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Security vulnerability fixes
+  yaml: '>=2.8.3'
+  brace-expansion: '>=2.0.3'
+  '@google-cloud/storage>fast-xml-parser': '>=5.7.0'
+  '@google-cloud/storage>uuid': '>=14.0.0'
+  'gaxios>uuid': '>=14.0.0'
+  'teeny-request>uuid': '>=14.0.0'
+  'http-proxy-agent>@tootallnate/once': '>=3.0.1'
   lodash: '>=4.18.0'
   path-to-regexp: '>=8.4.0'
   picomatch@^2: '2.3.2'
