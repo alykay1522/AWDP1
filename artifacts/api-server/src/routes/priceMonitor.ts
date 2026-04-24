@@ -130,6 +130,55 @@ router.post("/admin/price-manual", async (req, res) => {
   }
 });
 
+// POST /api/admin/price-competitor — record a competitor's retail price for a product
+router.post("/admin/price-competitor", async (req, res) => {
+  try {
+    const { productSku, competitor, competitorUrl, competitorPrice, notes } = req.body as {
+      productSku: string;
+      competitor: string;
+      competitorUrl?: string;
+      competitorPrice: number;
+      notes?: string;
+    };
+
+    const COMPETITORS = ["AllBrand", "BiltBest", "Truth/EntryGard", "Oldach"];
+    if (!productSku || !competitor || !competitorPrice) {
+      return res.status(400).json({ error: "productSku, competitor, and competitorPrice are required" });
+    }
+    if (!COMPETITORS.includes(competitor)) {
+      return res.status(400).json({ error: `competitor must be one of: ${COMPETITORS.join(", ")}` });
+    }
+
+    const [product] = await db.select().from(productsTable).where(eq(productsTable.sku, productSku)).limit(1);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const ourPrice = parseFloat(product.price);
+    const markupRatio = competitorPrice > 0 ? ourPrice / competitorPrice : 0;
+
+    // Compare: are we competitive? (within 15% of competitor price)
+    let status = "ok";
+    if (ourPrice > competitorPrice * 1.15) status = "cost_up"; // we're more than 15% above competitor
+    else if (ourPrice < competitorPrice * 0.85) status = "cost_down"; // we're more than 15% below
+
+    const [record] = await db.insert(distributorPricesTable).values({
+      productSku,
+      distributor: competitor,
+      distributorSku: null,
+      distributorUrl: competitorUrl ?? null,
+      costPrice: String(competitorPrice.toFixed(2)),
+      ourPrice: String(ourPrice.toFixed(2)),
+      markupRatio: String(markupRatio.toFixed(4)),
+      targetMarkup: "1.0",
+      status: "manual",
+      notes: notes || `Competitor price check: ${competitor} sells at $${competitorPrice.toFixed(2)}, we sell at $${ourPrice.toFixed(2)}`,
+    }).returning();
+
+    res.json({ success: true, record, status, comparison: { ourPrice, competitorPrice, difference: (ourPrice - competitorPrice).toFixed(2) } });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/admin/price-update-our — update our selling price and mark alerts as resolved
 router.post("/admin/price-update-our", async (req, res) => {
   try {

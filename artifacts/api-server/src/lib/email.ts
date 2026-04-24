@@ -139,16 +139,17 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
           <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Age</td>
           <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(windowDoorAge)}</td>
         </tr>` : ""}
-        ${imageFileName ? `
-        <tr>
-          <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Image</td>
-          <td style="padding: 8px 12px; border-bottom: 1px solid #e8eaed;">${escapeHtml(imageFileName)}</td>
-        </tr>` : ""}
         <tr>
           <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; vertical-align: top;">Description</td>
           <td style="padding: 8px 12px; white-space: pre-wrap;">${escapeHtml(description)}</td>
         </tr>
       </table>
+      ${imageBase64 ? `
+      <div style="margin: 16px 0;">
+        <p style="font-weight: bold; color: #1e3a5f; margin: 0 0 8px;">Attached Photo${imageFileName ? ` — ${escapeHtml(imageFileName)}` : ""}:</p>
+        <img src="${imageBase64}" alt="Customer photo of part" style="max-width: 480px; max-height: 480px; border: 1px solid #e8eaed; border-radius: 6px; display: block;" />
+      </div>
+      ` : ""}
       <hr style="border: none; border-top: 1px solid #e8eaed; margin: 24px 0;" />
       <p style="color: #666; font-size: 12px; margin: 0;">
         Submitted via allwindowdoorparts.com parts identification form.<br/>

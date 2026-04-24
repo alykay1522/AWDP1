@@ -78,14 +78,51 @@ router.post("/checkout/session", async (req, res) => {
       line_items: lineItems,
       mode: "payment",
       customer_email: customerEmail,
+      customer_creation: "always",
       shipping_address_collection: {
         allowed_countries: ["US", "CA"],
       },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 1295, currency: "usd" },
+            display_name: "Standard Ground",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 5 },
+              maximum: { unit: "business_day", value: 7 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 2495, currency: "usd" },
+            display_name: "Priority Shipping",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 2 },
+              maximum: { unit: "business_day", value: 3 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 4995, currency: "usd" },
+            display_name: "Express Overnight",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 1 },
+              maximum: { unit: "business_day", value: 1 },
+            },
+          },
+        },
+      ],
+      automatic_tax: { enabled: true },
       phone_number_collection: { enabled: true },
       custom_text: {
         submit: {
           message:
-            "Orders typically ship within 1-2 business days. Questions? Call 785-533-0244.",
+            "Most items are special order and ship within 1-3 business days. Questions? Call 785-533-0244.",
         },
       },
       metadata: { orderId },

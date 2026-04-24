@@ -58,21 +58,33 @@ function formatMarkup(ratio: string | null, target: string) {
   );
 }
 
+const COMPETITOR_SITES: Record<string, string> = {
+  "AllBrand": "https://www.allbrandwindowdoorparts.com",
+  "BiltBest": "https://www.biltbestwindowparts.com",
+  "Truth/EntryGard": "https://www.truthentrygard.com",
+  "Oldach": "https://www.oldachparts.com",
+};
+
 function ManualPriceEntry({ sku, distributor, onSave }: { sku: string; distributor: string; onSave: () => void }) {
   const [cost, setCost] = useState("");
   const [saving, setSaving] = useState(false);
+  const isCompetitor = Object.keys(COMPETITOR_SITES).includes(distributor);
 
   const handleSave = async () => {
     if (!cost || isNaN(Number(cost))) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/price-manual", {
+      const endpoint = isCompetitor ? "/api/admin/price-competitor" : "/api/admin/price-manual";
+      const body = isCompetitor
+        ? { productSku: sku, competitor: distributor, competitorPrice: Number(cost), competitorUrl: COMPETITOR_SITES[distributor] }
+        : { productSku: sku, distributor, costPrice: Number(cost) };
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productSku: sku, distributor, costPrice: Number(cost) }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
-        toast({ title: "Price saved", description: `Cost $${cost} recorded for ${sku}` });
+        toast({ title: "Price saved", description: `${isCompetitor ? "Competitor" : "Cost"} $${cost} recorded for ${sku}` });
         onSave();
       }
     } finally {
@@ -82,7 +94,7 @@ function ManualPriceEntry({ sku, distributor, onSave }: { sku: string; distribut
 
   return (
     <div className="flex items-center gap-2 mt-2">
-      <span className="text-xs text-muted-foreground">Enter cost:</span>
+      <span className="text-xs text-muted-foreground">{isCompetitor ? "Their retail price:" : "Enter cost:"}</span>
       <Input
         type="number"
         step="0.01"
@@ -94,6 +106,13 @@ function ManualPriceEntry({ sku, distributor, onSave }: { sku: string; distribut
       <Button size="sm" className="h-7 text-xs" onClick={handleSave} disabled={saving || !cost}>
         <Check className="w-3 h-3 mr-1" /> Save
       </Button>
+      {isCompetitor && COMPETITOR_SITES[distributor] && (
+        <a href={COMPETITOR_SITES[distributor]} target="_blank" rel="noreferrer">
+          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1">
+            <ExternalLink className="w-3 h-3" /> Open site
+          </Button>
+        </a>
+      )}
     </div>
   );
 }
@@ -179,13 +198,14 @@ export default function AdminPrices() {
         <div>
           <h1 className="text-2xl font-bold font-serif">Distributor Price Monitor</h1>
           <p className="text-muted-foreground text-sm">
-            Track cost prices from Alcosupply &amp; Strybuc — get notified when markup needs updating.
+            Track supplier costs (Alcosupply, Strybuc) and monitor competitor retail prices (AllBrand, BiltBest, Truth/EntryGard, Oldach).
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={refresh} className="gap-1">
             <RefreshCw className="w-4 h-4" /> Refresh
           </Button>
+          <span className="text-xs text-muted-foreground self-center font-medium">Suppliers:</span>
           <a href="https://alcosupply.com/shop/" target="_blank" rel="noreferrer">
             <Button variant="outline" size="sm" className="gap-1">
               <ExternalLink className="w-3 h-3" /> Alcosupply
@@ -194,6 +214,27 @@ export default function AdminPrices() {
           <a href="https://shop.strybuc.com/" target="_blank" rel="noreferrer">
             <Button variant="outline" size="sm" className="gap-1">
               <ExternalLink className="w-3 h-3" /> Strybuc
+            </Button>
+          </a>
+          <span className="text-xs text-muted-foreground self-center font-medium ml-2">Competitors:</span>
+          <a href="https://www.allbrandwindowdoorparts.com" target="_blank" rel="noreferrer">
+            <Button variant="outline" size="sm" className="gap-1 border-orange-200 text-orange-700 hover:bg-orange-50">
+              <ExternalLink className="w-3 h-3" /> AllBrand
+            </Button>
+          </a>
+          <a href="https://www.biltbestwindowparts.com" target="_blank" rel="noreferrer">
+            <Button variant="outline" size="sm" className="gap-1 border-orange-200 text-orange-700 hover:bg-orange-50">
+              <ExternalLink className="w-3 h-3" /> BiltBest
+            </Button>
+          </a>
+          <a href="https://www.truthentrygard.com" target="_blank" rel="noreferrer">
+            <Button variant="outline" size="sm" className="gap-1 border-orange-200 text-orange-700 hover:bg-orange-50">
+              <ExternalLink className="w-3 h-3" /> Truth/EntryGard
+            </Button>
+          </a>
+          <a href="https://www.oldachparts.com" target="_blank" rel="noreferrer">
+            <Button variant="outline" size="sm" className="gap-1 border-orange-200 text-orange-700 hover:bg-orange-50">
+              <ExternalLink className="w-3 h-3" /> Oldach Parts
             </Button>
           </a>
         </div>
@@ -240,8 +281,8 @@ export default function AdminPrices() {
             </Button>
           ))}
         </div>
-        <div className="flex gap-1">
-          {["all", "Alcosupply", "Strybuc"].map(d => (
+        <div className="flex flex-wrap gap-1">
+          {["all", "Alcosupply", "Strybuc", "AllBrand", "BiltBest", "Truth/EntryGard", "Oldach"].map(d => (
             <Button key={d} size="sm" variant={distFilter === d ? "secondary" : "ghost"} className="h-9 text-xs" onClick={() => setDistFilter(d)}>
               {d}
             </Button>
