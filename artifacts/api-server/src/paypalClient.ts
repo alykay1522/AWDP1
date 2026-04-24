@@ -121,7 +121,11 @@ export async function capturePayPalOrder(
   id: string;
   status: string;
   payer?: { email_address?: string; name?: { given_name?: string; surname?: string } };
-  purchase_units?: Array<{ shipping?: { address?: Record<string, string>; name?: { full_name?: string } }; payments?: { captures?: Array<{ id: string; amount: { value: string } }> } }>;
+  purchase_units?: Array<{
+    reference_id?: string;
+    shipping?: { address?: Record<string, string>; name?: { full_name?: string } };
+    payments?: { captures?: Array<{ id: string; amount: { value: string } }> };
+  }>;
 }> {
   const token = await getAccessToken();
 

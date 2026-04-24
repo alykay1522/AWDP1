@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { ordersTable } from "@workspace/db/schema";
-import { eq } from "drizzle-orm";
+import { ordersTable, productsTable } from "@workspace/db/schema";
+import { eq, inArray } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
@@ -10,10 +10,11 @@ const router = Router();
 
 const CartItemSchema = z.object({
   sku: z.string(),
-  name: z.string(),
-  price: z.number().positive(),
   quantity: z.number().int().positive(),
   imageUrl: z.string().optional(),
+  // name and price accepted but IGNORED — server re-prices from catalog
+  name: z.string().optional(),
+  price: z.number().optional(),
 });
 
 const CreateOrderSchema = z.object({
@@ -29,6 +30,50 @@ function generateOrderId(): string {
   return id;
 }
 
+/**
+ * Re-prices every cart item against the live catalog.
+ * Throws if any SKU is unknown or not available for online purchase.
+ */
+async function serverPriceItems(
+  rawItems: Array<{ sku: string; quantity: number; imageUrl?: string }>,
+): Promise<Array<{ sku: string; name: string; price: number; quantity: number; imageUrl?: string }>> {
+  const skus = rawItems.map((i) => i.sku);
+
+  const dbProducts = await db
+    .select({
+      sku: productsTable.sku,
+      name: productsTable.name,
+      price: productsTable.price,
+      imageUrl: productsTable.imageUrl,
+    })
+    .from(productsTable)
+    .where(inArray(productsTable.sku, skus));
+
+  const productMap = new Map(dbProducts.map((p) => [p.sku, p]));
+
+  const missing = skus.filter((s) => !productMap.has(s));
+  if (missing.length > 0) {
+    throw new Error(`Unknown SKU(s): ${missing.join(", ")}`);
+  }
+
+  return rawItems.map((item) => {
+    const p = productMap.get(item.sku)!;
+    const price = parseFloat(p.price as string);
+    if (price <= 0) {
+      throw new Error(
+        `Item "${p.name}" (${item.sku}) is not available for online purchase. Please call 785-533-0244 for pricing.`,
+      );
+    }
+    return {
+      sku: p.sku,
+      name: p.name,
+      price,
+      quantity: item.quantity,
+      imageUrl: item.imageUrl ?? p.imageUrl ?? undefined,
+    };
+  });
+}
+
 // POST /api/paypal/create-order
 router.post("/paypal/create-order", async (req, res) => {
   try {
@@ -37,8 +82,22 @@ router.post("/paypal/create-order", async (req, res) => {
       return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
     }
 
-    const { items } = parsed.data;
+    // Re-price every item from the catalog — ignore client-supplied prices
+    let items: Awaited<ReturnType<typeof serverPriceItems>>;
+    try {
+      items = await serverPriceItems(parsed.data.items);
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    const ORDER_MINIMUM = 50;
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (subtotal < ORDER_MINIMUM) {
+      return res.status(400).json({
+        error: `Order minimum is $${ORDER_MINIMUM.toFixed(2)}. Your cart total is $${subtotal.toFixed(2)}.`,
+      });
+    }
+
     const orderId = generateOrderId();
 
     const paypalOrder = await createPayPalOrder({
@@ -51,15 +110,15 @@ router.post("/paypal/create-order", async (req, res) => {
       orderId,
     });
 
-    // Save pending order to DB
+    // Save pending order to DB using server-verified prices
     await db.insert(ordersTable).values({
       orderId,
       customerName: "Customer",
       customerEmail: "",
       lineItems: items,
-      subtotal: String(subtotal.toFixed(2)),
+      subtotal: subtotal.toFixed(2),
       shippingCost: "0",
-      total: String(subtotal.toFixed(2)),
+      total: subtotal.toFixed(2),
       status: "pending",
     });
 
@@ -82,6 +141,17 @@ router.post("/paypal/capture-order", async (req, res) => {
     const capture = await capturePayPalOrder(paypalOrderId);
 
     if (capture.status === "COMPLETED") {
+      // Verify that the captured PayPal order's reference_id matches the local orderId
+      // This prevents an attacker from paying for a cheap order and marking an expensive
+      // local order as paid by substituting the expensive orderId in this request.
+      const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
+      if (!capturedReferenceId || capturedReferenceId !== orderId) {
+        console.error(
+          `[PayPal] reference_id mismatch: PayPal has "${capturedReferenceId}", request claims "${orderId}"`,
+        );
+        return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
+      }
+
       const payer = capture.payer;
       const pu = capture.purchase_units?.[0];
       const shipping = pu?.shipping;
