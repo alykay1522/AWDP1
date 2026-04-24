@@ -10,13 +10,19 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+const sslConfig = (() => {
+  if (process.env.NODE_ENV !== "production") return undefined;
+  if (process.env.DATABASE_URL?.includes("sslmode=disable")) return undefined;
+  return { rejectUnauthorized: true };
+})();
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   min: 2,
   max: 10,
   idleTimeoutMillis: 60000,
   connectionTimeoutMillis: 10000,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+  ssl: sslConfig,
 });
 
 pool.on("error", (err) => {

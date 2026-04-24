@@ -18,7 +18,7 @@ function createTransporter() {
       pass: password,
     },
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
     },
   });
 }
