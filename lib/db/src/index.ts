@@ -12,7 +12,13 @@ if (!process.env.DATABASE_URL) {
 
 const sslConfig = (() => {
   if (process.env.NODE_ENV !== "production") return undefined;
-  if (process.env.DATABASE_URL?.includes("sslmode=disable")) return undefined;
+  if (process.env.DATABASE_URL?.includes("sslmode=disable")) {
+    throw new Error(
+      "[SECURITY] DATABASE_URL contains 'sslmode=disable' in production. " +
+        "Unencrypted database connections are not permitted. " +
+        "Remove 'sslmode=disable' from DATABASE_URL to enforce TLS.",
+    );
+  }
   return { rejectUnauthorized: true };
 })();
 
