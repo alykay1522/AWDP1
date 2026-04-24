@@ -144,10 +144,10 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
           <td style="padding: 8px 12px; white-space: pre-wrap;">${escapeHtml(description)}</td>
         </tr>
       </table>
-      ${imageBase64 ? `
-      <div style="margin: 16px 0;">
-        <p style="font-weight: bold; color: #1e3a5f; margin: 0 0 8px;">Attached Photo${imageFileName ? ` — ${escapeHtml(imageFileName)}` : ""}:</p>
-        <img src="${imageBase64}" alt="Customer photo of part" style="max-width: 480px; max-height: 480px; border: 1px solid #e8eaed; border-radius: 6px; display: block;" />
+      ${imageFileName ? `
+      <div style="margin: 16px 0; padding: 10px 14px; background: #f0f4ff; border-left: 4px solid #1e3a5f;">
+        <p style="margin: 0; font-weight: bold; color: #1e3a5f;">📎 Photo attached: ${escapeHtml(imageFileName)}</p>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #555;">See the attached image file in this email.</p>
       </div>
       ` : ""}
       <hr style="border: none; border-top: 1px solid #e8eaed; margin: 24px 0;" />

@@ -22,6 +22,21 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
 }
 
+function isSingleEmail(value: string): boolean {
+  if (/[,;\r\n\t?&#%]/.test(value)) return false;
+  return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value.trim());
+}
+
+function safeMailtoHref(email: string, params: Record<string, string> = {}): string | undefined {
+  if (!isSingleEmail(email)) return undefined;
+  // Encode the entire address then restore @ so mailto: clients parse it correctly
+  const encodedEmail = encodeURIComponent(email).replace(/%40/gi, "@");
+  const qs = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join("&");
+  return `mailto:${encodedEmail}${qs ? `?${qs}` : ""}`;
+}
+
 export default function AdminPartsIdList() {
   const qc = useQueryClient();
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -118,7 +133,7 @@ export default function AdminPartsIdList() {
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Customer</h4>
                           <p className="font-medium">{req.name}</p>
-                          <a href={`mailto:${req.email}`} className="flex items-center gap-1.5 text-blue-600 hover:underline text-sm"><Mail className="w-3.5 h-3.5" />{req.email}</a>
+                          <a href={safeMailtoHref(req.email)} className="flex items-center gap-1.5 text-blue-600 hover:underline text-sm"><Mail className="w-3.5 h-3.5" />{req.email}</a>
                           {req.phone && <a href={`tel:${req.phone}`} className="flex items-center gap-1.5 text-blue-600 hover:underline text-sm"><Phone className="w-3.5 h-3.5" />{req.phone}</a>}
                         </div>
                         <div>
@@ -145,7 +160,7 @@ export default function AdminPartsIdList() {
                             {STATUS_CONFIG[s]?.label ?? s}
                           </button>
                         ))}
-                        <a href={`mailto:${req.email}?subject=Re: Your Parts ID Request ${req.ticketId}`}
+                        <a href={safeMailtoHref(req.email, { subject: `Re: Your Parts ID Request ${req.ticketId}` })}
                           className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors">
                           Reply via Email
                         </a>

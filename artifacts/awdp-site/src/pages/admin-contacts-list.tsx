@@ -13,6 +13,21 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
 }
 
+function isSingleEmail(value: string): boolean {
+  if (/[,;\r\n\t?&#%]/.test(value)) return false;
+  return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value.trim());
+}
+
+function safeMailtoHref(email: string, params: Record<string, string> = {}): string | undefined {
+  if (!isSingleEmail(email)) return undefined;
+  // Encode the entire address then restore @ so mailto: clients parse it correctly
+  const encodedEmail = encodeURIComponent(email).replace(/%40/gi, "@");
+  const qs = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join("&");
+  return `mailto:${encodedEmail}${qs ? `?${qs}` : ""}`;
+}
+
 export default function AdminContactsList() {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -89,7 +104,7 @@ export default function AdminContactsList() {
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Contact</h4>
                           <p className="font-medium">{sub.name}</p>
-                          <a href={`mailto:${sub.email}`} className="flex items-center gap-1.5 text-blue-600 hover:underline"><Mail className="w-3.5 h-3.5" />{sub.email}</a>
+                          <a href={safeMailtoHref(sub.email)} className="flex items-center gap-1.5 text-blue-600 hover:underline"><Mail className="w-3.5 h-3.5" />{sub.email}</a>
                           {sub.phone && <a href={`tel:${sub.phone}`} className="flex items-center gap-1.5 text-blue-600 hover:underline"><Phone className="w-3.5 h-3.5" />{sub.phone}</a>}
                         </div>
                         <div>
@@ -103,7 +118,7 @@ export default function AdminContactsList() {
                         <p className="text-sm text-slate-700 bg-white rounded-lg border p-4 whitespace-pre-wrap">{sub.message}</p>
                       </div>
                       <div className="flex gap-2 pt-1 border-t">
-                        <a href={`mailto:${sub.email}?subject=Re: ${sub.subject ?? "Your inquiry"}`}
+                        <a href={safeMailtoHref(sub.email, { subject: `Re: ${sub.subject ?? "Your inquiry"}` })}
                           className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors">
                           Reply via Email
                         </a>

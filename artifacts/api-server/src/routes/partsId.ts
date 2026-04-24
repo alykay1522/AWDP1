@@ -6,6 +6,13 @@ import { forwardContactEmail, forwardPartsIdEmail } from "../lib/email.js";
 
 const router: IRouter = Router();
 
+function isValidSingleEmail(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  // Reject characters used for header injection, address lists, or URI query manipulation
+  if (/[,;\r\n\t?&#%]/.test(value)) return false;
+  return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value.trim());
+}
+
 router.post("/parts-identification", async (req, res) => {
   try {
     const { name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64 } = req.body;
@@ -15,20 +22,29 @@ router.post("/parts-identification", async (req, res) => {
       return;
     }
 
-    // Server-side image validation
+    if (!isValidSingleEmail(email)) {
+      res.status(400).json({ error: "validation_error", message: "A valid email address is required." });
+      return;
+    }
+
+    // Server-side image validation — imageBase64 MUST be a strict data URI with an image MIME type
+    // and its payload must contain only valid base64 characters.
     if (imageBase64) {
-      // Must be a valid data URI with image MIME type
-      const mimeMatch = (imageBase64 as string).match(/^data:([^;]+);base64,/);
-      if (mimeMatch) {
-        const mime = mimeMatch[1];
-        if (!mime.startsWith("image/")) {
-          res.status(400).json({ error: "validation_error", message: "Only image files (JPEG, PNG, WebP, GIF) are accepted." });
-          return;
-        }
+      const ALLOWED_MIME = /^(image\/jpeg|image\/png|image\/webp|image\/gif)$/;
+      const DATA_URI_RE = /^data:(image\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=\r\n]+)$/;
+      const mimeMatch = (imageBase64 as string).match(DATA_URI_RE);
+      if (!mimeMatch) {
+        res.status(400).json({ error: "validation_error", message: "Image must be provided as a valid base64-encoded data URI." });
+        return;
+      }
+      const mime = mimeMatch[1];
+      if (!ALLOWED_MIME.test(mime)) {
+        res.status(400).json({ error: "validation_error", message: "Only image files (JPEG, PNG, WebP, GIF) are accepted." });
+        return;
       }
       // Guard against oversized payloads: base64 of a 10 MB file ≈ 13.3 MB chars
       const MAX_BASE64_CHARS = Math.ceil(10 * 1024 * 1024 * (4 / 3));
-      const raw = (imageBase64 as string).replace(/^data:[^;]+;base64,/, "");
+      const raw = mimeMatch[2];
       if (raw.length > MAX_BASE64_CHARS) {
         res.status(400).json({ error: "validation_error", message: "Image must be smaller than 10 MB." });
         return;
@@ -70,6 +86,11 @@ router.post("/contact", async (req, res) => {
 
     if (!name || !email || !message) {
       res.status(400).json({ error: "validation_error", message: "Name, email, and message are required" });
+      return;
+    }
+
+    if (!isValidSingleEmail(email)) {
+      res.status(400).json({ error: "validation_error", message: "A valid email address is required." });
       return;
     }
 
