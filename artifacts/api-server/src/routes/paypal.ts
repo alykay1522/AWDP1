@@ -69,7 +69,7 @@ async function serverPriceItems(
       name: p.name,
       price,
       quantity: item.quantity,
-      imageUrl: item.imageUrl ?? p.imageUrl ?? undefined,
+      imageUrl: p.imageUrl ?? undefined,
     };
   });
 }
@@ -138,10 +138,24 @@ router.post("/paypal/capture-order", async (req, res) => {
       return res.status(400).json({ error: "paypalOrderId and orderId are required" });
     }
 
+    // Fetch the local pending order BEFORE capture so we can validate amounts
+    const [localOrder] = await db
+      .select({ orderId: ordersTable.orderId, total: ordersTable.total, status: ordersTable.status })
+      .from(ordersTable)
+      .where(eq(ordersTable.orderId, orderId))
+      .limit(1);
+
+    if (!localOrder) {
+      return res.status(404).json({ error: "Local order not found" });
+    }
+    if (localOrder.status === "paid") {
+      return res.status(400).json({ error: "Order has already been fulfilled" });
+    }
+
     const capture = await capturePayPalOrder(paypalOrderId);
 
     if (capture.status === "COMPLETED") {
-      // Verify that the captured PayPal order's reference_id matches the local orderId
+      // Verify that the captured PayPal order's reference_id matches the local orderId.
       // This prevents an attacker from paying for a cheap order and marking an expensive
       // local order as paid by substituting the expensive orderId in this request.
       const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
@@ -150,6 +164,17 @@ router.post("/paypal/capture-order", async (req, res) => {
           `[PayPal] reference_id mismatch: PayPal has "${capturedReferenceId}", request claims "${orderId}"`,
         );
         return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
+      }
+
+      // Defense-in-depth: verify captured amount matches local order total
+      const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
+      const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
+      const localTotal = parseFloat(localOrder.total as string);
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+        console.error(
+          `[PayPal] Amount mismatch: PayPal captured $${capturedAmountStr}, local order total $${localOrder.total}`,
+        );
+        return res.status(400).json({ error: "Captured payment amount does not match order total." });
       }
 
       const payer = capture.payer;

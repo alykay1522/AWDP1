@@ -73,7 +73,7 @@ async function serverPriceItems(
       name: p.name,
       price,
       quantity: item.quantity,
-      imageUrl: item.imageUrl ?? p.imageUrl ?? undefined,
+      imageUrl: p.imageUrl ?? undefined,
     };
   });
 }
