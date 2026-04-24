@@ -1,0 +1,38 @@
+{
+  "site_url": "https://www.allwindowdoorparts.com",
+  "consumer_key": "ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "consumer_secret": "cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+
+  "dry_run": true,
+
+  "delete_price_threshold": 50.0,
+
+  "protected_categories": [
+    "Do Not Delete",
+    "Sample",
+    "Internal"
+  ],
+
+  "protected_sku_prefixes": [
+    "AWDP-SAFE-",
+    "TEST-"
+  ],
+
+  "price_rules": [
+    {
+      "type": "name_contains",
+      "value": "tandem roller",
+      "markup": 0.30
+    },
+    {
+      "type": "price_over",
+      "threshold": 50.0,
+      "markup": 0.20
+    }
+  ],
+
+  "enable_cleanup": true,
+  "enable_price_markup": true,
+  "enable_image_processing": false,
+  "enable_product_sync": false
+}
