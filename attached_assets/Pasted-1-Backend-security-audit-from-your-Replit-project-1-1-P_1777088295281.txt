@@ -1,0 +1,192 @@
+1. Backend & security audit (from your Replit project)
+1.1 PostgreSQL TLS: certificate verification disabled
+Issue:  
+lib/db/src/index.ts creates the Postgres pool with:
+
+ts
+ssl: process.env.NODE_ENV === "production"
+  ? { rejectUnauthorized: false }
+  : undefined
+That means in production you accept any TLS certificate from “the database,” so a MITM can impersonate your DB and see/modify everything (orders, customers, admin sessions).
+
+Fix:
+
+ts
+ssl: process.env.NODE_ENV === "production"
+  ? { rejectUnauthorized: true }
+  : undefined
+Then:
+
+Make sure your hosted Postgres has a valid cert.
+
+If it uses a custom CA, set PGSSLROOTCERT (or equivalent) to that CA bundle.
+
+1.2 SMTP TLS: certificate verification disabled
+Issue:  
+Both artifacts/api-server/src/lib/email.ts and artifacts/api-server/src/emailNotifier.ts use:
+
+ts
+tls: { rejectUnauthorized: false }
+So any attacker on the path can impersonate mail.allwindowdoorparts.com, steal EMAIL_APP_PASSWORD, and read/alter all customer/support/order emails.
+
+Fix:
+
+ts
+const transporter = nodemailer.createTransport({
+  host: "mail.allwindowdoorparts.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: true,
+  },
+});
+Then:
+
+Ensure the mail server has a valid cert for that hostname.
+
+Rotate the mailbox password once this is fixed.
+
+1.3 Stripe & PayPal checkout trust client-supplied prices/SKUs
+Issue:  
+In artifacts/api-server/src/routes/checkout.ts and routes/paypal.ts:
+
+The client sends sku, name, price, quantity, imageUrl.
+
+Server uses those values directly to:
+
+Compute subtotal.
+
+Charge Stripe/PayPal.
+
+Store the order.
+
+A user can change the request in DevTools and buy a $300 part for $5.
+
+Fix pattern:
+
+Client sends only: sku + quantity.
+
+Server re‑looks up products from DB:
+
+ts
+const items = req.body.items; // [{ sku, quantity }]
+
+const dbProducts = await db
+  .select()
+  .from(productsTable)
+  .where(inArray(productsTable.sku, items.map(i => i.sku)));
+
+const lineItems = items.map(i => {
+  const p = dbProducts.find(dp => dp.sku === i.sku);
+  if (!p) throw new Error(`Invalid SKU: ${i.sku}`);
+  return {
+    sku: p.sku,
+    name: p.title,
+    priceCents: p.price_cents,
+    quantity: i.quantity,
+    imageUrl: p.image_url,
+  };
+});
+Compute subtotal from lineItems only.
+
+Enforce minimum order on that subtotal.
+
+Send those server‑validated values to Stripe/PayPal and store them.
+
+1.4 PayPal capture can mark the wrong order as paid
+Issue:  
+/api/paypal/capture-order in routes/paypal.ts:
+
+Accepts paypalOrderId and orderId from the client.
+
+Captures PayPal order by paypalOrderId.
+
+Marks local order with orderId as paid—without checking they belong together.
+
+So someone can pay for a cheap order and mark an expensive one as paid.
+
+Fix:
+
+When creating the PayPal order, store paypalOrderId on the local order:
+
+ts
+await db.update(ordersTable)
+  .set({ paypalOrderId })
+  .where(eq(ordersTable.orderId, localOrderId));
+On capture:
+
+Look up the order by paypalOrderId (not client orderId).
+
+Verify:
+
+PayPal status === "COMPLETED".
+
+PayPal amount matches local subtotal.
+
+PayPal reference_id/custom_id equals local orderId.
+
+Only then mark that order as paid.
+
+1.5 Unauthenticated order lookup exposes full customer records
+Issue:  
+GET /api/checkout/order/:orderId in routes/checkout.ts:
+
+Returns the entire order row (name, email, phone, address, line items, payment IDs) to anyone who knows orderId.
+
+orderId is shown on the success page, so it’s not a secret.
+
+Fix options:
+
+For admin: require authenticated admin to fetch full order details.
+
+For customers: use a separate random publicOrderToken:
+
+URL: /order-status/:publicOrderToken.
+
+Response: only non‑sensitive fields (status, items, masked email/phone).
+
+Do not treat orderId alone as authorization.
+
+2. Admin “Product Images” page audit
+Your /admin/images tab currently shows:
+
+“0 images in library”
+
+ZIP import, CSV import, and diagnose tools are present but unused.
+
+“Image Library: No images yet.”
+
+So in this backend:
+
+The image library is effectively empty.
+
+Any product image display must be coming from:
+
+External URLs set directly on products, or
+
+A different system (e.g., WooCommerce) not wired into this admin.
+
+From a sales and UX standpoint, this is critical: no images in the library = no centralized control, no easy dedupe, and likely missing images on many listings.
+
+2.1 What to do next (concrete steps)
+Option A – ZIP import (best if you have folders per part):
+
+Prepare a ZIP where each subfolder is named exactly by SKU (e.g., 10-452SS/…images…).
+
+Go to “Bulk Import from ZIP”:
+
+Upload ZIP.
+
+Check “Force overwrite existing images” only if you’re replacing.
+
+Run “Diagnose ZIP” first:
+
+See which folders match SKUs in the DB.
+
+Fix any naming mismatches.
+
+Once mapping looks right, run the real import.

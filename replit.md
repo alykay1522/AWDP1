@@ -75,6 +75,25 @@ DB table: `product_images` (`id`, `filename`, `object_name`, `url`, `uploaded_at
 Object storage lib: `artifacts/api-server/src/lib/objectStorage.ts` (GCS client, Replit sidecar auth)
 Env vars set: `DEFAULT_OBJECT_STORAGE_BUCKET_ID`, `PRIVATE_OBJECT_DIR`, `PUBLIC_OBJECT_SEARCH_PATHS`
 
+#### Catalog Image Batch Upload (done)
+
+281 AWDP catalog images were uploaded to GCS under `product-images/awdp-catalog/image_N.jpg` using
+`artifacts/api-server/src/scripts/uploadCatalogImages.mjs`. The script assigns category-level
+representative images to all 15,698 products:
+
+| Category | Image # | Description |
+|---|---|---|
+| Window Balances | 80 | "Window Balances – All Types" collage |
+| Window Hardware | 190 | "Marvin Awning Hardware" |
+| Door Hardware | 205 | "Sliding Glass Patio Door Parts & Hardware" |
+| Window Glazing and Weatherstrip | 281 | "Weather Strip and Seals" |
+| Screen Hardware and Accessories | 220 | "Screen Corners" with brand logos |
+| Sash Hardware | 195 | "Marvin Sash Carrier Tracks" |
+| Other Hardware | 210 | AWDP general marketing card |
+
+Supplier overrides: Truth/EntryGard → image_270, Oldach → image_220 (only applied to NULL rows).
+Serve URL format: `/api/admin/images/serve/product-images/awdp-catalog/image_N.jpg` (streamed via Express).
+
 ### `lib/db` (`@workspace/db`)
 
 Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.

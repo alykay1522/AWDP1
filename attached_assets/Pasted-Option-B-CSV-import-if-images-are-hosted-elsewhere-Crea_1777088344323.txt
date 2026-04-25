@@ -1,0 +1,92 @@
+Option B – CSV import (if images are hosted elsewhere):
+
+Create a CSV:
+
+csv
+sku,imageUrl
+AWDP-10-452SS,https://yourcdn.com/images/10-452SS.jpg
+AWDP-13-147W,https://yourcdn.com/images/13-147W.jpg
+...
+Use “Import Image URLs (CSV)” to bulk-attach URLs to products.
+
+Goal: after this, /admin/images should show a populated library, and product pages should consistently have images.
+
+3. Product matching, duplicates, and correctness
+The open tabs don’t show your product table directly, but given your setup, here’s the fastest way to get what you originally asked for (correct images, no duplicates):
+
+3.1 Export product data
+From your DB/admin (or via a simple route), export CSV with:
+
+sku
+
+title
+
+image_url
+
+price
+
+Save as products_export.csv.
+
+3.2 Run a quick duplicate/mismatch check
+Use this Python script (you can drop it into the Replit project or WSL):
+
+python
+import csv
+from collections import defaultdict
+
+by_sku = defaultdict(list)
+by_title = defaultdict(list)
+by_image = defaultdict(list)
+
+with open("products_export.csv", newline="", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    rows = list(reader)
+
+for row in rows:
+    sku = row["sku"].strip()
+    title = row["title"].strip().lower()
+    image = row["image_url"].strip().lower()
+
+    by_sku[sku].append(row)
+    by_title[title].append(row)
+    by_image[image].append(row)
+
+def report(label, groups):
+    print(f"\n=== POSSIBLE DUPLICATES BY {label} ===")
+    for key, items in groups.items():
+        if key and len(items) > 1:
+            print(f"\n{label}: {key!r}  (count={len(items)})")
+            for r in items:
+                print(f"  - SKU={r['sku']} | Title={r['title']} | Image={r['image_url']} | Price={r.get('price')}")
+
+report("SKU", by_sku)
+report("TITLE", by_title)
+report("IMAGE", by_image)
+This gives you:
+
+Duplicate SKUs → must be merged or corrected.
+
+Duplicate titles → check if they’re truly distinct products.
+
+Duplicate images → same image used for multiple SKUs; verify that’s intentional.
+
+If you paste the output here, I can tell you exactly which to merge, rename, or fix.
+
+4. Direct sales-impact summary
+From just these two tabs, the highest-impact fixes are:
+
+Security & integrity (protect money and data):
+
+Turn TLS verification on for Postgres and SMTP.
+
+Make checkout trust the DB, not the browser.
+
+Bind PayPal captures to the correct local order.
+
+Lock down order lookups.
+
+Visual merchandising (actually sell the parts):
+
+Populate the Product Images library via ZIP or CSV.
+
+Then run the duplicate/mismatch script to clean SKUs/titles/images.
