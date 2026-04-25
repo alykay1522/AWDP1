@@ -72,7 +72,7 @@ router.post("/parts-identification", async (req, res) => {
     res.json({
       success: true,
       ticketId,
-      message: `Your parts identification request has been submitted! Ticket ID: ${ticketId}. Our experts will review your request and respond within 1 business day.`,
+      message: `Your parts identification request has been submitted! Ticket ID: ${ticketId}. Our experts will review your request and respond within 2-3 business days.`,
     });
   } catch (err) {
     req.log.error({ err }, "Error submitting parts ID request");
@@ -108,7 +108,7 @@ router.post("/contact", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Thank you for contacting us! We typically respond within 1 business day. You can also reach us directly at 785-533-0244.",
+      message: "Thank you for contacting us! We typically respond within 2-3 business days. You can also reach us directly at 785-533-0244.",
     });
   } catch (err) {
     req.log.error({ err }, "Error submitting contact form");
