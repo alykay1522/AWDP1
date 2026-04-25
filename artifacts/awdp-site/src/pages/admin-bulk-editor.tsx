@@ -187,6 +187,7 @@ export default function AdminBulkEditor() {
     onSuccess: (data) => {
       toast({ title: "Done", description: data.message });
       qc.invalidateQueries({ queryKey: ["admin-bulk"] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
       clearSelection();
       setConfirmDelete(false);
     },
@@ -207,6 +208,8 @@ export default function AdminBulkEditor() {
     onSuccess: (count) => {
       toast({ title: "Deleted", description: `${count} product${count !== 1 ? "s" : ""} deleted` });
       qc.invalidateQueries({ queryKey: ["admin-bulk"] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
       clearSelection();
       setConfirmDelete(false);
     },

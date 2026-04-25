@@ -149,7 +149,11 @@ export default function AdminProductsList() {
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Delete failed"); }
       return res.json();
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-products"] }); toast({ title: "Product deleted" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
+      toast({ title: "Product deleted" });
+    },
     onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
   });
 
@@ -195,6 +199,8 @@ export default function AdminProductsList() {
       if (!res.ok) throw new Error(result.error ?? "Import failed");
 
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["admin-categories-list"] });
+      qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
       const parts = [
         result.inserted  && `${result.inserted} added`,
         result.updated   && `${result.updated} updated`,
