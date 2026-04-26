@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { FileText, ExternalLink, Search, X, Ruler, BookOpen, FileQuestion, HelpCircle, ChevronRight } from "lucide-react";
+import { FileText, ExternalLink, Search, X, Ruler, BookOpen, HelpCircle, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ interface PdfResource {
   title: string;
   brand: string;
   category: string;
-  type: "Measurement Guide" | "Product Catalog" | "How-To Guide" | "Reference" | "Order Form";
+  type: "Measurement Guide" | "Product Catalog" | "How-To Guide" | "Reference";
   url: string;
   description: string;
 }
@@ -100,15 +100,6 @@ const PDF_RESOURCES: PdfResource[] = [
     description: "Reference sheet for AngelLock vent lock hardware — dimensions, installation positions, and compatible window types.",
   },
   {
-    id: "quote-request-form",
-    title: "Replacement Parts Quote Request Form",
-    brand: "BiltBest",
-    category: "Hardware & Accessories",
-    type: "Order Form",
-    url: "http://www.biltbestwindowparts.com/pdf/Replacement%20Parts%20Quote%20Request%20Form.pdf",
-    description: "Printable form for requesting a quote on replacement window and door parts. Fill out and email or fax to the AWDP team.",
-  },
-  {
     id: "sash-support-guide",
     title: "Window Sash Support Guide — Spring, Channel, Block & Tackle, Tube Balances",
     brand: "BiltBest",
@@ -134,7 +125,6 @@ const TYPE_ICONS: Record<PdfResource["type"], React.ReactNode> = {
   "Product Catalog":  <BookOpen className="w-5 h-5" />,
   "How-To Guide":     <HelpCircle className="w-5 h-5" />,
   "Reference":        <FileText className="w-5 h-5" />,
-  "Order Form":       <FileQuestion className="w-5 h-5" />,
 };
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string; dot: string }> = {
@@ -150,7 +140,6 @@ const TYPE_BADGE_COLORS: Record<PdfResource["type"], string> = {
   "Product Catalog":   "bg-indigo-100 text-indigo-700",
   "How-To Guide":      "bg-teal-100 text-teal-700",
   "Reference":         "bg-slate-100 text-slate-600",
-  "Order Form":        "bg-orange-100 text-orange-700",
 };
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
