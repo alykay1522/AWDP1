@@ -120,9 +120,10 @@ export default function ProductDetail() {
   const savings = isSale ? originalPrice - price : 0;
 
   // Derive "Before Ordering" notes from AWDP attributes balance type
-  const productAttributes = (product as any).attributes as Record<string, string[]> | null | undefined;
+  const productAttributes = (product as any).attributes as Record<string, unknown> | null | undefined;
   const productSoldAs = (product as any).soldAs as string | null | undefined;
-  const balanceType = productAttributes?.balance_type?.[0]?.toLowerCase() ?? "";
+  const balanceTypeRaw = productAttributes?.balance_type;
+  const balanceType = (Array.isArray(balanceTypeRaw) ? balanceTypeRaw[0] : balanceTypeRaw)?.toString().toLowerCase() ?? "";
   const attrNotes: string[] =
     balanceType.includes("channel") || balanceType.includes("block")
       ? ["Match stamping code exactly", "Verify metal channel length (end to end)", "Confirm terminal shoe style (15-001, 15-002, or 15-004)"]

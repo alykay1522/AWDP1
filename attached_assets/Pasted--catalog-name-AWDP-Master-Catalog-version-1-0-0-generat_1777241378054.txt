@@ -1,0 +1,1109 @@
+{
+  "catalog": {
+    "name": "AWDP Master Catalog",
+    "version": "1.0.0",
+    "generated": "2026-04-26",
+    "source": "allwindowdoorparts.com",
+    "total_categories": 7,
+    "sku_schema": {
+      "pattern": "AWDP-{TYPE}-{PARTCODE}-{VARIANT}",
+      "prefix": "AWDP",
+      "separator": "-",
+      "suffix": "2",
+      "type_codes": {
+        "BI": "Balance — Inverted / Tilt Tube",
+        "BE": "Balance — External / Plastic Tube",
+        "TRS": "Balance — Tilt Rotation Spiral",
+        "TR4C": "Balance — Channel (Block & Tackle)",
+        "TRDV": "Balance — Devac Overhead",
+        "TRCF": "Balance — Constant Force Coil",
+        "0L": "Operator / Tool / Control Device",
+        "IE": "Lock / Keeper / Sash Hardware",
+        "LEE": "Door Roller / Patio Door Hardware",
+        "WS": "Weatherstrip / Glazing Seal",
+        "SC": "Screen Hardware / Accessories",
+        "SH": "Sash Hardware / Tilt Latch",
+        "OH": "Other Hardware / Misc"
+      }
+    }
+  },
+
+  "categories": [
+
+    {
+      "category_id": "CAT-BAL",
+      "category_name": "Window Balances",
+      "slug": "window-balances",
+      "part_count": 1542,
+      "description": "Replacement balance systems for single-hung and double-hung windows — spiral, channel, block & tackle, constant force, tilt tube, and devac overhead.",
+      "subcategories": [
+        {
+          "subcategory_id": "BAL-SPIRAL",
+          "subcategory_name": "Spiral / Tube Balances",
+          "description": "Spring-loaded rod inside a metal tube. Compact, versatile, common in vinyl and wood windows.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-TRS-ORO-PL77-2",
+              "original_sku": "TRS-ORO-PL77",
+              "title": "33in Inverted Tilt Window Balance — Spiral Tube",
+              "price": 72.00,
+              "balance_type": "Spiral",
+              "length_inches": 33,
+              "material": "Steel tube / spiral rod",
+              "compatibility": "Double-hung, single-hung",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-TRS-RTO-PL77-2",
+              "original_sku": "TRS-RTO-PL77",
+              "title": "27in Inverted Tilt Window Balance — Spiral Tube",
+              "price": 66.80,
+              "balance_type": "Spiral",
+              "length_inches": 27,
+              "material": "Steel tube / spiral rod",
+              "compatibility": "Double-hung, single-hung",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "BAL-CHANNEL",
+          "subcategory_name": "Channel Balances (Block & Tackle)",
+          "description": "Spring and pulley system inside a metal channel. Strong, smooth counterbalance for heavier sashes.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-TR4C-RBG-I-2",
+              "original_sku": "TR4C-RBG-I",
+              "title": "28in Channel Balance — Block & Tackle",
+              "price": 103.06,
+              "balance_type": "Channel / Block & Tackle",
+              "length_inches": 28,
+              "material": "Steel channel housing",
+              "compatibility": "Vinyl and aluminum double-hung",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "BAL-TILTTUBE",
+          "subcategory_name": "Tilt Tube Balances",
+          "description": "Tube-style balances with integrated tilt functionality for tilt-wash windows.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-BI-OBHD-2",
+              "original_sku": "BI-OBHD",
+              "title": "38in Tilt Tube Window Balance",
+              "price": 35.86,
+              "balance_type": "Tilt Tube",
+              "length_inches": 38,
+              "material": "Steel tube",
+              "compatibility": "Tilt-wash double-hung",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-BE-SRA1-P-2",
+              "original_sku": "BE-SRA1-P",
+              "title": "5/8in Plastic Tube Window Balance",
+              "price": 37.64,
+              "balance_type": "Plastic Tube",
+              "length_inches": null,
+              "material": "Plastic tube housing",
+              "compatibility": "Lightweight sash systems",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "BAL-DEVAC",
+          "subcategory_name": "Devac Overhead Balances",
+          "description": "Top-mounted balance systems for overhead counterweight applications.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-TRDV-RAOEHDM-2",
+              "original_sku": "TRDV-RAOEHDM",
+              "title": "28in Devac Overhead Window Balance",
+              "price": 45.98,
+              "balance_type": "Devac Overhead",
+              "length_inches": 28,
+              "material": "Steel",
+              "compatibility": "Overhead-mounted systems",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "BAL-CONSTFORCE",
+          "subcategory_name": "Constant Force Balances",
+          "description": "Flat coiled spring providing consistent tension. Slim, low-maintenance, used in newer construction.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-TRCF-CF28-SS-2",
+              "original_sku": "TRCF-CF28-SS",
+              "title": "28in Constant Force Coil Balance — Stainless",
+              "price": null,
+              "balance_type": "Constant Force",
+              "length_inches": 28,
+              "material": "Stainless steel coil spring",
+              "compatibility": "Energy-efficient double-hung",
+              "stock_status": "check_availability"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-WINHW",
+      "category_name": "Window Hardware",
+      "slug": "window-hardware",
+      "part_count": 1453,
+      "description": "Casement and awning operators, crank handles, covers, hinges, tracks, control devices, and window locking hardware.",
+      "subcategories": [
+        {
+          "subcategory_id": "WINHW-OPS-SINGLE",
+          "subcategory_name": "Single Arm Casement Operators",
+          "description": "For narrower casements (20–32in wide) and specialty windows requiring egress.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TELL1530-W-2",
+              "original_sku": "0L-TELL1530-W",
+              "title": "Truth Ellipse Single Arm Casement Operator | 9-1/2in | White",
+              "price": 67.62,
+              "operator_type": "Single Arm",
+              "series": "Truth Ellipse (15 Series)",
+              "arm_length_inches": 9.5,
+              "mount_type": "Sill Mount",
+              "hand": "Left/Right available",
+              "colors": ["White", "Brown", "Coppertone", "Bright Brass"],
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-OPS-DUAL",
+          "subcategory_name": "Dual Arm Casement Operators",
+          "description": "For large casements up to 40in × 84in frame / 96 lb sash. Supports washability and egress.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TENCORE19-2",
+              "original_sku": "0L-TENCORE19",
+              "title": "Truth Encore Dual Arm Casement Operator | 19in",
+              "price_range": {"min": 79.45, "max": 102.69},
+              "operator_type": "Dual Arm",
+              "series": "Truth Encore",
+              "arm_length_inches": 19,
+              "mount_type": "Face Mount",
+              "hand": "Left/Right available",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-OPS-DYAD",
+          "subcategory_name": "Dyad Casement Operators",
+          "description": "For narrow casements 16–32in wide, up to 72in frame / 55 lb sash.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TDYAD514-2",
+              "original_sku": "0L-TDYAD514",
+              "title": "Truth Rear Mount Dyad Casement Operator | 5-1/4in",
+              "price": 43.55,
+              "operator_type": "Dyad",
+              "series": "Truth Maxim",
+              "arm_length_inches": 5.25,
+              "mount_type": "Rear Mount",
+              "hand": "Left/Right available",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-OPS-SPLIT",
+          "subcategory_name": "Split Arm / EntryGard Operators",
+          "description": "Split arm sill-mounted operators for specific window models and specialized opening angles.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TENTRYSPLIT-2",
+              "original_sku": "0L-TENTRYSPLIT",
+              "title": "Truth EntryGard Split Arm Sill Mounted Casement Operator",
+              "price": 60.23,
+              "operator_type": "Split Arm",
+              "series": "Truth EntryGard",
+              "mount_type": "Sill Mount",
+              "hand": "Left/Right available",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-TENTRYDA-2",
+              "original_sku": "0L-TENTRYDA",
+              "title": "Truth EntryGard Dual Arm Casement Operator | 4-7/16in Short Arm",
+              "price_range": {"min": 58.88, "max": 84.44},
+              "operator_type": "Dual Arm",
+              "series": "Truth EntryGard",
+              "arm_length_inches": 4.4375,
+              "mount_type": "Face Mount",
+              "hand": "Left/Right available",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-OPS-AWNING",
+          "subcategory_name": "Awning Window Operators",
+          "description": "For top-hinged awning windows, frame widths 20–60in.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TELL712SM-2",
+              "original_sku": "0L-TELL712SM",
+              "title": "Truth Ellipse Sill Mounted Single Arm Awning Operator | 7-1/2in Arm",
+              "price": 67.62,
+              "operator_type": "Awning - Single Arm",
+              "series": "Truth Ellipse",
+              "arm_length_inches": 7.5,
+              "mount_type": "Sill Mount",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-OPS-FACE",
+          "subcategory_name": "Face Mounted Operators (Legacy)",
+          "description": "Older-style face-mounted operators for vintage and obsolete window systems.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-TFACE9-2",
+              "original_sku": "0L-TFACE9",
+              "title": "Truth Face Mounted Casement Operator | 9in",
+              "price": 67.88,
+              "operator_type": "Face Mount",
+              "series": "Truth",
+              "arm_length_inches": 9,
+              "mount_type": "Face Mount",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-TFACE9OLD-2",
+              "original_sku": "0L-TFACE9OLD",
+              "title": "Truth Face Mounted Casement Operator | 9in Two-Hole Old Style",
+              "price": 48.88,
+              "operator_type": "Face Mount (Legacy)",
+              "series": "Truth",
+              "arm_length_inches": 9,
+              "mount_type": "Face Mount - 2 Hole",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-CRANKS",
+          "subcategory_name": "Crank Handles and Covers",
+          "description": "Replacement crank handles, fold-down covers, and operator cover plates.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-CRANKFOLD-W-2",
+              "original_sku": "0L-CRANKFOLD-W",
+              "title": "Fold-Down Crank Handle Cover | White",
+              "price": null,
+              "part_type": "Crank Handle Cover",
+              "colors": ["White", "Brown", "Coppertone", "Gold"],
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-CONTROL",
+          "subcategory_name": "Control Devices and Tools",
+          "description": "Limiting control devices (SafeGard), custodial lock handles, spanner tools, and stud brackets.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-SAFEGARD-LH-2",
+              "original_sku": "0L-SAFEGARD-LH",
+              "title": "LH Limiting Control Device SafeGard",
+              "price": 120.00,
+              "part_type": "Limiting Control Device",
+              "hand": "Left Hand",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-CUSTKEY-2",
+              "original_sku": "0L-CUSTKEY",
+              "title": "Key for Custodial Lock Handle",
+              "price": 65.98,
+              "part_type": "Custodial Key",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-SPANNER-2",
+              "original_sku": "0L-SPANNER",
+              "title": "Spanner Operating Tool",
+              "price": 41.46,
+              "part_type": "Tool",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-STUDBKT-RH-2",
+              "original_sku": "0L-STUDBKT-RH",
+              "title": "Truth Stud Bracket — Right Hand",
+              "price": 38.66,
+              "part_type": "Stud Bracket",
+              "hand": "Right Hand",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WINHW-MAXIM",
+          "subcategory_name": "Maxim Series Operators",
+          "description": "Truth Maxim series — modern, low-profile operators for dual arm and dyad configurations.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-0L-MAXDUALP-2",
+              "original_sku": "0L-MAXDUALP",
+              "title": "Truth Maxim Series Dual Arm Low Profile Casement Operator",
+              "price": 79.93,
+              "operator_type": "Dual Arm Low Profile",
+              "series": "Truth Maxim",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-0L-MAXDUAL-2",
+              "original_sku": "0L-MAXDUAL",
+              "title": "Truth Maxim Series Dual Arm Operator",
+              "price": 86.79,
+              "operator_type": "Dual Arm",
+              "series": "Truth Maxim",
+              "stock_status": "in_stock"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-SASH",
+      "category_name": "Sash Hardware",
+      "slug": "sash-hardware",
+      "part_count": null,
+      "description": "Window sash locks, keepers, tilt latches, cam locks, sash lifts, handles, and tilt-wash pivot hardware.",
+      "subcategories": [
+        {
+          "subcategory_id": "SASH-LOCKS",
+          "subcategory_name": "Sash Locks and Keepers",
+          "description": "Sweep locks, cam locks, and matching keepers for single and double-hung windows.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-IE-SASHKAW-2",
+              "original_sku": "IE-SASHKAW",
+              "title": "Sash Lock Keyed Alike — White",
+              "price": 108.00,
+              "part_type": "Sash Lock",
+              "keyed": true,
+              "color": "White",
+              "material": "Die-cast zinc",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-IE-NKBB-2",
+              "original_sku": "IE-NKBB",
+              "title": "Narrow Keeper — Bright Brass",
+              "price": 53.94,
+              "part_type": "Keeper",
+              "color": "Bright Brass",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SASH-TILT",
+          "subcategory_name": "Tilt Latches and Pivot Bars",
+          "description": "Tilt latch mechanisms and pivot bars for tilt-wash window systems.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SH-TILTL-W-2",
+              "original_sku": "SH-TILTL-W",
+              "title": "Window Tilt Latch — White",
+              "price": null,
+              "part_type": "Tilt Latch",
+              "color": "White",
+              "compatibility": "Tilt-wash double-hung",
+              "stock_status": "check_availability"
+            },
+            {
+              "awdp_sku": "AWDP-SH-PIVOTBAR-2",
+              "original_sku": "SH-PIVOTBAR",
+              "title": "Sash Pivot Bar — Tilt Window",
+              "price": null,
+              "part_type": "Pivot Bar",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SASH-LIFTS",
+          "subcategory_name": "Sash Lifts and Handles",
+          "description": "Sash lift handles, finger pulls, and rail lifts for opening double-hung windows.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SH-LIFT-W-2",
+              "original_sku": "SH-LIFT-W",
+              "title": "Sash Lift Handle — White",
+              "price": null,
+              "part_type": "Sash Lift",
+              "color": "White",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SASH-VENTLOCKS",
+          "subcategory_name": "Vent Locks and Slide Bolts",
+          "description": "Vent locks, slide bolts, spring catches, and safety security locks.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SH-VENTLOCK-2",
+              "original_sku": "SH-VENTLOCK",
+              "title": "Window Vent Lock — Security",
+              "price": null,
+              "part_type": "Vent Lock",
+              "stock_status": "check_availability"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-DOORHW",
+      "category_name": "Door Hardware",
+      "slug": "door-hardware",
+      "part_count": null,
+      "description": "Patio door rollers, handles, locks, multipoint lock systems, sliding door tracks, and inswing/outswing hardware.",
+      "subcategories": [
+        {
+          "subcategory_id": "DOOR-ROLLERS-TANDEM",
+          "subcategory_name": "Tandem Patio Door Rollers",
+          "description": "Dual-wheel roller assemblies for sliding patio doors. Steel, nylon, and stainless options.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-LEE-LLAB-2",
+              "original_sku": "LEE-LLAB",
+              "title": "Patio Door Roller Tandem Assembly",
+              "price": 72.88,
+              "part_type": "Tandem Roller",
+              "wheel_material": "Steel ball bearing",
+              "wheel_diameter_inches": 1.25,
+              "housing_material": "Stamped steel",
+              "adjustment": "Side adjustable",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-RROIB-2",
+              "original_sku": "LEE-RROIB",
+              "title": "Patio Door Roller Tandem Assembly",
+              "price": 72.88,
+              "part_type": "Tandem Roller",
+              "wheel_material": "Steel ball bearing",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-REALL-2",
+              "original_sku": "LEE-REALL",
+              "title": "Patio Door Roller Tandem Assembly",
+              "price": 72.88,
+              "part_type": "Tandem Roller",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-PLIOT7-2",
+              "original_sku": "LEE-PLIOT7",
+              "title": "Patio Door Roller Tandem Assembly",
+              "price": 72.88,
+              "part_type": "Tandem Roller",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "DOOR-ROLLERS-PREMIUM",
+          "subcategory_name": "Premium / Heavy-Duty Door Rollers",
+          "description": "Boss and heavy-duty roller assemblies for larger or commercial patio doors.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-LEE-PLIOT-2",
+              "original_sku": "LEE-PLIOT",
+              "title": "Heavy-Duty Patio Door Roller Assembly",
+              "price": 87.88,
+              "part_type": "Heavy-Duty Roller",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-PLOBOSS-2",
+              "original_sku": "LEE-PLOBOSS",
+              "title": "Boss Patio Door Roller Assembly",
+              "price": 87.88,
+              "part_type": "Boss Roller",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-PLOBON-2",
+              "original_sku": "LEE-PLOBON",
+              "title": "Patio Door Roller Assembly — Standard",
+              "price": 87.88,
+              "part_type": "Roller Assembly",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-PLOBO-2",
+              "original_sku": "LEE-PLOBO",
+              "title": "Patio Door Roller Assembly",
+              "price": 87.88,
+              "part_type": "Roller Assembly",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-LEE-PRIAL-2",
+              "original_sku": "LEE-PRIAL",
+              "title": "Patio Door Roller Assembly — Premium",
+              "price": 87.88,
+              "part_type": "Premium Roller",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "DOOR-LOCKS",
+          "subcategory_name": "Door Locks and Multipoint Systems",
+          "description": "Sliding patio door locks, mortise locks, multipoint locking hardware, keepers, and strikes.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-LEE-PDLOCK-2",
+              "original_sku": "LEE-PDLOCK",
+              "title": "Patio Door Mortise Lock — Sliding",
+              "price": null,
+              "part_type": "Mortise Lock",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "DOOR-HANDLES",
+          "subcategory_name": "Door Handles and Pulls",
+          "description": "Replacement patio door handles, pulls, and handle sets.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-LEE-PDHANDLE-2",
+              "original_sku": "LEE-PDHANDLE",
+              "title": "Sliding Patio Door Handle Set",
+              "price": null,
+              "part_type": "Handle Set",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "DOOR-INSWING",
+          "subcategory_name": "Inswing / Outswing Door Parts",
+          "description": "Hardware for hinged patio doors — hinges, threshold seals, multipoint systems.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-LEE-INSWING-H-2",
+              "original_sku": "LEE-INSWING-H",
+              "title": "Inswing Door Hinge — Adjustable",
+              "price": null,
+              "part_type": "Hinge",
+              "door_type": "Inswing",
+              "stock_status": "check_availability"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-GLZWS",
+      "category_name": "Window Glazing and Weatherstrip",
+      "slug": "window-glazing-and-weatherstrip",
+      "part_count": null,
+      "description": "Weatherstripping seals, glazing beads, compression bulbs, kerf inserts, leaf seals, foam strips, and T-slot profiles for windows and doors.",
+      "subcategories": [
+        {
+          "subcategory_id": "WS-KERF",
+          "subcategory_name": "Kerf Insert Weatherstrip",
+          "description": "Barb-style inserts pressed into kerf grooves in window and door frames.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-KERF300-2",
+              "original_sku": "WS-KERF300",
+              "title": ".300 Weather-Strip Kerf Insert Seal",
+              "price": null,
+              "part_type": "Kerf Insert",
+              "profile_width": ".300",
+              "material": "Vinyl",
+              "sold_by": "Linear foot",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-BULB",
+          "subcategory_name": "Compression / Bulb Vinyl Weatherstrip",
+          "description": "Bulb-profile vinyl seals for compression fit along sash and frame contacts.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-BULBBLK-2",
+              "original_sku": "WS-BULBBLK",
+              "title": "Black Compression Seal Bulb Vinyl Weatherstrip",
+              "price": 237.19,
+              "part_type": "Bulb Compression",
+              "color": "Black",
+              "material": "Vinyl",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-LEAF",
+          "subcategory_name": "Leaf Weatherseal",
+          "description": "Fin-style leaf seals for sash-to-frame contact. Available in multiple colors.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-LEAFBLK-2",
+              "original_sku": "WS-LEAFBLK",
+              "title": "Black Weather Strip Seal | Leaf Weatherseal",
+              "price": 151.11,
+              "part_type": "Leaf Seal",
+              "color": "Black",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-LEAFTAN-2",
+              "original_sku": "WS-LEAFTAN",
+              "title": "Tan Weather Strip Seal | Leaf Weatherseal",
+              "price": 302.75,
+              "part_type": "Leaf Seal",
+              "color": "Tan",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-LEAFTYPE-2",
+              "original_sku": "WS-LEAFTYPE",
+              "title": "Weather Strip Seal | Leaf Type",
+              "price": 295.77,
+              "part_type": "Leaf Seal",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-FOAM",
+          "subcategory_name": "Foam Compression Weatherstrip",
+          "description": "Q-Foam and foam compression seals for T-slot and offset applications.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-FOAMTSLOT-2",
+              "original_sku": "WS-FOAMTSLOT",
+              "title": "Foam Seals Offset T-Slot Q-Foam",
+              "price": 239.85,
+              "part_type": "Q-Foam",
+              "mount_type": "T-Slot Offset",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-TSLOTBULB-2",
+              "original_sku": "WS-TSLOTBULB",
+              "title": "T-Slot Offset Bulb Foam Compression Weather Strip | 19/64in",
+              "price": 262.91,
+              "part_type": "T-Slot Bulb Foam",
+              "dimension": "19/64 inch",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-TSLOT",
+          "subcategory_name": "T-Slot / Groove Mount Weatherstrip",
+          "description": "Phillips and standard T-slot groove mounted weatherstrip profiles.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-PHILLTSLOT-2",
+              "original_sku": "WS-PHILLTSLOT",
+              "title": "Phillips T-Slot Groove Mount Window Weatherstrip",
+              "price": 486.75,
+              "part_type": "T-Slot Groove Mount",
+              "brand": "Phillips",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-DOORSWEEP",
+          "subcategory_name": "Door Bottom Sweeps and Seals",
+          "description": "Door bottom sweep seals, dual-kerf inserts, and threshold weatherstripping.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-DBSWEEP-DK-2",
+              "original_sku": "WS-DBSWEEP-DK",
+              "title": "Door Bottom Sweep Weather-Strip Seal | Dual Kerf Barb Insert",
+              "price_range": {"min": 26.38, "max": 35.75},
+              "part_type": "Door Bottom Sweep",
+              "mount_type": "Dual Kerf Barb",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-DBSWEEP175-2",
+              "original_sku": "WS-DBSWEEP175",
+              "title": "Vinyl Door Bottom Sweep Seal | 1-3/4in",
+              "price": 60.22,
+              "part_type": "Door Bottom Sweep",
+              "dimension": "1-3/4 inch",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-DOORSEALS",
+          "subcategory_name": "Door Seals and Air Locks",
+          "description": "Complete door seal systems — E-Lon, Foam-Tite, vinyl air locks.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-ELON-2",
+              "original_sku": "WS-ELON",
+              "title": "E-Lon Foam-Tite Door Seal",
+              "price_range": {"min": 154.55, "max": 223.85},
+              "part_type": "Door Seal System",
+              "brand": "E-Lon",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-VINYLAIRLOCK-2",
+              "original_sku": "WS-VINYLAIRLOCK",
+              "title": "Vinyl Door Air Lock Weather Seal",
+              "price_range": {"min": 108.88, "max": 388.88},
+              "part_type": "Air Lock Seal",
+              "material": "Vinyl",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-VINYLSASH",
+          "subcategory_name": "Vinyl Sash Weatherstrip",
+          "description": "Sash-applied vinyl weatherstrip for window sash perimeter sealing.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-VINYLSASH-2",
+              "original_sku": "WS-VINYLSASH",
+              "title": "Vinyl Sash Weatherstrip",
+              "price": 154.93,
+              "part_type": "Sash Weatherstrip",
+              "material": "Vinyl",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "WS-PATIODOOR",
+          "subcategory_name": "Patio and Screen Door Weatherstrip",
+          "description": "Sliding patio door and screen door perimeter weatherstrip seals.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-WS-PDWS-2",
+              "original_sku": "WS-PDWS",
+              "title": "Sliding Patio Door Weather-Strip",
+              "price": 42.63,
+              "part_type": "Patio Door Weatherstrip",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-WS-PDSCREEN-2",
+              "original_sku": "WS-PDSCREEN",
+              "title": "Weather Strip Seal | Patio and Screen Door",
+              "price": 78.88,
+              "part_type": "Screen Door Weatherstrip",
+              "stock_status": "in_stock"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-SCREEN",
+      "category_name": "Screen Hardware and Accessories",
+      "slug": "screen-hardware-and-accessories",
+      "part_count": null,
+      "description": "Screen frames, corner keys, retainer clips, tension springs, screen door rollers, pulls, and screen replacement supplies.",
+      "subcategories": [
+        {
+          "subcategory_id": "SCR-FRAMES",
+          "subcategory_name": "Screen Frames and Corners",
+          "description": "Aluminum screen frame stock, corner keys, angles, and frame assembly hardware.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SC-CORNERKEY-2",
+              "original_sku": "SC-CORNERKEY",
+              "title": "Screen Frame Corner Key Set",
+              "price": null,
+              "part_type": "Corner Key",
+              "material": "Die-cast / Aluminum",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SCR-ROLLERS",
+          "subcategory_name": "Screen Door Rollers",
+          "description": "Replacement roller assemblies for sliding screen doors.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SC-SDROLLER-2",
+              "original_sku": "SC-SDROLLER",
+              "title": "Sliding Screen Door Roller Assembly",
+              "price": null,
+              "part_type": "Screen Door Roller",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SCR-CLIPS",
+          "subcategory_name": "Clips, Springs, and Retainers",
+          "description": "Screen insert clips, tension springs, plunger pins, and retaining hardware.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SC-INSERTCLIP-2",
+              "original_sku": "SC-INSERTCLIP",
+              "title": "Window Screen Insert Clip",
+              "price": null,
+              "part_type": "Insert Clip",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "SCR-PULLS",
+          "subcategory_name": "Screen Pulls and Handles",
+          "description": "Screen door and window screen pulls, handles, and latches.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-SC-PULL-2",
+              "original_sku": "SC-PULL",
+              "title": "Screen Door Pull Handle",
+              "price": null,
+              "part_type": "Screen Pull",
+              "stock_status": "check_availability"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "category_id": "CAT-OTHER",
+      "category_name": "Other Hardware",
+      "slug": "other-hardware",
+      "part_count": null,
+      "description": "Miscellaneous window and door hardware — pressure shoes, friction shoes, guide buttons, pulleys, grille pins, glass cleaner, and specialty fasteners.",
+      "subcategories": [
+        {
+          "subcategory_id": "OTH-FRICTION",
+          "subcategory_name": "Pressure Shoes and Friction Devices",
+          "description": "Jambliner pressure shoes and friction fit devices for older double-hung systems.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-OH-PRESSHOE-2",
+              "original_sku": "OH-PRESSHOE",
+              "title": "Window Pressure Shoe — Friction Fit",
+              "price": null,
+              "part_type": "Pressure Shoe",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "OTH-PULLEYS",
+          "subcategory_name": "Pulleys and Sash Cord Hardware",
+          "description": "Brass and steel sash pulleys for cord-and-weight balance systems in historic windows.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-OH-PULLEYBRASS-2",
+              "original_sku": "OH-PULLEYBRASS",
+              "title": "Brass Sash Pulley — Cord & Weight System",
+              "price": null,
+              "part_type": "Sash Pulley",
+              "material": "Brass",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "OTH-GRILLE",
+          "subcategory_name": "Grille Pins and Fasteners",
+          "description": "Wood grille pins, fastener parts, and grille mounting hardware.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-OH-GRILLEPIN-2",
+              "original_sku": "OH-GRILLEPIN",
+              "title": "Wood Grille Pins and Fastener Parts",
+              "price": 62.88,
+              "part_type": "Grille Pins",
+              "stock_status": "in_stock"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "OTH-WEEPCOVERS",
+          "subcategory_name": "Weep Hole Covers",
+          "description": "Snap-in weep hole covers to protect drainage channels from debris and insects.",
+          "products": [
+            {
+              "awdp_sku": "AWDP-OH-WEEPCOVER-2",
+              "original_sku": "OH-WEEPCOVER",
+              "title": "Weep Hole Cover — Snap-In",
+              "price": null,
+              "part_type": "Weep Hole Cover",
+              "stock_status": "check_availability"
+            }
+          ]
+        },
+        {
+          "subcategory_id": "OTH-SPECIALTY",
+          "subcategory_name": "Specialty and Brand-Specific Parts",
+          "description": "OEM and compatible parts for specific brands — Andersen, Pella, Biltbest, Caradco, NORCO, Marvin.",
+          "products": [
+            {
+              "awdp_sku": "AWDP_GROUP_USA",
+              "original_sku": "AWDP_GROUP_USA",
+              "title": "Custom Wood Window Milled Parts | Sash Kits | Historic Preservations",
+              "price": null,
+              "part_type": "Custom Milled Parts",
+              "stock_status": "special_order"
+            },
+            {
+              "awdp_sku": "AWDP-OH-ANDERSEN-2",
+              "original_sku": "OH-ANDERSEN",
+              "title": "Andersen Window Door Parts | Repair Replacement Hardware",
+              "price": null,
+              "part_type": "Brand Collection — Andersen",
+              "stock_status": "check_availability"
+            },
+            {
+              "awdp_sku": "AWDP-OH-PELLA-OPS-2",
+              "original_sku": "OH-PELLA-OPS",
+              "title": "Old Pella Window Parts | Casement Operators Cranks Handles Covers",
+              "price": 188.88,
+              "part_type": "Brand Collection — Pella",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-OH-BILTBEST-2",
+              "original_sku": "OH-BILTBEST",
+              "title": "Biltbest Window and Door Collection OEM Model Reference",
+              "price": null,
+              "part_type": "Brand Collection — Biltbest",
+              "stock_status": "reference"
+            },
+            {
+              "awdp_sku": "AWDP-OH-CARADCO-2",
+              "original_sku": "OH-CARADCO",
+              "title": "Caradco Clad Window Sash Kits | Casement Window Clad Sashes",
+              "price": 498.88,
+              "part_type": "Brand Collection — Caradco",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-OH-NORCO-2",
+              "original_sku": "OH-NORCO",
+              "title": "NORCO Cottage Style Double Hung Window Jambliner Replacements",
+              "price": 288.88,
+              "part_type": "Brand Collection — NORCO",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-OH-SASHKITS-2",
+              "original_sku": "OH-SASHKITS",
+              "title": "The Ultimate in Old Double Hung Replacement Sash Kits",
+              "price": 478.88,
+              "part_type": "Sash Kit",
+              "stock_status": "in_stock"
+            },
+            {
+              "awdp_sku": "AWDP-OH-SASHLOCKSET-2",
+              "original_sku": "OH-SASHLOCKSET",
+              "title": "Window Sash Locks and Keepers | All Styles and Brands",
+              "price": 128.88,
+              "part_type": "Sash Lock Kit",
+              "stock_status": "in_stock"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "metadata": {
+    "brands_carried": [
+      "Truth Hardware",
+      "EntryGard",
+      "Andersen",
+      "Pella",
+      "Milgard",
+      "Marvin",
+      "Amesbury",
+      "Caldwell",
+      "Caradco",
+      "Biltbest",
+      "NORCO",
+      "Hurd",
+      "Weather Shield",
+      "Acorn",
+      "Arcadia",
+      "Kawneer",
+      "Prime-Line"
+    ],
+    "operator_series": [
+      {"series": "Encore", "types": ["Dual Arm", "Dual Arm Low Profile", "Single Arm", "Single Arm Low Profile", "Dyad", "Dyad Low Profile", "Reverse Dyad", "Reverse Dyad Low Profile", "Awning", "Awning Narrow"]},
+      {"series": "Maxim", "types": ["Dual Arm", "Dual Arm Low Profile", "Single Arm", "Single Arm Low Profile", "Dyad", "Dyad Low Profile", "Reverse Dyad", "Reverse Dyad Low Profile", "Awning", "Awning Narrow"]},
+      {"series": "EntryGard", "types": ["Dual Arm", "Single Arm", "Dyad", "Awning"]},
+      {"series": "Ellipse (15 Series)", "types": ["Dual Arm", "Single Arm", "Dyad", "Awning"]}
+    ],
+    "balance_types": [
+      "Spiral / Tube",
+      "Channel / Block & Tackle",
+      "Constant Force Coil",
+      "Tilt Tube",
+      "Devac Overhead",
+      "Plastic Tube",
+      "Cord & Weight (Historic)"
+    ],
+    "weatherstrip_profiles": [
+      "Kerf Insert",
+      "Bulb Compression",
+      "Leaf Seal",
+      "Q-Foam T-Slot",
+      "T-Slot Groove Mount",
+      "Door Bottom Sweep",
+      "Vinyl Air Lock",
+      "Vinyl Sash",
+      "E-Lon Foam-Tite"
+    ],
+    "roller_types": [
+      "Tandem Steel Ball Bearing",
+      "Tandem Stainless Steel",
+      "Tandem Nylon",
+      "Single Roller",
+      "Heavy-Duty / Boss",
+      "Concave Wheel",
+      "Adjustable Side/Edge"
+    ],
+    "store_info": {
+      "name": "All Window Door Parts",
+      "phone": "785-533-0244",
+      "email": "Info@allwindowdoorparts.com",
+      "hours": "Mon-Fri 8am-5pm CST",
+      "minimum_order": 50.00,
+      "veteran_owned": true,
+      "experience_years": 40
+    }
+  }
+}
