@@ -91,15 +91,6 @@ const PDF_RESOURCES: PdfResource[] = [
     description: "Comprehensive patio door parts catalog — rollers, handles, locks, tracks, screen hardware, and replacement door components.",
   },
   {
-    id: "awdp-patio-screen-catalog",
-    title: "AWDP All Patio & Screen Door Parts Catalog",
-    brand: "AWDP",
-    category: "Patio Doors",
-    type: "Product Catalog",
-    url: "/api/storage/public-objects/awdp-parts-catalog.pdf",
-    description: "All Window Door Parts complete patio and screen door hardware catalog — rollers, handles, locks, tracks, screen parts, and more with full SKU listings and specifications.",
-  },
-  {
     id: "angellock-vent-lock",
     title: "AngelLock Window Vent Lock",
     brand: "BiltBest",
