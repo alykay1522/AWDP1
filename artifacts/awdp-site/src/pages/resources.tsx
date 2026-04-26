@@ -91,6 +91,15 @@ const PDF_RESOURCES: PdfResource[] = [
     description: "Comprehensive patio door parts catalog — rollers, handles, locks, tracks, screen hardware, and replacement door components.",
   },
   {
+    id: "oldach-patio-door-catalog",
+    title: "Oldach Parts — Patio Door Hardware Catalog",
+    brand: "Oldach",
+    category: "Patio Doors",
+    type: "Product Catalog",
+    url: "/api/storage/public-objects/resources/oldach-patio-door-catalog.pdf",
+    description: "Full Oldach patio door hardware catalog — rollers, handles, locks, tracks, and accessories. Note: SKUs in this catalog use the 'AWDP-' prefix on AllWindowDoorParts.com.",
+  },
+  {
     id: "angellock-vent-lock",
     title: "AngelLock Window Vent Lock",
     brand: "BiltBest",
