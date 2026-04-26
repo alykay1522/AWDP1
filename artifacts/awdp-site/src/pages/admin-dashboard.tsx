@@ -93,7 +93,12 @@ export default function AdminDashboard() {
   const [priceLimit, setPriceLimit] = useState(100);
 
   const { data: catalogStats } = useGetCatalogStats({
-    query: { queryKey: getGetCatalogStatsQueryKey() },
+    query: {
+      queryKey: getGetCatalogStatsQueryKey(),
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: "always",
+    },
   });
 
   const { data: ordersData } = useQuery<AdminOrdersResponse>({
