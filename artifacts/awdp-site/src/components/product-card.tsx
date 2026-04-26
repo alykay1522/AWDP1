@@ -1,7 +1,7 @@
 import { useCart } from "@/lib/cart";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, PackageCheck } from "lucide-react";
+import { ShoppingCart, PackageCheck, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/product-image";
 
@@ -22,8 +22,10 @@ function getCategorySnippet(category?: string | null, description?: string | nul
   return CATEGORY_SNIPPETS[category] ?? null;
 }
 
+type ProductWithVariantCount = Product & { variantCount?: number };
+
 interface ProductCardProps {
-  product: Product;
+  product: ProductWithVariantCount;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -34,6 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const snippet = getCategorySnippet(product.category, product.description);
+  const variantCount = product.variantCount ?? 1;
 
   return (
     <div className="group relative bg-card border border-border rounded-lg overflow-hidden hover-elevate transition-all duration-300 flex flex-col h-full">
@@ -50,6 +53,15 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         )}
       </div>
+      {/* Variant count badge — top right */}
+      {variantCount > 1 && (
+        <div className="absolute top-3 right-3 z-10">
+          <span className="bg-slate-800/80 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm">
+            <Layers className="w-3 h-3" />
+            {variantCount} options
+          </span>
+        </div>
+      )}
 
       <Link href={`/product/${product.sku}`} className="block relative aspect-square bg-white border-b overflow-hidden">
         <ProductImage

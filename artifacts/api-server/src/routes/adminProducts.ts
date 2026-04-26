@@ -1113,4 +1113,76 @@ router.post(
   }
 );
 
+// ── Auto-group similar products ─────────────────────────────────────────────
+// POST /api/admin/products/auto-group
+// Groups window balance products by extracting base names (removing weight/part-number suffixes).
+// Also groups exact-name duplicates across all categories.
+// Safe to run multiple times — only updates products where variant_group_id IS NULL.
+router.post("/admin/products/auto-group", async (req, res) => {
+  try {
+    // Step 1: Window balances — group by length + balance type
+    await db.execute(sql`
+      WITH base_names AS (
+        SELECT sku, name,
+          TRIM(REGEXP_REPLACE(
+            REGEXP_REPLACE(name,
+              E'\\\\s*(\\\\([^)]+\\\\)|[Ww][/:][^\\\\s].*|[Ww]\\\\d[-/].*|-(?:WHT|BLK|BGE|ALM|WH|BK|wht|bge|CHR|brz)\\\\s*$)',
+              '', 'i'),
+            E'\\\\s+$', ''
+          )) AS base_name
+        FROM products
+        WHERE category = 'Window Balances'
+      ),
+      groups_with_count AS (
+        SELECT base_name, COUNT(*) AS cnt
+        FROM base_names
+        GROUP BY base_name
+        HAVING COUNT(*) > 1
+      )
+      UPDATE products p
+      SET
+        variant_group_id = bn.base_name,
+        variant_label = p.name
+      FROM base_names bn
+      JOIN groups_with_count gwc ON bn.base_name = gwc.base_name
+      WHERE p.sku = bn.sku
+        AND p.variant_group_id IS NULL
+    `);
+
+    // Step 2: Exact-name duplicates across other categories
+    await db.execute(sql`
+      WITH same_name AS (
+        SELECT name, category,
+          COUNT(*) OVER (PARTITION BY name, category) AS cnt
+        FROM products
+        WHERE variant_group_id IS NULL
+          AND category != 'Window Balances'
+      )
+      UPDATE products p
+      SET
+        variant_group_id = 'dup:' || s.name,
+        variant_label = p.sku
+      FROM same_name s
+      WHERE p.name = s.name
+        AND p.category = s.category
+        AND s.cnt > 1
+        AND p.variant_group_id IS NULL
+    `);
+
+    // Stats
+    const [stats] = await db.execute(sql`
+      SELECT
+        COUNT(*) FILTER (WHERE variant_group_id IS NOT NULL)::int AS grouped_products,
+        COUNT(DISTINCT variant_group_id) FILTER (WHERE variant_group_id IS NOT NULL)::int AS unique_groups,
+        COUNT(*) FILTER (WHERE variant_group_id IS NULL)::int AS ungrouped_products
+      FROM products
+    `);
+
+    res.json({ success: true, stats: stats });
+  } catch (err: any) {
+    req.log?.error({ err }, "Error in auto-group");
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useGetProductBySku, getGetProductBySkuQueryKey, useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { PageSeo } from "@/components/page-seo";
@@ -8,7 +8,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight, CheckCircle2, Layers } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } from "@/components/measurement-diagrams";
@@ -22,6 +23,7 @@ export default function ProductDetail() {
   const params = useParams();
   const sku = params.sku;
   const { addToCart } = useCart();
+  const [, navigate] = useLocation();
   const [quantity, setQuantity] = useState(1);
 
   const { data: product, isLoading, isError } = useGetProductBySku(sku || "", {
@@ -404,25 +406,36 @@ export default function ProductDetail() {
 
               {/* Variant picker */}
               {variants.length > 1 && (
-                <div className="mb-6">
-                  <p className="text-sm font-bold text-slate-700 mb-2">Available Variants</p>
-                  <div className="flex flex-wrap gap-2">
-                    {variants.map((v) => (
-                      <Link href={`/product/${encodeURIComponent(v.sku)}`} key={v.sku}>
-                        <button
-                          type="button"
-                          className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
-                            v.sku === sku
-                              ? "bg-primary text-white border-primary"
-                              : "bg-white text-slate-700 border-slate-300 hover:border-primary hover:text-primary"
-                          }`}
-                          aria-current={v.sku === sku ? "true" : undefined}
-                        >
-                          {v.variantLabel ?? v.sku}
-                        </button>
-                      </Link>
-                    ))}
+                <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Layers className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-bold text-slate-800">
+                      {variants.length} Options Available
+                    </p>
                   </div>
+                  <Select
+                    value={sku}
+                    onValueChange={(val) => navigate(`/product/${encodeURIComponent(val)}`)}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Select a variant…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {variants.map((v) => (
+                        <SelectItem key={v.sku} value={v.sku}>
+                          <span className="font-medium">{v.variantLabel ?? v.name}</span>
+                          {v.price && Number(v.price) > 0 && (
+                            <span className="ml-2 text-muted-foreground text-xs">
+                              ${Number(v.price).toFixed(2)}
+                            </span>
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Selecting a different option will take you to that product page.
+                  </p>
                 </div>
               )}
 

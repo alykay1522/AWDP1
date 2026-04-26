@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, ilike, and, or, sql, count, isNotNull, asc, desc } from "drizzle-orm";
+import { eq, ilike, and, or, sql, count, isNotNull, asc, desc, type SQL } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -210,11 +210,57 @@ router.get("/products", async (req, res) => {
       conditions.push(sql`${productsTable.price}::numeric <= ${maxPrice}`);
     }
 
-    const whereClause = and(...conditions);
+    const whereClause = and(...conditions) as SQL;
 
     // Determine sort order
     // Default "newest" puts imaged products first, then sorts by newest ID within each group
     const hasImage = sql`CASE WHEN ${productsTable.imageUrl} IS NOT NULL AND ${productsTable.imageUrl} != '' THEN 0 ELSE 1 END`;
+
+    // Dedup mode: return one canonical product per variant group (with variant count)
+    const dedup = req.query.dedup === "true";
+    if (dedup) {
+      const innerOrder =
+        sort === "price-asc"  ? sql`price::numeric ASC NULLS LAST`
+        : sort === "price-desc" ? sql`price::numeric DESC NULLS FIRST`
+        : sql`CASE WHEN image_url IS NOT NULL AND image_url != '' THEN 0 ELSE 1 END, id DESC`;
+
+      const outerOrder =
+        sort === "price-asc"  ? sql`price::numeric ASC NULLS LAST`
+        : sort === "price-desc" ? sql`price::numeric DESC NULLS FIRST`
+        : sort === "name-asc"   ? sql`name ASC`
+        : sql`CASE WHEN image_url IS NOT NULL AND image_url != '' THEN 0 ELSE 1 END, id DESC`;
+
+      const [dedupResult, countResult] = await Promise.all([
+        db.execute(sql`
+          SELECT * FROM (
+            SELECT DISTINCT ON (COALESCE(variant_group_id, sku)) *,
+              COUNT(*) OVER (PARTITION BY COALESCE(variant_group_id, sku))::int AS "variantCount"
+            FROM products
+            WHERE ${whereClause}
+            ORDER BY COALESCE(variant_group_id, sku), ${innerOrder}
+          ) deduped
+          ORDER BY ${outerOrder}
+          LIMIT ${limit} OFFSET ${offset}
+        `),
+        db.execute(sql`
+          SELECT COUNT(*)::int AS count FROM (
+            SELECT DISTINCT ON (COALESCE(variant_group_id, sku)) id
+            FROM products
+            WHERE ${whereClause}
+            ORDER BY COALESCE(variant_group_id, sku)
+          ) deduped
+        `),
+      ]);
+
+      const total = Number((countResult.rows[0] as any)?.count ?? 0);
+      const products = (dedupResult.rows as any[]).map((r) => ({
+        ...r,
+        variantCount: r.variantCount != null ? Number(r.variantCount) : 1,
+      }));
+
+      res.json({ products, total, page, limit, totalPages: Math.ceil(total / limit) });
+      return;
+    }
 
     const [products, totalResult] = await Promise.all([
       db.select().from(productsTable).where(whereClause).orderBy(

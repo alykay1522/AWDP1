@@ -1,0 +1,155 @@
+AWDP STANDARD PRODUCT TEMPLATE (UNIVERSAL)
+Copy/paste‑ready. Works for ANY product type.
+🏷️ 1. PRODUCT TITLE
+Code
+{{Product Name}} – {{Key Attribute}} – {{Size/Range}}
+Example:  
+Window Balances – Color Coded Terminal Tilt Balances – 19" to 25"
+
+💲 2. PRICE
+Code
+{{Price}} (Per Unit / Per Pair / Per Set)
+🧾 3. SHORT DESCRIPTION
+Code
+{{1–2 sentence summary of what the product is and what it fits}}
+📦 4. LONG DESCRIPTION
+Code
+{{Full product description}}
+{{Compatibility list}}
+{{Installation notes}}
+{{Brand references}}
+{{Warnings or limitations}}
+🔽 5. STANDARDIZED DROPDOWN ATTRIBUTES
+(Use these for every product that has variations.)
+
+A. Size / Length / Measurement
+Code
+{{Option 1}}
+{{Option 2}}
+{{Option 3}}
+...
+B. Color / Finish
+Code
+White
+Black
+Bronze
+Aluminum
+Stainless Steel
+Other
+C. Material / Type
+Code
+Steel
+Vinyl
+Nylon
+Zinc
+Composite
+Other
+D. Orientation / Handing
+Code
+Left
+Right
+Universal
+E. Application / Sash Type / Door Type
+Code
+Top Sash
+Bottom Sash
+Single Hung
+Double Hung
+Casement
+Awning
+Slider
+Patio Door
+F. Brand Compatibility
+Code
+Marvin
+Milgard
+Andersen
+Pella
+Silverline
+Wenco
+Traco
+Other
+G. Additional Required Info
+Code
+Stamping Code
+Color Code
+Bracket Type
+Jamb Liner Type
+Operator Handing
+Glass Thickness
+🧩 6. UNIVERSAL JSON TEMPLATE (FOR REPLIT + API PIPELINES)
+json
+{
+  "product_name": "{{Product Name}}",
+  "sku": "{{SKU}}",
+  "price": {{Price}},
+  "category": "{{Category}}",
+  "description_short": "{{Short Description}}",
+  "description_long": "{{Long Description}}",
+  "images": [
+    "{{ImageURL1}}",
+    "{{ImageURL2}}"
+  ],
+  "attributes": {
+    "size": ["{{Option1}}", "{{Option2}}", "{{Option3}}"],
+    "color": ["White", "Black", "Bronze", "Other"],
+    "material": ["Steel", "Vinyl", "Nylon"],
+    "orientation": ["Left", "Right", "Universal"],
+    "application": ["Top Sash", "Bottom Sash"],
+    "brand_compatibility": ["Marvin", "Milgard", "Pella", "Other"],
+    "additional_info": ["Stamping Code", "Bracket Type", "Jamb Liner Type"]
+  },
+  "sold_as": "{{Unit Type}}",
+  "notes": [
+    "{{Note 1}}",
+    "{{Note 2}}",
+    "{{Note 3}}"
+  ]
+}
+🧱 7. UNIVERSAL HTML TEMPLATE (FOR REPLIT FRONTEND)
+html
+<h2>{{Product Name}}</h2>
+<p><strong>Price:</strong> {{Price}}</p>
+
+<label>Size / Length:</label>
+<select id="size">
+  <option>{{Option1}}</option>
+  <option>{{Option2}}</option>
+  <option>{{Option3}}</option>
+</select>
+
+<label>Color:</label>
+<select id="color">
+  <option>White</option>
+  <option>Black</option>
+  <option>Bronze</option>
+  <option>Other</option>
+</select>
+
+<label>Orientation / Handing:</label>
+<select id="orientation">
+  <option>Left</option>
+  <option>Right</option>
+  <option>Universal</option>
+</select>
+
+<label>Application:</label>
+<select id="application">
+  <option>Top Sash</option>
+  <option>Bottom Sash</option>
+  <option>Single Hung</option>
+  <option>Double Hung</option>
+</select>
+
+<label>Brand Compatibility:</label>
+<select id="brand">
+  <option>Marvin</option>
+  <option>Milgard</option>
+  <option>Pella</option>
+  <option>Other</option>
+</select>
+🎯 8. UNIVERSAL SKU FORMAT (AWDP STANDARD)
+(Matches your AWDP prefixing rules.)
+
+Code
+AWDP-{{CategoryCode}}-{{ProductCode}}-{{SizeCode}}-{{ColorCode}}

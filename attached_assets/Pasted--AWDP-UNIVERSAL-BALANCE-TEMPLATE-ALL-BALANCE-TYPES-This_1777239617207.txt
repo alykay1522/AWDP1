@@ -1,0 +1,154 @@
+⭐ AWDP UNIVERSAL BALANCE TEMPLATE (ALL BALANCE TYPES)
+This is the one template that works for:
+
+Channel balances
+
+Spiral balances
+
+Coil balances
+
+Tilt balances
+
+Hybrid / OEM balances
+
+🏷️ PRODUCT TITLE
+Code
+{{Balance Type}} – {{Series / Style}} – {{Length / Size}} – {{Weight / Color Code}}
+💲 PRICE
+Code
+{{Price}} (Per Pair or Per Set)
+🧾 SHORT DESCRIPTION
+Code
+{{Balance Type}} replacement balance for {{Window Type}} windows. 
+Available in multiple lengths, weight ratings, and configurations.
+📦 LONG DESCRIPTION
+Code
+This {{Balance Type}} is a high‑quality replacement for many OEM window systems. 
+Designed for smooth sash operation and long service life. 
+Available in multiple lengths, weight ratings, shoe types, and configurations.
+
+Includes:
+• {{Quantity}} balances  
+• Terminal shoes / color tips (as selected)  
+• Optional brackets or guides  
+
+Fits:
+{{Brand Compatibility List}}
+
+Notes:
+• Always match stamping or color code  
+• Verify length (metal channel only if applicable)  
+• Confirm shoe type or terminal color  
+• Send photos if unsure
+🔽 UNIVERSAL DROPDOWN ATTRIBUTES (ALL BALANCE TYPES)
+Balance Type
+Code
+Channel Balance (Block & Tackle)
+Spiral Balance
+Coil Balance (Constant Force)
+Tilt Balance (Color‑Coded Terminal)
+OEM / Specialty Balance
+Length / Size
+Code
+10"
+12"
+14"
+16"
+18"
+20"
+22"
+24"
+26"
+28"
+30"
+32"
+34"
+36"
+Other
+Weight / Stamping / Color Code
+Code
+1020
+1220
+1420
+1620
+1820
+2020
+2220
+2420
+2620
+2820
+3020
+Red Tip
+Blue Tip
+Green Tip
+Black Tip
+Yellow Tip
+Other
+Terminal Shoe / Tip Type
+Code
+15-001 (Standard)
+15-002 (Extended)
+15-004 (Special)
+White Tip
+Black Tip
+Blue Tip
+Brown Tip
+Green Tip
+Other
+Top Guide / Bracket Type
+Code
+19-002
+19-005
+19-030
+Jamb Liner Type A
+Jamb Liner Type B
+Jamb Liner Type C
+Other
+Balance Configuration
+Code
+Single
+Double
+Triple Coil Pack
+Tilt-Pack Pair
+Other
+Brand Compatibility
+Code
+Marvin
+Milgard
+Silverline
+Wenco
+Norandex
+Crestline
+Acorn
+Alenco
+Traco
+Weather Shield
+Lincoln
+Eagle
+Other
+🧩 UNIVERSAL JSON TEMPLATE (MEGA‑BATCH READY)
+json
+{
+  "product_name": "{{Balance Type}} – {{Series}} – {{Length}} – {{Code}}",
+  "sku": "{{AWDP-SKU}}",
+  "price": {{Price}},
+  "category": "Window Balances",
+  "description_short": "{{Short Description}}",
+  "description_long": "{{Long Description}}",
+  "images": ["{{ImageURL1}}"],
+  "attributes": {
+    "balance_type": ["Channel", "Spiral", "Coil", "Tilt", "OEM"],
+    "length": ["10\"", "12\"", "14\"", "16\"", "18\"", "20\"", "22\"", "24\"", "26\"", "28\"", "30\"", "32\"", "34\"", "36\"", "Other"],
+    "weight_code": ["1020", "1220", "1420", "1620", "1820", "2020", "2220", "2420", "2620", "2820", "3020", "Red Tip", "Blue Tip", "Green Tip", "Black Tip", "Yellow Tip", "Other"],
+    "shoe_type": ["15-001", "15-002", "15-004", "White Tip", "Black Tip", "Blue Tip", "Brown Tip", "Green Tip", "Other"],
+    "top_guide": ["19-002", "19-005", "19-030", "Jamb Liner A", "Jamb Liner B", "Jamb Liner C", "Other"],
+    "configuration": ["Single", "Double", "Triple Coil Pack", "Tilt-Pack Pair", "Other"],
+    "brand_compatibility": ["Marvin", "Milgard", "Silverline", "Wenco", "Norandex", "Crestline", "Acorn", "Alenco", "Traco", "Weather Shield", "Lincoln", "Eagle", "Other"]
+  },
+  "sold_as": "{{Pair or Set}}",
+  "notes": [
+    "Match stamping or color code",
+    "Verify length",
+    "Confirm shoe or terminal type"
+  ]
+}

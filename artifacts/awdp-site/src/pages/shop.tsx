@@ -143,6 +143,7 @@ function useFilteredProducts(params: {
       q.set("page", String(params.page));
       q.set("limit", String(params.limit));
       q.set("sort", params.sort);
+      q.set("dedup", "true");
       if (params.search)     q.set("search",      params.search);
       if (params.category)   q.set("category",    params.category);
       if (params.minPrice)   q.set("minPrice",    String(params.minPrice));

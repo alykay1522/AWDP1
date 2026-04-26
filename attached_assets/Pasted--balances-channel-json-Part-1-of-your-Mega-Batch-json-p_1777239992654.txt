@@ -1,0 +1,139 @@
+📁 balances_channel.json
+(Part 1 of your Mega‑Batch)
+json
+[
+  {
+    "product_name": "Series 57 Channel Balance – 28\" – 2830",
+    "sku_original": "Series 57 Balance 28-2830",
+    "sku_awdp": "AWDP-BAL-57-28-2830-15001",
+    "price": 38.88,
+    "category": "Window Balances",
+    "description_short": "Series 57 block & tackle channel balance for single/double hung windows. Sold as a pair.",
+    "description_long": "Series 57 block & tackle channel balance designed for smooth sash operation. Direct replacement for many OEM window systems. Includes two balances and standard 15-001 shoe. Match stamping code and metal channel length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["57"],
+      "length": ["28\""],
+      "weight_code": ["2830"],
+      "shoe_type": ["15-001"],
+      "top_guide": ["19-002"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match stamping code",
+      "Verify metal channel length",
+      "Confirm shoe type"
+    ]
+  },
+
+  {
+    "product_name": "Series 58 Channel Balance – 24\" – 2420",
+    "sku_original": "Series 58 Balance 24-2420",
+    "sku_awdp": "AWDP-BAL-58-24-2420-15002",
+    "price": 38.88,
+    "category": "Window Balances",
+    "description_short": "Series 58 block & tackle channel balance for residential windows. Sold as a pair.",
+    "description_long": "Series 58 channel balance is a heavy-duty replacement for many OEM window systems. Includes extended 15-002 shoe for deeper pocket applications. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["58"],
+      "length": ["24\""],
+      "weight_code": ["2420"],
+      "shoe_type": ["15-002"],
+      "top_guide": ["19-005"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Norandex", "Crestline", "Acorn", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match stamping code",
+      "Verify metal channel length",
+      "Confirm shoe type"
+    ]
+  },
+
+  {
+    "product_name": "Series 60P Channel Balance – 30\" – 3020",
+    "sku_original": "Series 60P Balance 30-3020",
+    "sku_awdp": "AWDP-BAL-60P-30-3020-15001",
+    "price": 42.88,
+    "category": "Window Balances",
+    "description_short": "Series 60P premium channel balance for heavy sashes. Sold as a pair.",
+    "description_long": "Series 60P channel balance is designed for heavier window sashes and premium-grade installations. Includes standard 15-001 shoe and reinforced top guide. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["60P"],
+      "length": ["30\""],
+      "weight_code": ["3020"],
+      "shoe_type": ["15-001"],
+      "top_guide": ["19-030"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match stamping code",
+      "Verify metal channel length",
+      "Confirm shoe type"
+    ]
+  },
+
+  {
+    "product_name": "Series 61 Channel Balance – 26\" – 2620",
+    "sku_original": "Series 61 Balance 26-2620",
+    "sku_awdp": "AWDP-BAL-61-26-2620-15004",
+    "price": 39.88,
+    "category": "Window Balances",
+    "description_short": "Series 61 channel balance with special 15-004 shoe. Sold as a pair.",
+    "description_long": "Series 61 channel balance is used in specialty window systems requiring the 15-004 shoe. Designed for smooth operation and long service life. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["61"],
+      "length": ["26\""],
+      "weight_code": ["2620"],
+      "shoe_type": ["15-004"],
+      "top_guide": ["19-002"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Traco", "Weather Shield", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match stamping code",
+      "Verify metal channel length",
+      "Confirm shoe type"
+    ]
+  },
+
+  {
+    "product_name": "Series 62DV Channel Balance – 22\" – 2220",
+    "sku_original": "Series 62DV Balance 22-2220",
+    "sku_awdp": "AWDP-BAL-62DV-22-2220-15001",
+    "price": 41.88,
+    "category": "Window Balances",
+    "description_short": "Series 62DV channel balance for double-vent windows. Sold as a pair.",
+    "description_long": "Series 62DV channel balance is designed for double-vent window systems. Includes standard 15-001 shoe and reinforced top guide. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["62DV"],
+      "length": ["22\""],
+      "weight_code": ["2220"],
+      "shoe_type": ["15-001"],
+      "top_guide": ["19-005"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match stamping code",
+      "Verify metal channel length",
+      "Confirm shoe type"
+    ]
+  }
+]

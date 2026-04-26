@@ -1,0 +1,193 @@
+⭐ AWDP STANDARD PRODUCT LISTING TEMPLATE — OPERATORS
+Use this for every operator you add to your store.
+🏷️ PRODUCT TITLE
+Code
+{{Brand}} {{Series}} {{Handing}} {{Operator Type}} Operator – {{Arm Length}}
+Examples:  
+Truth EntryGard Left‑Hand Casement Operator – 9.5" Arm
+Roto ProDrive Awning Operator – Split Arm
+Pella Fold‑Down Casement Operator – 11" Arm
+
+💲 PRICE
+Code
+{{Price}} (Operator Only)
+{{Price}} (Operator + Cover + Handle)
+🧾 SHORT DESCRIPTION
+Code
+{{Brand}} {{Series}} {{Operator Type}} operator for casement or awning windows. 
+Direct replacement for OEM hardware. Available in multiple colors, arm lengths, and handing options.
+📦 LONG DESCRIPTION
+Code
+This {{Brand}} {{Series}} operator is a high‑quality replacement for many OEM window systems. 
+Designed for smooth operation, long service life, and compatibility with standard 
+Truth/EntryGard, Encore, Maxim, Roto, Andersen, Pella, Milgard, Silverline, Wenco, Lincoln, Eagle, and other window systems.
+
+Common applications include residential, commercial, and manufactured housing windows. 
+Available in multiple finishes and arm lengths. Mounting hole patterns match original hardware for easy installation.
+
+Includes:
+• Operator body  
+• Optional cover  
+• Optional handle  
+• Optional mounting screws  
+
+Fits:
+{{Compatibility List}}
+
+Notes:
+• Always verify arm length and hole pattern  
+• Check handing (Left/Right)  
+• Compare operator body shape to photos  
+• Send pictures if unsure
+🔽 DROPDOWN ATTRIBUTES (STANDARDIZED FOR ALL OPERATORS)
+Operator Type
+Code
+Casement
+Awning
+Dual Arm
+Dyad
+Split Arm
+ProDrive
+EntryGard
+Encore
+Maxim
+Universal
+Handing
+Code
+Left Hand
+Right Hand
+Universal
+Arm Length
+Code
+9"
+9.5"
+10"
+11"
+13.5"
+Other
+Color / Finish
+Code
+White
+Almond
+Bronze
+Clay
+Champagne
+Black
+Stainless Steel
+Other
+Mount Type
+Code
+Surface Mount
+Face Mount
+Rear Mount
+Track Mount
+Other
+Cover Style
+Code
+Standard Cover
+Folding Handle Cover
+Low‑Profile Cover
+No Cover
+Handle Type
+Code
+Folding Handle
+Crank Handle
+T‑Handle
+No Handle
+Brand Compatibility
+Code
+Truth
+Andersen
+Pella
+Milgard
+Silverline
+Wenco
+Lincoln
+Eagle
+Other
+🧩 JSON TEMPLATE (REPLIT‑READY)
+json
+{
+  "product_name": "{{Brand}} {{Series}} {{Handing}} {{Operator Type}} Operator",
+  "sku": "{{AWDP-SKU}}",
+  "price": {{Price}},
+  "category": "Window Operators",
+  "description_short": "{{Short Description}}",
+  "description_long": "{{Long Description}}",
+  "images": ["{{ImageURL1}}", "{{ImageURL2}}"],
+  "attributes": {
+    "operator_type": ["Casement", "Awning", "Dual Arm", "Dyad", "Split Arm"],
+    "handing": ["Left", "Right", "Universal"],
+    "arm_length": ["9\"", "9.5\"", "10\"", "11\"", "13.5\"", "Other"],
+    "color": ["White", "Almond", "Bronze", "Black", "Other"],
+    "mount_type": ["Surface Mount", "Face Mount", "Rear Mount"],
+    "cover_style": ["Standard", "Folding", "Low Profile", "None"],
+    "handle_type": ["Folding", "Crank", "T-Handle", "None"],
+    "brand_compatibility": ["Truth", "Andersen", "Pella", "Milgard", "Other"]
+  },
+  "sold_as": "Each",
+  "notes": [
+    "Verify arm length and hole pattern",
+    "Check handing before ordering",
+    "Compare operator body to photos"
+  ]
+}
+🧱 HTML TEMPLATE (FRONTEND DROPDOWNS)
+html
+<h2>{{Brand}} {{Series}} {{Handing}} Operator</h2>
+<p><strong>Price:</strong> {{Price}}</p>
+
+<label>Operator Type:</label>
+<select id="operator_type">
+  <option>Casement</option>
+  <option>Awning</option>
+  <option>Dual Arm</option>
+  <option>Dyad</option>
+  <option>Split Arm</option>
+</select>
+
+<label>Handing:</label>
+<select id="handing">
+  <option>Left Hand</option>
+  <option>Right Hand</option>
+  <option>Universal</option>
+</select>
+
+<label>Arm Length:</label>
+<select id="arm_length">
+  <option>9"</option>
+  <option>9.5"</option>
+  <option>10"</option>
+  <option>11"</option>
+  <option>13.5"</option>
+  <option>Other</option>
+</select>
+
+<label>Color:</label>
+<select id="color">
+  <option>White</option>
+  <option>Almond</option>
+  <option>Bronze</option>
+  <option>Black</option>
+  <option>Other</option>
+</select>
+
+<label>Mount Type:</label>
+<select id="mount_type">
+  <option>Surface Mount</option>
+  <option>Face Mount</option>
+  <option>Rear Mount</option>
+</select>
+
+<label>Handle Type:</label>
+<select id="handle_type">
+  <option>Folding Handle</option>
+  <option>Crank Handle</option>
+  <option>T-Handle</option>
+  <option>No Handle</option>
+</select>
+🎯 AWDP SKU FORMAT (OPERATORS)
+This keeps your entire catalog consistent.
+
+Code
+AWDP-OPR-{{BrandCode}}-{{SeriesCode}}-

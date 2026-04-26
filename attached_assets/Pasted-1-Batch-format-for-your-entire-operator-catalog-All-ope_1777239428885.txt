@@ -1,0 +1,112 @@
+1. Batch format for your entire operator catalog
+All operators go into one JSON array, each item using the same template:
+
+json
+[
+  {
+    "product_name": "",
+    "sku": "",
+    "price": 0,
+    "category": "Window Operators",
+    "description_short": "",
+    "description_long": "",
+    "images": [],
+    "attributes": {
+      "operator_type": [],
+      "handing": [],
+      "arm_length": [],
+      "color": [],
+      "mount_type": [],
+      "cover_style": [],
+      "handle_type": [],
+      "brand_compatibility": []
+    },
+    "sold_as": "Each",
+    "notes": []
+  }
+]
+That’s your master shape. Every operator record just fills those fields.
+
+2. Example batch with multiple brands (copy/paste-ready)
+json
+[
+  {
+    "product_name": "Truth EntryGard Left-Hand Casement Operator – 9.5\" Arm",
+    "sku": "AWDP-OPR-TRUTH-ENTRYGARD-LH-095-WH",
+    "price": 48.88,
+    "category": "Window Operators",
+    "description_short": "Truth EntryGard left-hand casement operator with 9.5\" arm. Direct replacement for many OEM casement windows.",
+    "description_long": "This Truth EntryGard left-hand casement operator is a high-quality replacement for many OEM window systems. Designed for smooth operation and long service life. Mounting hole pattern matches original hardware for easy installation.\n\nIncludes:\n• Operator body\n• Optional cover\n• Optional handle\n\nNotes:\n• Verify arm length and hole pattern\n• Check handing (Left/Right)\n• Compare operator body shape to photos",
+    "images": [
+      "https://example.com/images/truth-entrygard-lh-95-operator-1.jpg"
+    ],
+    "attributes": {
+      "operator_type": ["Casement"],
+      "handing": ["Left Hand"],
+      "arm_length": ["9.5\""],
+      "color": ["White"],
+      "mount_type": ["Surface Mount"],
+      "cover_style": ["Standard Cover"],
+      "handle_type": ["Crank Handle"],
+      "brand_compatibility": ["Truth", "Marvin", "Milgard", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Verify arm length and hole pattern",
+      "Check handing before ordering",
+      "Compare operator body to photos"
+    ]
+  },
+  {
+    "product_name": "Andersen Right-Hand Casement Operator – 11\" Arm",
+    "sku": "AWDP-OPR-ANDERSEN-STD-RH-110-BR",
+    "price": 54.95,
+    "category": "Window Operators",
+    "description_short": "Andersen right-hand casement operator with 11\" arm. Fits many Andersen casement window series.",
+    "description_long": "This Andersen right-hand casement operator is a direct replacement for many Andersen casement window systems. Designed for smooth operation and long-term durability.\n\nIncludes:\n• Operator body\n• Folding handle\n\nNotes:\n• Confirm series and arm length\n• Check handing (Right Hand)\n• Compare mounting hole pattern to existing operator",
+    "images": [
+      "https://example.com/images/andersen-rh-11-operator-1.jpg"
+    ],
+    "attributes": {
+      "operator_type": ["Casement"],
+      "handing": ["Right Hand"],
+      "arm_length": ["11\""],
+      "color": ["Bronze"],
+      "mount_type": ["Face Mount"],
+      "cover_style": ["Standard Cover"],
+      "handle_type": ["Folding Handle"],
+      "brand_compatibility": ["Andersen"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Confirm Andersen series before ordering",
+      "Check arm length and hole pattern"
+    ]
+  },
+  {
+    "product_name": "Pella Casement Operator – Universal Hand – 10\" Arm",
+    "sku": "AWDP-OPR-PELLA-UNIV-UN-100-AL",
+    "price": 52.50,
+    "category": "Window Operators",
+    "description_short": "Pella universal-hand casement operator with 10\" arm. Works on select Pella casement windows.",
+    "description_long": "This Pella casement operator is designed as a universal-hand replacement for select Pella casement window systems. Arm length is 10\" and fits specific Pella profiles.\n\nIncludes:\n• Operator body\n• Fold-down handle\n\nNotes:\n• Verify Pella series and profile\n• Confirm arm length and spline type\n• Compare operator body to photos",
+    "images": [
+      "https://example.com/images/pella-universal-10-operator-1.jpg"
+    ],
+    "attributes": {
+      "operator_type": ["Casement"],
+      "handing": ["Universal"],
+      "arm_length": ["10\""],
+      "color": ["Aluminum"],
+      "mount_type": ["Surface Mount"],
+      "cover_style": ["Low-Profile Cover"],
+      "handle_type": ["Folding Handle"],
+      "brand_compatibility": ["Pella"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Verify Pella series and profile",
+      "Check arm length and spline type"
+    ]
+  }
+]

@@ -1,0 +1,148 @@
+AWDP STANDARD PRODUCT TEMPLATE — BLOCK & TACKLE / CHANNEL BALANCES
+🏷️ PRODUCT TITLE
+Code
+{{Series}} Block & Tackle Channel Balance – {{Length}} – {{Weight Option}}
+Examples:  
+Series 351 Channel Balance – 28" – 2830
+Series 390 Block & Tackle Balance – 24" – 2320
+
+💲 PRICE
+Code
+{{Price}} (Per Pair)
+🧾 SHORT DESCRIPTION
+Code
+Block & tackle channel balance for single and double hung windows. 
+Available in multiple lengths and weight options. Sold in pairs.
+📦 LONG DESCRIPTION
+Code
+This block & tackle channel balance is a direct replacement for many OEM window systems. 
+Designed for smooth sash operation and long service life. 
+Available in multiple lengths, weight ratings, and shoe types.
+
+Includes:
+• 2 balances (sold as a pair)
+• Terminal shoes (as selected)
+• Optional top/bottom guides
+
+Fits:
+{{Brand Compatibility List}}
+
+Notes:
+• Always match the stamping code
+• Verify length (metal channel only)
+• Confirm shoe style (e.g., 15-001, 15-002, 15-004)
+• Send photos if unsure
+🔽 STANDARDIZED DROPDOWN ATTRIBUTES (BALANCES)
+Length (Metal Channel Length)
+Code
+10"
+12"
+14"
+16"
+18"
+20"
+22"
+24"
+26"
+28"
+30"
+32"
+34"
+36"
+Other
+Stamping / Weight Code
+Code
+1020
+1220
+1420
+1620
+1820
+2020
+2220
+2420
+2620
+2820
+3020
+Other
+Terminal Shoe Type
+Code
+15-001 (Standard)
+15-002 (Extended)
+15-004 (Special)
+Other
+Top Guide Type
+Code
+19-002
+19-005
+19-030
+Other
+Color / Finish
+Code
+Zinc
+White
+Black
+Other
+Brand Compatibility
+Code
+Alenco
+Acorn
+Milgard
+Silverline
+Wenco
+Norandex
+Crestline
+Other
+🧩 JSON TEMPLATE (REPLIT‑READY)
+json
+{
+  "product_name": "{{Series}} Channel Balance – {{Length}} – {{Stamping}}",
+  "sku": "{{AWDP-SKU}}",
+  "price": {{Price}},
+  "category": "Window Balances",
+  "description_short": "{{Short Description}}",
+  "description_long": "{{Long Description}}",
+  "images": ["{{ImageURL1}}"],
+  "attributes": {
+    "length": ["10\"", "12\"", "14\"", "16\"", "18\"", "20\"", "22\"", "24\"", "26\"", "28\"", "30\"", "32\"", "34\"", "36\"", "Other"],
+    "stamping": ["1020", "1220", "1420", "1620", "1820", "2020", "2220", "2420", "2620", "2820", "3020", "Other"],
+    "shoe_type": ["15-001", "15-002", "15-004", "Other"],
+    "top_guide": ["19-002", "19-005", "19-030", "Other"],
+    "color": ["Zinc", "White", "Black", "Other"],
+    "brand_compatibility": ["Alenco", "Acorn", "Milgard", "Silverline", "Wenco", "Other"]
+  },
+  "sold_as": "Pair",
+  "notes": [
+    "Match stamping code",
+    "Verify metal channel length",
+    "Confirm shoe type"
+  ]
+}
+🧱 HTML TEMPLATE (FRONTEND DROPDOWNS)
+html
+<label>Length:</label>
+<select id="length">
+  <option>10"</option><option>12"</option><option>14"</option><option>16"</option>
+  <option>18"</option><option>20"</option><option>22"</option><option>24"</option>
+  <option>26"</option><option>28"</option><option>30"</option><option>32"</option>
+  <option>34"</option><option>36"</option><option>Other</option>
+</select>
+
+<label>Stamping Code:</label>
+<select id="stamping">
+  <option>1020</option><option>1220</option><option>1420</option><option>1620</option>
+  <option>1820</option><option>2020</option><option>2220</option><option>2420</option>
+  <option>2620</option><option>2820</option><option>3020</option><option>Other</option>
+</select>
+
+<label>Shoe Type:</label>
+<select id="shoe_type">
+  <option>15-001</option><option>15-002</option><option>15-004</option><option>Other</option>
+</select>
+
+<label>Top Guide:</label>
+<select id="top_guide">
+  <option>19-002</option><option>19-005</option><option>19-030</option><option>Other</option>
+</select>
+🎯 AWDP SKU FORMAT (BALANCES)
+Code
+AWDP-BAL-{{SeriesCode}}-{{LengthCode}

@@ -27,7 +27,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Casement Windows",
     type: "Measurement Guide",
-    url: "http://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Casement%20Sash%20Frame%20NO%20Glass.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Casement%20Sash%20Frame%20NO%20Glass.pdf",
     description: "Step-by-step instructions for measuring a BiltBest casement sash frame without glass. Includes width, height, and corner tolerances.",
   },
   {
@@ -36,7 +36,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Casement Windows",
     type: "Measurement Guide",
-    url: "http://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Casement%20Sash%20Frame%20With%20Glass.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Casement%20Sash%20Frame%20With%20Glass.pdf",
     description: "Measurement guide for BiltBest casement sash frames with glass still installed. Shows glass-inclusive dimension reference points.",
   },
   {
@@ -45,7 +45,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Casement Windows",
     type: "Measurement Guide",
-    url: "http://www.biltbestwindowparts.com/pdf/Casement%20Sill%20Stop%20PDF.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/Casement%20Sill%20Stop%20PDF.pdf",
     description: "Measurement and identification guide for BiltBest casement sill stop and right-hand operator cover components.",
   },
   {
@@ -54,7 +54,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Casement Windows",
     type: "Product Catalog",
-    url: "http://www.biltbestwindowparts.com/pdf/BiltBestCasement.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/BiltBestCasement.pdf",
     description: "Complete BiltBest casement window parts collection — operators, hinges, sash hardware, locks, and replacement sash components.",
   },
   {
@@ -63,7 +63,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Double Hung Windows",
     type: "Measurement Guide",
-    url: "http://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Double%20Hung%20Jambliner.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Double%20Hung%20Jambliner.pdf",
     description: "Detailed instructions for measuring a BiltBest double hung jambliner, including channel width, pocket depth, and sash clearance.",
   },
   {
@@ -72,7 +72,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Double Hung Windows",
     type: "Measurement Guide",
-    url: "http://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Double%20Hung%20Sash%20Frames.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/How%20To%20Measure%20-%20BiltBest%20Double%20Hung%20Sash%20Frames.pdf",
     description: "Step-by-step sash frame measurement guide for BiltBest double hung windows — width, height, and corner style identification.",
   },
   {
@@ -81,7 +81,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Double Hung Windows",
     type: "Product Catalog",
-    url: "http://www.biltbestwindowparts.com/pdf/BiltBestDH.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/BiltBestDH.pdf",
     description: "Full BiltBest double hung window parts collection — balances, tilt latches, jamb liners, sash locks, and meeting rail hardware.",
   },
   {
@@ -90,7 +90,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Patio Doors",
     type: "Product Catalog",
-    url: "http://www.biltbestwindowparts.com/pdf/BiltBestPD.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/BiltBestPD.pdf",
     description: "Comprehensive patio door parts catalog — rollers, handles, locks, tracks, screen hardware, and replacement door components.",
   },
   {
@@ -108,7 +108,7 @@ const PDF_RESOURCES: PdfResource[] = [
     brand: "BiltBest",
     category: "Hardware & Accessories",
     type: "Reference",
-    url: "http://www.biltbestwindowparts.com/pdf/Angel%20Ventlock.pdf",
+    url: "https://www.biltbestwindowparts.com/pdf/Angel%20Ventlock.pdf",
     description: "Reference sheet for AngelLock vent lock hardware — dimensions, installation positions, and compatible window types.",
   },
   {
