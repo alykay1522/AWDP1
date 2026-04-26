@@ -122,6 +122,9 @@ function AppContent() {
         <Route path="/about" component={About} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
+        <Route path="/privacy-policy">
+          {() => { window.location.replace("/policies#privacy"); return null; }}
+        </Route>
         <Route path="/guides" component={GuideHub} />
         <Route path="/guides/window-balance" component={GuideWindowBalance} />
         <Route path="/guides/patio-door-roller" component={GuidePatioDoorRoller} />

@@ -13,6 +13,9 @@ const STATIC_PAGES = [
   { path: "/parts-identification", priority: "0.9", changefreq: "monthly" },
   { path: "/about",               priority: "0.6", changefreq: "monthly" },
   { path: "/contact",             priority: "0.6", changefreq: "monthly" },
+  { path: "/policies",            priority: "0.5", changefreq: "yearly"  },
+  { path: "/guides",              priority: "0.7", changefreq: "monthly" },
+  { path: "/resources",           priority: "0.6", changefreq: "monthly" },
 ];
 
 function xmlEscape(str: string): string {

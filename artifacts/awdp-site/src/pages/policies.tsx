@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Shield, Truck, RefreshCcw, Lock, Zap, PackageCheck, AlertTriangle } from "lucide-react";
+import { Shield, Truck, RefreshCcw, Lock, Zap, PackageCheck, AlertTriangle, EyeOff } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Link } from "wouter";
@@ -47,7 +47,7 @@ export default function Policies() {
     <div className="bg-slate-50 min-h-screen">
       <PageSeo
         title="Store Policies — All Window Door Parts"
-        description="Shipping policy, return policy, and security guarantee for All Window Door Parts. UPS, FedEx, and USPS shipping. SSL-secured checkout."
+        description="Shipping, return, security, and privacy policies for All Window Door Parts. UPS, FedEx, and USPS shipping. SSL-secured checkout. Veteran-owned."
         path="/policies"
       />
       <Breadcrumb items={[{ label: "Store Policies" }]} />
@@ -170,6 +170,52 @@ export default function Policies() {
               <h2 className="text-2xl font-serif font-bold text-slate-900">Guarantee Details</h2>
             </div>
             <p className="text-slate-700 leading-relaxed">{s(settings, "policyGuarantee")}</p>
+          </section>
+
+          {/* Privacy Policy */}
+          <section id="privacy" className="bg-white rounded-2xl border shadow-sm p-8 scroll-mt-24">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="bg-violet-50 text-violet-600 p-2.5 rounded-xl">
+                <EyeOff className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900">Privacy Policy</h2>
+            </div>
+            <div className="space-y-4 text-slate-700 leading-relaxed text-sm">
+              <p><strong>Last updated: April 2025</strong></p>
+
+              <p>All Window Door Parts ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard the personal information you provide when using our website at <span className="font-medium">allwindowdoorparts.com</span>.</p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Information We Collect</h3>
+              <p>We collect information you voluntarily provide when placing an order, submitting a parts-identification request, or contacting us — including your name, email address, phone number, shipping address, and payment details. Payment data is processed securely by PayPal and is never stored on our servers.</p>
+              <p>We also collect standard web analytics data (pages visited, browser type, referring URL) through Google Analytics (Google Tag Manager). This data is aggregated and does not identify you personally.</p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">How We Use Your Information</h3>
+              <ul className="list-disc list-inside space-y-1 text-slate-700">
+                <li>To process and fulfill your orders</li>
+                <li>To respond to your inquiries and parts-identification requests</li>
+                <li>To send order confirmations and shipping updates</li>
+                <li>To improve our website and product catalog</li>
+              </ul>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Information Sharing</h3>
+              <p>We do not sell, rent, or share your personal information with third parties for marketing purposes. We share information only with service providers necessary to fulfill your order (e.g., payment processors and shipping carriers) and as required by law.</p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Cookies</h3>
+              <p>Our site uses session cookies to maintain your shopping cart and analytics cookies (Google Analytics) to understand site usage. You can disable cookies in your browser settings; however, some features such as the shopping cart may not function correctly.</p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Data Security</h3>
+              <p>All checkout data is transmitted over SSL/TLS encryption. We follow industry-standard practices to protect your personal information against unauthorized access, alteration, or disclosure.</p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Your Rights</h3>
+              <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us at{" "}
+                <a href="mailto:Info@allwindowdoorparts.com" className="text-primary underline font-medium">Info@allwindowdoorparts.com</a>
+                {" "}or by calling{" "}
+                <a href="tel:785-533-0244" className="text-primary underline font-medium">785-533-0244</a>.
+              </p>
+
+              <h3 className="text-base font-bold text-slate-900 mt-2">Changes to This Policy</h3>
+              <p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated revision date.</p>
+            </div>
           </section>
 
         </div>

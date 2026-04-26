@@ -126,6 +126,14 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
+      {/* Skip to main content — accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-primary focus:font-semibold focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
       {/* Full-Width Logo Banner */}
       <Link href="/" className="block w-full">
         <img
@@ -527,7 +535,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {children}
       </main>
 
@@ -588,6 +596,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <li><Link href="/policies#returns" className="hover:text-white transition-colors">Return Policy</Link></li>
                 <li><Link href="/policies#security" className="hover:text-white transition-colors">Security Notice</Link></li>
                 <li><Link href="/policies#guarantee" className="hover:text-white transition-colors">Secure Shopping Guarantee</Link></li>
+                <li><Link href="/policies#privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/policies" className="hover:text-white transition-colors">All Policies</Link></li>
               </ul>
               <div className="mt-6 bg-slate-700/40 border border-slate-600/40 rounded-md px-3 py-2.5 text-slate-300 text-xs leading-snug flex items-start gap-2">

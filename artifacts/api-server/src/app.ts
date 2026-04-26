@@ -3,6 +3,8 @@ import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import pinoHttp from "pino-http";
+import helmet from "helmet";
+import compression from "compression";
 import router from "./routes";
 import paypalRouter from "./routes/paypal";
 import priceMonitorRouter from "./routes/priceMonitor";
@@ -27,6 +29,49 @@ const app: Express = express();
 app.disable("etag");
 // Trust Replit's reverse proxy so secure cookies work over HTTPS
 app.set("trust proxy", 1);
+
+// Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
+// CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",  // Vite HMR in dev; runtime-generated scripts
+          "https://www.googletagmanager.com",
+          "https://www.paypal.com",
+          "https://js.paypalobjects.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        connectSrc: ["'self'", "https://www.paypal.com", "https://api.paypal.com"],
+        frameSrc: ["'self'", "https://www.paypal.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    // HSTS: force HTTPS for 1 year
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    // Prevent clickjacking — allow same-origin frames only
+    frameguard: { action: "sameorigin" },
+    // Disable MIME type sniffing
+    noSniff: true,
+    // XSS filter
+    xssFilter: true,
+    // Referrer policy
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  })
+);
+
+// Gzip/Brotli compression for all responses
+app.use(compression());
 
 // Stripe webhook MUST be registered before express.json() — needs raw Buffer body
 app.post(

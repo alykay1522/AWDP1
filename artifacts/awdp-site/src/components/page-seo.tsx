@@ -35,7 +35,7 @@ export function PageSeo({
 }: PageSeoProps) {
   const fullTitle = title
     ? `${title} | ${SITE_NAME}`
-    : `${SITE_NAME} | Window & Door Hardware — Veteran Owned`;
+    : `${SITE_NAME} | Window & Door Hardware`;
   const canonical = `${BASE_URL}${path}`;
   const ogImage = image || DEFAULT_IMAGE;
   const ogImageAlt = imageAlt || fullTitle;
