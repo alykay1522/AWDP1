@@ -27,6 +27,7 @@ import GuideWeatherstripping from "@/pages/guide-weatherstripping";
 import GuideWindowOperator from "@/pages/guide-window-operator";
 import GuideDoorLock from "@/pages/guide-door-lock";
 import GuideGlazingBead from "@/pages/guide-glazing-bead";
+import Resources from "@/pages/resources";
 
 // Admin pages
 import AdminLogin from "@/pages/admin-login";
@@ -122,6 +123,7 @@ function AppContent() {
         <Route path="/guides/window-operator" component={GuideWindowOperator} />
         <Route path="/guides/door-lock" component={GuideDoorLock} />
         <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
+        <Route path="/resources" component={Resources} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

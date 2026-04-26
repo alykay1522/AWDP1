@@ -256,6 +256,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   )}
                 </div>
 
+                <Link href="/resources" className="hover:text-accent transition-colors">Resources</Link>
                 <Link href="/parts-identification" className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 font-bold uppercase tracking-wide text-sm transition-colors">
                   <PackageSearch className="w-4 h-4" aria-hidden="true" /> Free Parts ID
                 </Link>
@@ -473,6 +474,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     <Link href="/" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
                     <Link href="/shop" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Shop Parts</Link>
                     <Link href="/categories" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Categories</Link>
+                    <Link href="/resources" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>PDF Resources</Link>
                     <Link href="/parts-identification" className="py-2 border-b text-red-600 font-bold flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                       <PackageSearch className="w-5 h-5" /> Free Parts ID
                     </Link>
@@ -572,6 +574,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <ul className="space-y-3 text-sm">
                 <li><Link href="/shop" className="hover:text-white transition-colors">Shop All Parts</Link></li>
                 <li><Link href="/categories" className="hover:text-white transition-colors">Browse by Category</Link></li>
+                <li><Link href="/resources" className="hover:text-white transition-colors">PDF Resources</Link></li>
                 <li><Link href="/parts-identification" className="text-accent hover:text-white transition-colors font-medium">Free Parts Identification</Link></li>
                 <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
