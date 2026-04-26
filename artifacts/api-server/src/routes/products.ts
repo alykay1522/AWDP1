@@ -123,6 +123,8 @@ router.get("/products/search-suggestions", async (req, res) => {
 });
 
 // GET /api/products/:sku/variants — sibling variants sharing the same variantGroupId
+// Deduplicates by variant_label (one representative SKU per unique label),
+// sorted numerically by the leading measurement if present.
 router.get("/products/:sku/variants", async (req, res) => {
   try {
     const { sku } = req.params;
@@ -137,18 +139,39 @@ router.get("/products/:sku/variants", async (req, res) => {
       return;
     }
 
-    const variants = await db
-      .select({
-        sku: productsTable.sku,
-        name: productsTable.name,
-        variantLabel: productsTable.variantLabel,
-        price: productsTable.price,
-        inStock: productsTable.inStock,
-        imageUrl: productsTable.imageUrl,
-      })
-      .from(productsTable)
-      .where(eq(productsTable.variantGroupId, product.variantGroupId))
-      .orderBy(asc(productsTable.name));
+    // Deduplicate by variant_label: pick one representative SKU per label.
+    // Sort numerically by leading measurement (e.g. "10in" < "11in" < "100in")
+    // then fall back to label text for non-numeric labels.
+    const rows = await db.execute(sql`
+      SELECT DISTINCT ON (COALESCE(variant_label, sku))
+        sku,
+        name,
+        variant_label AS "variantLabel",
+        price,
+        in_stock AS "inStock",
+        image_url AS "imageUrl"
+      FROM products
+      WHERE variant_group_id = ${product.variantGroupId}
+      ORDER BY
+        COALESCE(variant_label, sku),
+        CASE
+          WHEN variant_label ~ '^[0-9]'
+          THEN (REGEXP_MATCH(variant_label, '^([0-9]+)'))[1]::integer
+          ELSE NULL
+        END NULLS LAST,
+        variant_label
+    `);
+
+    // Re-sort the deduplicated set numerically in JS for precision
+    type VariantRow = { sku: string; name: string; variantLabel: string | null; price: string; inStock: boolean; imageUrl: string | null };
+    const variants: VariantRow[] = (rows.rows as unknown as VariantRow[]).sort((a, b) => {
+      const aLabel = a.variantLabel ?? a.name;
+      const bLabel = b.variantLabel ?? b.name;
+      const aNum = parseFloat(aLabel.replace(/[^0-9.]/g, "") || "0");
+      const bNum = parseFloat(bLabel.replace(/[^0-9.]/g, "") || "0");
+      if (!isNaN(aNum) && !isNaN(bNum) && aNum !== bNum) return aNum - bNum;
+      return aLabel.localeCompare(bLabel);
+    });
 
     res.json({ variants });
   } catch (err) {
