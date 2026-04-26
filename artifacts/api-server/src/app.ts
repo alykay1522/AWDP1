@@ -13,6 +13,7 @@ import adminSettingsRouter from "./routes/adminSettings";
 import adminImagesRouter from "./routes/adminImages";
 import adminGenerateRouter from "./routes/adminGenerate";
 import adminCsvImportRouter from "./routes/adminCsvImport";
+import adminResourcesRouter from "./routes/adminResources";
 import { requireAdmin } from "./middleware/requireAdmin";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
@@ -111,6 +112,7 @@ app.use("/api", adminImagesRouter);
 app.use("/api", priceMonitorRouter);
 app.use("/api", adminGenerateRouter);
 app.use("/api/admin/csv-import", adminCsvImportRouter);
+app.use("/api", adminResourcesRouter);
 
 // Sitemap at root (not under /api so search engines can reach it)
 app.use(sitemapRouter);

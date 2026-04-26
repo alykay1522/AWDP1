@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine, ChevronDown, Phone } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
@@ -233,7 +234,27 @@ function FaqSection() {
   );
 }
 
+const HERO_DEFAULTS: Record<string, string> = {
+  heroBadge: "Veteran Owned & Operated",
+  heroHeadline: "Replacement Window & Door Parts",
+  heroSubheadline: "Over 40 years of industry experience. One of the largest replacement hardware catalogs in the country. If they made it, we can find it — if we can't, you probably never will.",
+  heroCtaShop: "Shop 4,000+ Parts",
+  heroCtaPartsId: "Free Parts ID",
+};
+
 export default function Home() {
+  const { data: settingsData } = useQuery<{ settings: Record<string, string> }>({
+    queryKey: ["site-content"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const c = (key: string) => settingsData?.settings?.[key] || HERO_DEFAULTS[key] || "";
+
   const { data: featuredProducts, isLoading } = useGetFeaturedProducts({
     query: {
       queryKey: getGetFeaturedProductsQueryKey(),
@@ -271,16 +292,15 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-sm font-bold text-blue-200 mb-6 uppercase tracking-wider">
-              <Shield className="w-4 h-4" aria-hidden="true" /> Veteran Owned &amp; Operated
+              <Shield className="w-4 h-4" aria-hidden="true" /> {c("heroBadge")}
             </div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight mb-4 text-white shadow-sm">
-              Replacement Window &amp; Door Parts
+              {c("heroHeadline")}
             </h1>
-            <p className="text-xl md:text-2xl text-blue-300 font-semibold mb-6">Expert Parts Identification &amp; Nationwide Shipping</p>
 
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl leading-relaxed">
-              Over 40 years of industry experience. One of the largest replacement hardware catalogs in the country. If they made it, we can find it — if we can't, you probably never will.
+              {c("heroSubheadline")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -288,20 +308,20 @@ export default function Home() {
                 size="lg"
                 className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
                 asChild
-                onClick={() => analytics.track("CTA Clicked", { label: "Shop 4,000+ Parts", location: "hero" })}
+                onClick={() => analytics.track("CTA Clicked", { label: c("heroCtaShop"), location: "hero" })}
               >
                 <Link href="/shop">
-                  Shop 4,000+ Parts <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
+                  {c("heroCtaShop")} <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
                 </Link>
               </Button>
               <Button
                 size="lg"
                 className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 border-0 text-white shadow-md hover:shadow-lg transition-shadow"
                 asChild
-                onClick={() => analytics.track("CTA Clicked", { label: "Free Parts ID", location: "hero" })}
+                onClick={() => analytics.track("CTA Clicked", { label: c("heroCtaPartsId"), location: "hero" })}
               >
                 <Link href="/parts-identification">
-                  <PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> Free Parts ID
+                  <PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> {c("heroCtaPartsId")}
                 </Link>
               </Button>
             </div>

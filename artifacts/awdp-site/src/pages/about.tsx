@@ -1,10 +1,45 @@
-import { Shield, Award, Factory, Wrench } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Shield, Award, Factory, Wrench, Loader2 } from "lucide-react";
 import { PageSeo } from "@/components/page-seo";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
+type Settings = Record<string, string>;
+
+const DEFAULTS: Settings = {
+  aboutHeroTitle: "40+ Years of Hardware Expertise",
+  aboutHeroSubtitle: "We are America's trusted source for replacement window and door parts. We don't just sell hardware; we solve problems.",
+  aboutStoryP1: "Our AllWindowDoorParts GROUP USA was built by industry veterans—not executives in a boardroom. With over 40 years of hands-on experience in construction, remodeling and fenestration, we've dealt with every kind of window and door hardware challenge.",
+  aboutStoryP2: "We have helped D.I.Y. homeowners, contractors big and small wasting precious time searching for parts that were discontinued, redesigned, or impossible to find in hardware stores and big box stores. So, we created a company dedicated to solving that problem.",
+  aboutStoryP3: "If a part exists, we can get it. If it doesn't, we know the right modern replacement—or can confirm and save you time wasted when something is truly no longer available.",
+  aboutExpertiseTitle: "Unmatched Expertise",
+  aboutExpertiseText: "Our team has over 40 years of hands-on experience. We know Casement, Awning, Single/Double Hung and slider windows inside and out.",
+  aboutVeteranTitle: "Veteran Owned",
+  aboutVeteranText: "Operated with the same integrity, precision, and dedication to service that we learned in the military.",
+  aboutInventoryTitle: "Massive Inventory",
+  aboutInventoryText: "We stock thousands of parts from hundreds of manufacturers, including rare and hard-to-find components.",
+  aboutCtaTitle: "Ready to fix that window or door?",
+  aboutCtaText: "Browse our catalog or let our experts find the exact part you need for free.",
+};
+
+function s(settings: Settings | undefined, key: string): string {
+  return settings?.[key] || DEFAULTS[key] || "";
+}
+
 export default function About() {
+  const { data } = useQuery<{ settings: Settings }>({
+    queryKey: ["site-content"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const settings = data?.settings;
+
   return (
     <div className="flex flex-col">
       <PageSeo
@@ -32,17 +67,18 @@ export default function About() {
         }}
       />
       <Breadcrumb items={[{ label: "About Us" }]} />
+
       {/* Hero Section */}
       <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2071&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-accent/90 backdrop-blur text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg mb-8 uppercase tracking-wider">
-              <Shield className="w-4 h-4" /> Veteran Owned & Operated
+              <Shield className="w-4 h-4" /> Veteran Owned &amp; Operated
             </div>
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">40+ Years of Hardware Expertise</h1>
+            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">{s(settings, "aboutHeroTitle")}</h1>
             <p className="text-xl text-slate-300 leading-relaxed">
-              We are America's trusted source for replacement window and door parts. We don't just sell hardware; we solve problems.
+              {s(settings, "aboutHeroSubtitle")}
             </p>
           </div>
         </div>
@@ -55,15 +91,10 @@ export default function About() {
             <div>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">Our Story</h2>
               <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
-                <p>
-                  Our AllWindowDoorParts GROUP USA was built by industry veterans&mdash;not executives in a boardroom. With over 40 years of hands-on experience in construction, remodeling and fenestration, we've dealt with every kind of window and door hardware challenge.
-                </p>
-                <p>
-                  We have helped D.I.Y. homeowners, contractors big and small wasting precious time searching for parts that were discontinued, redesigned, or impossible to find in hardware stores and big box stores. So, we created a company dedicated to solving that problem.
-                </p>
-                <p>
-                  If a part exists, we can get it. If it doesn't, we know the right modern replacement&mdash;or can confirm and save you time wasted when something is truly no longer available.
-                </p>
+                {[s(settings, "aboutStoryP1"), s(settings, "aboutStoryP2"), s(settings, "aboutStoryP3")]
+                  .filter(Boolean)
+                  .map((p, i) => <p key={i}>{p}</p>)
+                }
               </div>
             </div>
             <div className="relative">
@@ -85,44 +116,35 @@ export default function About() {
               <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
                 <Award className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Unmatched Expertise</h3>
-              <p className="text-slate-600">
-                Our team has over 40 years of hands-on experience. We know Casement, Awning, Single/Double Hung and slider windows inside and out.
-              </p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{s(settings, "aboutExpertiseTitle")}</h3>
+              <p className="text-slate-600">{s(settings, "aboutExpertiseText")}</p>
             </div>
-            
+
             <div className="bg-primary p-8 rounded-2xl shadow-md border text-center text-white transform md:-translate-y-4">
               <div className="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-6">
                 <Shield className="w-8 h-8 text-accent" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Veteran Owned</h3>
-              <p className="text-blue-100">
-                Operated with the same integrity, precision, and dedication to service that we learned in the military.
-              </p>
+              <h3 className="text-xl font-bold mb-3">{s(settings, "aboutVeteranTitle")}</h3>
+              <p className="text-blue-100">{s(settings, "aboutVeteranText")}</p>
             </div>
 
             <div className="bg-white p-8 rounded-2xl shadow-sm border text-center">
               <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
                 <Factory className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Massive Inventory</h3>
-              <p className="text-slate-600">
-                We stock thousands of parts from hundreds of manufacturers, including rare and hard-to-find components.
-              </p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{s(settings, "aboutInventoryTitle")}</h3>
+              <p className="text-slate-600">{s(settings, "aboutInventoryText")}</p>
             </div>
           </div>
         </div>
       </section>
 
-
       {/* CTA */}
       <section className="py-24 bg-white text-center">
         <div className="container mx-auto px-4 max-w-3xl">
           <Wrench className="w-16 h-16 mx-auto text-slate-300 mb-6" />
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">Ready to fix that window or door?</h2>
-          <p className="text-xl text-slate-600 mb-10">
-            Browse our catalog or let our experts find the exact part you need for free.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">{s(settings, "aboutCtaTitle")}</h2>
+          <p className="text-xl text-slate-600 mb-10">{s(settings, "aboutCtaText")}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" className="h-14 px-8 text-lg font-bold" asChild>
               <Link href="/shop">Shop All Parts</Link>

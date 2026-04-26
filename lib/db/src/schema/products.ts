@@ -101,6 +101,23 @@ export const distributorPricesTable = pgTable("distributor_prices", {
 export type DistributorPrice = typeof distributorPricesTable.$inferSelect;
 export type InsertDistributorPrice = typeof distributorPricesTable.$inferInsert;
 
+// ─── PDF Resources ─────────────────────────────────────────────────────────────
+export const pdfResourcesTable = pgTable("pdf_resources", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  brand: text("brand").notNull().default(""),
+  category: text("category").notNull(),
+  type: text("type").notNull(),
+  url: text("url").notNull(),
+  description: text("description").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type PdfResource = typeof pdfResourcesTable.$inferSelect;
+export type InsertPdfResource = typeof pdfResourcesTable.$inferInsert;
+
 export const insertProductSchema = createInsertSchema(productsTable).omit({ id: true, createdAt: true });
 export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true });
 export const insertPartsIdSchema = createInsertSchema(partsIdRequestsTable).omit({ id: true, createdAt: true });

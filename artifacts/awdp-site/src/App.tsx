@@ -43,6 +43,8 @@ import AdminSettings from "@/pages/admin-settings";
 import AdminImages from "@/pages/admin-images";
 import AdminBulkEditor from "@/pages/admin-bulk-editor";
 import AdminCsvImport from "@/pages/admin-csv-import";
+import AdminContent from "@/pages/admin-content";
+import AdminResourcesPage from "@/pages/admin-resources";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -97,6 +99,8 @@ function AppContent() {
             <Route path="/admin/prices" component={AdminPrices} />
             <Route path="/admin/settings" component={AdminSettings} />
             <Route path="/admin/csv-import" component={AdminCsvImport} />
+            <Route path="/admin/content" component={AdminContent} />
+            <Route path="/admin/resources" component={AdminResourcesPage} />
             <Route component={NotFound} />
           </Switch>
         </AdminLayout>

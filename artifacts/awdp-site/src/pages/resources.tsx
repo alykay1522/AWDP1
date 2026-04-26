@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { FileText, ExternalLink, Search, X, Ruler, BookOpen, HelpCircle, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, ExternalLink, Search, X, Ruler, BookOpen, HelpCircle, ChevronRight, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,15 @@ import { PageSeo } from "@/components/page-seo";
 // ── PDF Catalog Data ──────────────────────────────────────────────────────────
 
 interface PdfResource {
-  id: string;
+  id: number | string;
   title: string;
   brand: string;
   category: string;
-  type: "Measurement Guide" | "Product Catalog" | "How-To Guide" | "Reference";
+  type: string;
   url: string;
   description: string;
+  isActive?: boolean;
+  sortOrder?: number;
 }
 
 const PDF_RESOURCES: PdfResource[] = [
@@ -180,14 +183,26 @@ export default function Resources() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [activeType, setActiveType]         = useState<string>("All");
 
+  const { data, isLoading } = useQuery<{ resources: PdfResource[] }>({
+    queryKey: ["public-resources"],
+    queryFn: async () => {
+      const res = await fetch("/api/resources");
+      if (!res.ok) throw new Error("Failed to load resources");
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const resources = data?.resources ?? [];
+
   const allTypes = useMemo(
-    () => ["All", ...Array.from(new Set(PDF_RESOURCES.map((r) => r.type)))],
-    []
+    () => ["All", ...Array.from(new Set(resources.map((r) => r.type)))],
+    [resources]
   );
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return PDF_RESOURCES.filter((r) => {
+    return resources.filter((r) => {
       const matchesSearch =
         !q ||
         r.title.toLowerCase().includes(q) ||
@@ -199,7 +214,7 @@ export default function Resources() {
       const matchesType     = activeType === "All"     || r.type === activeType;
       return matchesSearch && matchesCategory && matchesType;
     });
-  }, [search, activeCategory, activeType]);
+  }, [search, activeCategory, activeType, resources]);
 
   const clearFilters = () => {
     setSearch("");
@@ -330,7 +345,12 @@ export default function Resources() {
       {/* Results */}
       <main className="container mx-auto max-w-6xl px-4 py-8">
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Loading resources…</span>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
             <p className="text-slate-500 font-medium">No documents match your filters.</p>
@@ -341,7 +361,7 @@ export default function Resources() {
         ) : (
           <>
             <p className="text-sm text-muted-foreground mb-5">
-              Showing <strong>{filtered.length}</strong> of {PDF_RESOURCES.length} documents
+              Showing <strong>{filtered.length}</strong> of {resources.length} documents
             </p>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

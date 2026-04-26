@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
   ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
+  FileText, PenLine,
 } from "lucide-react";
 import { useAdminLogout } from "@/lib/useAdminAuth";
 
@@ -33,6 +34,8 @@ const NAV: NavItem[] = [
   { href: "/admin/contacts", label: "Contact Messages", icon: <MessageSquare className="w-4 h-4" /> },
   { href: "/admin/images", label: "Product Images", icon: <ImageIcon className="w-4 h-4" /> },
   { href: "/admin/prices", label: "Price Monitor", icon: <DollarSign className="w-4 h-4" /> },
+  { href: "/admin/content", label: "Site Content", icon: <PenLine className="w-4 h-4" /> },
+  { href: "/admin/resources", label: "PDF Resources", icon: <FileText className="w-4 h-4" /> },
   { href: "/admin/settings", label: "Site Settings", icon: <Settings className="w-4 h-4" /> },
 ];
 
