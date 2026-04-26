@@ -19,6 +19,8 @@ export const productsTable = pgTable("products", {
   compatibleBrands: json("compatible_brands").$type<string[]>().default([]),
   variantGroupId: text("variant_group_id"),  // shared identifier linking sibling variants
   variantLabel: text("variant_label"),        // display label within the group, e.g. "Left Hand", "White"
+  attributes: json("attributes").$type<Record<string, string[]>>(),  // AWDP structured attrs, e.g. {length:["28\""], weight_code:["2830"]}
+  soldAs: text("sold_as"),                    // "Pair" | "Each" | "Set"
   createdAt: timestamp("created_at").defaultNow(),
 });
 

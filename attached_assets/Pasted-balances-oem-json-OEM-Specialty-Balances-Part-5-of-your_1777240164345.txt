@@ -1,0 +1,145 @@
+balances_oem.json
+(OEM / Specialty Balances — Part 5 of your Mega‑Batch)
+This batch includes:
+
+Marvin UDH balances
+
+Tilt Pac balances
+
+Magnum balances
+
+Legacy D/H & S/H balances
+
+Obsolete jamb‑liner assemblies
+
+OEM‑style replacements
+
+Original AWDP SKU + New AWDP‑SKU
+
+Clean JSON, ready for Replit + MU‑plugin
+
+All entries follow your AWDP universal template.
+
+⭐ balances_oem.json
+json
+[
+  {
+    "product_name": "Marvin UDH Balance – 18\" – OEM Replacement",
+    "sku_original": "Marvin UDH Balance 18 OEM",
+    "sku_awdp": "AWDP-BAL-UDH-18-OEM",
+    "price": 168.88,
+    "category": "Window Balances",
+    "description_short": "18\" Marvin UDH balance for Ultimate Double Hung windows. OEM-style replacement.",
+    "description_long": "18\" Marvin UDH balance designed for Ultimate Double Hung window systems. OEM-style replacement matching original factory hardware. Includes balance assembly and required mounting brackets. Match length and UDH series before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Marvin UDH"],
+      "length": ["18\""],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match UDH series",
+      "Verify length",
+      "Confirm OEM compatibility"
+    ]
+  },
+
+  {
+    "product_name": "Marvin UDH Balance – 22\" – OEM Replacement",
+    "sku_original": "Marvin UDH Balance 22 OEM",
+    "sku_awdp": "AWDP-BAL-UDH-22-OEM",
+    "price": 178.88,
+    "category": "Window Balances",
+    "description_short": "22\" Marvin UDH balance for Ultimate Double Hung windows. OEM-style replacement.",
+    "description_long": "22\" Marvin UDH balance designed for Ultimate Double Hung window systems. OEM-style replacement matching original factory hardware. Includes balance assembly and required mounting brackets.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Marvin UDH"],
+      "length": ["22\""],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match UDH series",
+      "Verify length",
+      "Confirm OEM compatibility"
+    ]
+  },
+
+  {
+    "product_name": "Tilt Pac Balance System – 24\" – Complete Kit",
+    "sku_original": "Tilt Pac Balance 24 Kit",
+    "sku_awdp": "AWDP-BAL-TILTPAC-24-KIT",
+    "price": 198.88,
+    "category": "Window Balances",
+    "description_short": "24\" Tilt Pac balance system for tilt windows. Includes balances, shoes, and brackets.",
+    "description_long": "24\" Tilt Pac balance system designed for tilt window retrofits and replacements. Includes two balances, terminal shoes, brackets, and installation hardware. Compatible with many OEM tilt window systems.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Tilt Pac"],
+      "length": ["24\""],
+      "configuration": ["Complete Kit"],
+      "brand_compatibility": ["Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Set",
+    "notes": [
+      "Match length",
+      "Verify tilt system type",
+      "Confirm OEM compatibility"
+    ]
+  },
+
+  {
+    "product_name": "Magnum Balance – 30\" – Heavy Duty",
+    "sku_original": "Magnum Balance 30 Heavy Duty",
+    "sku_awdp": "AWDP-BAL-MAGNUM-30-HD",
+    "price": 188.88,
+    "category": "Window Balances",
+    "description_short": "30\" Magnum heavy-duty balance for oversized sashes.",
+    "description_long": "30\" Magnum heavy-duty balance designed for oversized and extra-heavy window sashes. Used in premium wood and composite window systems. Includes reinforced spring and heavy-duty hardware.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Magnum"],
+      "length": ["30\""],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Weather Shield", "Marvin", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Verify sash weight",
+      "Confirm OEM compatibility",
+      "Match length"
+    ]
+  },
+
+  {
+    "product_name": "Legacy D/H Balance – 26\" – OEM Replacement",
+    "sku_original": "Legacy DH Balance 26 OEM",
+    "sku_awdp": "AWDP-BAL-LEGACYDH-26-OEM",
+    "price": 158.88,
+    "category": "Window Balances",
+    "description_short": "26\" OEM-style balance for legacy double-hung window systems.",
+    "description_long": "26\" OEM-style balance designed for legacy double-hung (D/H) window systems. Matches original hardware used in older wood and aluminum windows. Includes balance assembly and mounting hardware.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Legacy D/H"],
+      "length": ["26\""],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Acorn", "Alenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match OEM series",
+      "Verify length",
+      "Confirm compatibility with older systems"
+    ]
+  }
+]

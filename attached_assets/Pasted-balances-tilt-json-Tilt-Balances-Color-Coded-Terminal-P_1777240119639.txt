@@ -1,0 +1,154 @@
+balances_tilt.json
+(Tilt Balances — Color‑Coded Terminal — Part 4 of your Mega‑Batch)
+This batch includes:
+
+12"–25" tilt balances
+
+White / Black / Blue / Brown / Green terminals
+
+Top / Bottom sash
+
+Jamb liner types (A/B/C)
+
+OEM tilt‑pack variants
+
+Original AWDP SKU + New AWDP‑SKU
+
+Clean JSON, ready for Replit + MU‑plugin
+
+Matches your live product page structure
+
+⭐ balances_tilt.json
+json
+[
+  {
+    "product_name": "Tilt Balance – 19\" – White Terminal – Top Sash",
+    "sku_original": "Tilt Window Balance 19 White",
+    "sku_awdp": "AWDP-BAL-TILT-19-WHITE-TOP",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "19\" tilt balance with white terminal shoe for top sash applications. Sold as a pair.",
+    "description_long": "19\" tilt balance with white color-coded terminal shoe. Designed for tilt windows requiring EZ-Tilt or older D/H and S/H tilt-pack systems. Compatible with Marvin, Integrity, Milgard, Arcadia, Acorn, Alenco, Craftline, Crestline, Norandex, Thermal-Gard, Weather-Craft, Wenco, Silverline, SNE, Traco, Weather-Shield, Lincoln, Eagle and others.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["19\""],
+      "terminal_color": ["White"],
+      "sash_position": ["Top"],
+      "jamb_liner_type": ["Type A"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin", "Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Provide stamping ID code",
+      "Specify terminal shoe color",
+      "Specify top or bottom sash",
+      "Some applications may not be available"
+    ]
+  },
+
+  {
+    "product_name": "Tilt Balance – 21\" – Blue Terminal – Bottom Sash",
+    "sku_original": "Tilt Window Balance 21 Blue",
+    "sku_awdp": "AWDP-BAL-TILT-21-BLUE-BOTTOM",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "21\" tilt balance with blue terminal shoe for bottom sash applications. Sold as a pair.",
+    "description_long": "21\" tilt balance with blue color-coded terminal shoe. Designed for tilt windows using EZ-Tilt and older tilt-pack systems. Compatible with many OEM window brands. Match terminal color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["21\""],
+      "terminal_color": ["Blue"],
+      "sash_position": ["Bottom"],
+      "jamb_liner_type": ["Type B"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin", "Norandex", "Crestline", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match terminal color",
+      "Verify sash position",
+      "Confirm jamb liner type"
+    ]
+  },
+
+  {
+    "product_name": "Tilt Balance – 23\" – Green Terminal – Top Sash",
+    "sku_original": "Tilt Window Balance 23 Green",
+    "sku_awdp": "AWDP-BAL-TILT-23-GREEN-TOP",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "23\" tilt balance with green terminal shoe for heavier sashes. Sold as a pair.",
+    "description_long": "23\" tilt balance with green color-coded terminal shoe for heavier tilt window sashes. Used in many OEM tilt-pack systems. Match terminal color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["23\""],
+      "terminal_color": ["Green"],
+      "sash_position": ["Top"],
+      "jamb_liner_type": ["Type C"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match terminal color",
+      "Verify sash position",
+      "Confirm jamb liner type"
+    ]
+  },
+
+  {
+    "product_name": "Tilt Balance – 25\" – Brown Terminal – Bottom Sash",
+    "sku_original": "Tilt Window Balance 25 Brown",
+    "sku_awdp": "AWDP-BAL-TILT-25-BROWN-BOTTOM",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "25\" tilt balance with brown terminal shoe for bottom sash applications. Sold as a pair.",
+    "description_long": "25\" tilt balance with brown color-coded terminal shoe. Designed for tilt windows requiring older D/H and S/H tilt-pack systems. Compatible with many OEM window brands.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["25\""],
+      "terminal_color": ["Brown"],
+      "sash_position": ["Bottom"],
+      "jamb_liner_type": ["Type A"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match terminal color",
+      "Verify sash position",
+      "Confirm jamb liner type"
+    ]
+  },
+
+  {
+    "product_name": "Tilt Balance – 20\" – Black Terminal – OEM Replacement",
+    "sku_original": "OEM Tilt Balance 20 Black",
+    "sku_awdp": "AWDP-BAL-TILT-20-BLACK-OEM",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "20\" tilt balance with black terminal shoe. OEM-style replacement. Sold as a pair.",
+    "description_long": "OEM-style 20\" tilt balance with black terminal shoe. Designed to match original tilt-pack systems used in many vinyl and wood windows. Match terminal color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["20\""],
+      "terminal_color": ["Black"],
+      "sash_position": ["Universal"],
+      "jamb_liner_type": ["Type B"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": [
+      "Match terminal color",
+      "Verify sash position",
+      "Confirm OEM compatibility"
+    ]
+  }
+]

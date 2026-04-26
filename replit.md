@@ -144,6 +144,13 @@ React + Vite e-commerce frontend for All Window Door Parts (allwindowdoorparts.c
 - **Product enrichment**: Category-specific symptom intro (7 categories); Measurement Guide tab (4 categories)
 - **SKU validator**: Admin bulk editor action tab — flags spaces, special chars, bad length (3–64 chars)
 - **Image batch processor**: Admin images page has ZIP upload + CSV matching (already existed)
+- **Product variant grouping**: `variant_group_id` + `variant_label` on products table. 9,180 window balances auto-grouped into 1,243 groups + 558 other exact-name-dup products into 128 groups. Admin endpoint: `POST /api/admin/products/auto-group`.
+- **Shop dedup mode**: `GET /api/products?dedup=true` returns one canonical product per variant group with `variantCount` field. Shop page uses this by default — Window Balances reduced from ~13,000 to ~633 listings.
+- **Variant badges**: ProductCard shows "N options" badge (dark, top-right) when `variantCount > 1`.
+- **Variant picker dropdown**: Product detail page uses `<Select>` component instead of link buttons when product has sibling variants.
+- **AWDP Standard Products**: `attributes` (jsonb) + `sold_as` columns added to products table. 7 new balance products imported with full AWDP attributes (Series 57/58/60P Channel, Spiral 3/8", Coil Series 17, Tilt 23" Green, Marvin UDH OEM).
+- **AttributeConfigurator component**: `src/components/attribute-configurator.tsx` — renders AWDP structured attributes as labeled rows with colored badges + "Before Ordering" notes section. Shown on product detail pages for products with `attributes` set.
+- **PDF URLs fixed**: All BiltBest PDF links changed from `http://` to `https://` in both `pdf_resources` DB table and `resources.tsx` hardcoded array.
 
 ### `scripts` (`@workspace/scripts`)
 

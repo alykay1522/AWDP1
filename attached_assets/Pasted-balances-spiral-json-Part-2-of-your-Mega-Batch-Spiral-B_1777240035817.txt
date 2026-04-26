@@ -1,0 +1,148 @@
+balances_spiral.json
+(Part 2 of your Mega‑Batch — Spiral Balances)
+This batch includes:
+
+3/8" Spiral Balances
+
+5/8" Spiral Balances
+
+Red / Blue / Green / Black Tips
+
+Lengths 20"–40"
+
+OEM‑style variants
+
+Original AWDP SKU + New AWDP‑SKU
+
+Real‑world AWDP structure
+
+Clean JSON, ready for Replit + MU‑plugin
+
+⭐ balances_spiral.json
+json
+[
+  {
+    "product_name": "3/8\" Spiral Balance – 30\" – Blue Tip",
+    "sku_original": "Spiral Balance 3/8 30 Blue",
+    "sku_awdp": "AWDP-BAL-SPIRAL38-30-BLUE",
+    "price": 22.88,
+    "category": "Window Balances",
+    "description_short": "3/8\" spiral balance with blue tip for medium-weight sashes. Sold individually.",
+    "description_long": "This 3/8\" spiral balance with blue tip is designed for medium-weight single and double hung window sashes. Commonly used in aluminum and vinyl windows. Includes spiral rod and tensioned spring. Match tip color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["3/8\""],
+      "length": ["30\""],
+      "tip_color": ["Blue"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Silverline", "Wenco", "Acorn", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match tip color",
+      "Verify tube diameter",
+      "Confirm length"
+    ]
+  },
+
+  {
+    "product_name": "3/8\" Spiral Balance – 28\" – Red Tip",
+    "sku_original": "Spiral Balance 3/8 28 Red",
+    "sku_awdp": "AWDP-BAL-SPIRAL38-28-RED",
+    "price": 21.88,
+    "category": "Window Balances",
+    "description_short": "3/8\" spiral balance with red tip for light-weight sashes. Sold individually.",
+    "description_long": "This 3/8\" spiral balance with red tip is designed for light-weight window sashes. Ideal for aluminum and vinyl windows. Includes spiral rod and tensioned spring. Match tip color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["3/8\""],
+      "length": ["28\""],
+      "tip_color": ["Red"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Milgard", "Silverline", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match tip color",
+      "Verify tube diameter",
+      "Confirm length"
+    ]
+  },
+
+  {
+    "product_name": "5/8\" Spiral Balance – 34\" – Green Tip",
+    "sku_original": "Spiral Balance 5/8 34 Green",
+    "sku_awdp": "AWDP-BAL-SPIRAL58-34-GREEN",
+    "price": 26.88,
+    "category": "Window Balances",
+    "description_short": "5/8\" heavy-duty spiral balance with green tip. Sold individually.",
+    "description_long": "This 5/8\" heavy-duty spiral balance with green tip is designed for heavier window sashes. Commonly used in wood and vinyl windows. Includes spiral rod and high-tension spring. Match tip color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["5/8\""],
+      "length": ["34\""],
+      "tip_color": ["Green"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match tip color",
+      "Verify tube diameter",
+      "Confirm length"
+    ]
+  },
+
+  {
+    "product_name": "5/8\" Spiral Balance – 36\" – Black Tip",
+    "sku_original": "Spiral Balance 5/8 36 Black",
+    "sku_awdp": "AWDP-BAL-SPIRAL58-36-BLACK",
+    "price": 27.88,
+    "category": "Window Balances",
+    "description_short": "5/8\" extra-heavy spiral balance with black tip. Sold individually.",
+    "description_long": "This 5/8\" spiral balance with black tip is designed for extra-heavy window sashes. Used in premium wood and composite windows. Includes spiral rod and reinforced spring. Match tip color and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["5/8\""],
+      "length": ["36\""],
+      "tip_color": ["Black"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Marvin", "Weather Shield", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match tip color",
+      "Verify tube diameter",
+      "Confirm length"
+    ]
+  },
+
+  {
+    "product_name": "3/8\" Spiral Balance – 32\" – Blue Tip (OEM Replacement)",
+    "sku_original": "OEM Spiral Balance 3/8 32 Blue",
+    "sku_awdp": "AWDP-BAL-SPIRAL38-32-BLUE-OEM",
+    "price": 24.88,
+    "category": "Window Balances",
+    "description_short": "OEM-style 3/8\" spiral balance with blue tip. Sold individually.",
+    "description_long": "OEM-style 3/8\" spiral balance with blue tip for medium-weight sashes. Designed to match original hardware found in many aluminum and vinyl windows. Includes spiral rod and tensioned spring.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["3/8\""],
+      "length": ["32\""],
+      "tip_color": ["Blue"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match tip color",
+      "Verify tube diameter",
+      "Confirm length"
+    ]
+  }
+]

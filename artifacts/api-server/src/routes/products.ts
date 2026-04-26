@@ -253,8 +253,27 @@ router.get("/products", async (req, res) => {
       ]);
 
       const total = Number((countResult.rows[0] as any)?.count ?? 0);
+      // Raw SQL returns snake_case column names — remap to camelCase to match Drizzle ORM output
       const products = (dedupResult.rows as any[]).map((r) => ({
-        ...r,
+        id: r.id,
+        sku: r.sku,
+        name: r.name,
+        description: r.description,
+        price: r.price,
+        originalPrice: r.original_price,
+        category: r.category,
+        subcategory: r.subcategory,
+        supplier: r.supplier,
+        inStock: r.in_stock,
+        imageUrl: r.image_url,
+        tags: r.tags,
+        specifications: r.specifications,
+        compatibleBrands: r.compatible_brands,
+        variantGroupId: r.variant_group_id,
+        variantLabel: r.variant_label,
+        attributes: r.attributes,
+        soldAs: r.sold_as,
+        createdAt: r.created_at,
         variantCount: r.variantCount != null ? Number(r.variantCount) : 1,
       }));
 

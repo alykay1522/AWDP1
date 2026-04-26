@@ -1,0 +1,153 @@
+[
+  {
+    "product_name": "Series 57 Channel Balance – 28\" – 2830",
+    "sku_original": "Series 57 Balance 28-2830",
+    "sku_awdp": "AWDP-BAL-57-28-2830-15001",
+    "price": 38.88,
+    "category": "Window Balances",
+    "description_short": "Series 57 block & tackle channel balance for single/double hung windows. Sold as a pair.",
+    "description_long": "Series 57 block & tackle channel balance designed for smooth sash operation. Direct replacement for many OEM window systems. Includes two balances and standard 15-001 shoe. Match stamping code and metal channel length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["57"],
+      "length": ["28\""],
+      "weight_code": ["2830"],
+      "shoe_type": ["15-001"],
+      "top_guide": ["19-002"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": ["Match stamping code", "Verify metal channel length", "Confirm shoe type"]
+  },
+
+  {
+    "product_name": "Series 58 Channel Balance – 24\" – 2420",
+    "sku_original": "Series 58 Balance 24-2420",
+    "sku_awdp": "AWDP-BAL-58-24-2420-15002",
+    "price": 38.88,
+    "category": "Window Balances",
+    "description_short": "Series 58 block & tackle channel balance for residential windows. Sold as a pair.",
+    "description_long": "Series 58 channel balance is a heavy-duty replacement for many OEM window systems. Includes extended 15-002 shoe for deeper pocket applications. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["58"],
+      "length": ["24\""],
+      "weight_code": ["2420"],
+      "shoe_type": ["15-002"],
+      "top_guide": ["19-005"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Norandex", "Crestline", "Acorn", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": ["Match stamping code", "Verify metal channel length", "Confirm shoe type"]
+  },
+
+  {
+    "product_name": "Series 60P Channel Balance – 30\" – 3020",
+    "sku_original": "Series 60P Balance 30-3020",
+    "sku_awdp": "AWDP-BAL-60P-30-3020-15001",
+    "price": 42.88,
+    "category": "Window Balances",
+    "description_short": "Series 60P premium channel balance for heavy sashes. Sold as a pair.",
+    "description_long": "Series 60P channel balance is designed for heavier window sashes and premium-grade installations. Includes standard 15-001 shoe and reinforced top guide. Match stamping code and length before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Channel"],
+      "series": ["60P"],
+      "length": ["30\""],
+      "weight_code": ["3020"],
+      "shoe_type": ["15-001"],
+      "top_guide": ["19-030"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": ["Match stamping code", "Verify metal channel length", "Confirm shoe type"]
+  },
+
+  {
+    "product_name": "3/8\" Spiral Balance – 30\" – Blue Tip",
+    "sku_original": "Spiral Balance 3/8 30 Blue",
+    "sku_awdp": "AWDP-BAL-SPIRAL38-30-BLUE",
+    "price": 22.88,
+    "category": "Window Balances",
+    "description_short": "3/8\" spiral balance with blue tip for medium-weight sashes. Sold individually.",
+    "description_long": "3/8\" spiral balance with blue tip designed for medium-weight window sashes. Common in aluminum and vinyl windows. Includes spiral rod and tensioned spring.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Spiral"],
+      "diameter": ["3/8\""],
+      "length": ["30\""],
+      "tip_color": ["Blue"],
+      "configuration": ["Single"],
+      "brand_compatibility": ["Silverline", "Wenco", "Acorn", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": ["Match tip color", "Verify tube diameter", "Confirm length"]
+  },
+
+  {
+    "product_name": "Constant Force Coil Balance – Series 17 – 10 lb Double Coil Pack",
+    "sku_original": "Coil Balance Series 17 10lb Double",
+    "sku_awdp": "AWDP-BAL-COIL17-10LB-DOUBLE",
+    "price": 28.88,
+    "category": "Window Balances",
+    "description_short": "Series 17 double-coil pack rated at 10 lbs per coil (20 lbs total).",
+    "description_long": "Series 17 double-coil constant force balance pack designed for heavier vinyl and composite window sashes. Each coil is rated at 10 lbs, providing a combined 20 lb lift.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["17"],
+      "coil_weight": ["10 lb"],
+      "configuration": ["Double Coil Pack"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Set",
+    "notes": ["Match coil weight", "Verify coil series", "Confirm pack configuration"]
+  },
+
+  {
+    "product_name": "Tilt Balance – 23\" – Green Terminal – Top Sash",
+    "sku_original": "Tilt Window Balance 23 Green",
+    "sku_awdp": "AWDP-BAL-TILT-23-GREEN-TOP",
+    "price": 138.88,
+    "category": "Window Balances",
+    "description_short": "23\" tilt balance with green terminal shoe for heavier sashes. Sold as a pair.",
+    "description_long": "23\" tilt balance with green color-coded terminal shoe for heavier tilt window sashes. Used in many OEM tilt-pack systems.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Tilt"],
+      "length": ["23\""],
+      "terminal_color": ["Green"],
+      "sash_position": ["Top"],
+      "jamb_liner_type": ["Type C"],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Milgard", "Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Pair",
+    "notes": ["Match terminal color", "Verify sash position", "Confirm jamb liner type"]
+  },
+
+  {
+    "product_name": "Marvin UDH Balance – 22\" – OEM Replacement",
+    "sku_original": "Marvin UDH Balance 22 OEM",
+    "sku_awdp": "AWDP-BAL-UDH-22-OEM",
+    "price": 178.88,
+    "category": "Window Balances",
+    "description_short": "22\" Marvin UDH balance for Ultimate Double Hung windows. OEM-style replacement.",
+    "description_long": "22\" Marvin UDH balance designed for Ultimate Double Hung window systems. OEM-style replacement matching original factory hardware.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["OEM"],
+      "oem_family": ["Marvin UDH"],
+      "length": ["22\""],
+      "configuration": ["Pair"],
+      "brand_compatibility": ["Marvin"]
+    },
+    "sold_as": "Pair",
+    "notes": ["Match UDH series", "Verify length", "Confirm OEM compatibility"]
+  }
+]

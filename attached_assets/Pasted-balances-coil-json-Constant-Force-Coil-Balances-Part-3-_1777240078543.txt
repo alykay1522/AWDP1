@@ -1,0 +1,145 @@
+balances_coil.json
+(Constant Force / Coil Balances — Part 3 of your Mega‑Batch)
+This batch includes:
+
+Single Coil Packs
+
+Double Coil Packs
+
+Triple Coil Packs
+
+Series 15–20 (real‑world OEM coil families)
+
+3–16 lb coils
+
+OEM assemblies
+
+Original AWDP SKU + New AWDP‑SKU
+
+Clean JSON, ready for Replit + MU‑plugin
+
+Everything follows your AWDP universal template.
+
+⭐ balances_coil.json
+json
+[
+  {
+    "product_name": "Constant Force Coil Balance – Series 15 – 5 lb Coil",
+    "sku_original": "Coil Balance Series 15 5lb",
+    "sku_awdp": "AWDP-BAL-COIL15-5LB-SINGLE",
+    "price": 14.88,
+    "category": "Window Balances",
+    "description_short": "Series 15 constant force coil balance rated at 5 lbs. Sold individually.",
+    "description_long": "Series 15 constant force coil balance designed for lightweight vinyl and aluminum window sashes. Rated at 5 lbs per coil. Used in single-coil and double-coil assemblies. Match coil weight and series before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["15"],
+      "coil_weight": ["5 lb"],
+      "configuration": ["Single Coil"],
+      "brand_compatibility": ["Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match coil weight",
+      "Verify coil series",
+      "Confirm single or double pack"
+    ]
+  },
+
+  {
+    "product_name": "Constant Force Coil Balance – Series 16 – 8 lb Coil",
+    "sku_original": "Coil Balance Series 16 8lb",
+    "sku_awdp": "AWDP-BAL-COIL16-8LB-SINGLE",
+    "price": 15.88,
+    "category": "Window Balances",
+    "description_short": "Series 16 constant force coil balance rated at 8 lbs. Sold individually.",
+    "description_long": "Series 16 constant force coil balance for medium-weight vinyl window sashes. Rated at 8 lbs per coil. Compatible with many OEM coil balance systems. Match coil weight and series before ordering.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["16"],
+      "coil_weight": ["8 lb"],
+      "configuration": ["Single Coil"],
+      "brand_compatibility": ["Milgard", "Norandex", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match coil weight",
+      "Verify coil series",
+      "Confirm single or double pack"
+    ]
+  },
+
+  {
+    "product_name": "Constant Force Coil Balance – Series 17 – 10 lb Double Coil Pack",
+    "sku_original": "Coil Balance Series 17 10lb Double",
+    "sku_awdp": "AWDP-BAL-COIL17-10LB-DOUBLE",
+    "price": 28.88,
+    "category": "Window Balances",
+    "description_short": "Series 17 double-coil pack rated at 10 lbs per coil (20 lbs total).",
+    "description_long": "Series 17 double-coil constant force balance pack designed for heavier vinyl and composite window sashes. Each coil is rated at 10 lbs, providing a combined 20 lb lift. Used in many OEM double-coil assemblies.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["17"],
+      "coil_weight": ["10 lb"],
+      "configuration": ["Double Coil Pack"],
+      "brand_compatibility": ["Marvin", "Lincoln", "Eagle", "Other"]
+    },
+    "sold_as": "Set",
+    "notes": [
+      "Match coil weight",
+      "Verify coil series",
+      "Confirm single, double, or triple pack"
+    ]
+  },
+
+  {
+    "product_name": "Constant Force Coil Balance – Series 18 – 12 lb Triple Coil Pack",
+    "sku_original": "Coil Balance Series 18 12lb Triple",
+    "sku_awdp": "AWDP-BAL-COIL18-12LB-TRIPLE",
+    "price": 39.88,
+    "category": "Window Balances",
+    "description_short": "Series 18 triple-coil pack rated at 12 lbs per coil (36 lbs total).",
+    "description_long": "Series 18 triple-coil constant force balance pack for extra-heavy window sashes. Each coil is rated at 12 lbs, providing a combined 36 lb lift. Common in premium wood and composite window systems.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["18"],
+      "coil_weight": ["12 lb"],
+      "configuration": ["Triple Coil Pack"],
+      "brand_compatibility": ["Marvin", "Weather Shield", "Other"]
+    },
+    "sold_as": "Set",
+    "notes": [
+      "Match coil weight",
+      "Verify coil series",
+      "Confirm pack configuration"
+    ]
+  },
+
+  {
+    "product_name": "Constant Force Coil Balance – Series 20 – 16 lb OEM Replacement",
+    "sku_original": "OEM Coil Balance Series 20 16lb",
+    "sku_awdp": "AWDP-BAL-COIL20-16LB-OEM",
+    "price": 19.88,
+    "category": "Window Balances",
+    "description_short": "OEM-style Series 20 constant force coil rated at 16 lbs.",
+    "description_long": "OEM-style Series 20 constant force coil balance designed for heavy vinyl and composite window sashes. Rated at 16 lbs per coil. Matches many original manufacturer coil systems.",
+    "images": [],
+    "attributes": {
+      "balance_type": ["Coil"],
+      "series": ["20"],
+      "coil_weight": ["16 lb"],
+      "configuration": ["Single Coil"],
+      "brand_compatibility": ["Silverline", "Wenco", "Other"]
+    },
+    "sold_as": "Each",
+    "notes": [
+      "Match coil weight",
+      "Verify coil series",
+      "Confirm OEM compatibility"
+    ]
+  }
+]

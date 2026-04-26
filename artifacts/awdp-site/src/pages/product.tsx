@@ -13,6 +13,7 @@ import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Came
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } from "@/components/measurement-diagrams";
+import { AttributeConfigurator } from "@/components/attribute-configurator";
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -117,6 +118,23 @@ export default function ProductDetail() {
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const savings = isSale ? originalPrice - price : 0;
+
+  // Derive "Before Ordering" notes from AWDP attributes balance type
+  const productAttributes = (product as any).attributes as Record<string, string[]> | null | undefined;
+  const productSoldAs = (product as any).soldAs as string | null | undefined;
+  const balanceType = productAttributes?.balance_type?.[0]?.toLowerCase() ?? "";
+  const attrNotes: string[] =
+    balanceType.includes("channel") || balanceType.includes("block")
+      ? ["Match stamping code exactly", "Verify metal channel length (end to end)", "Confirm terminal shoe style (15-001, 15-002, or 15-004)"]
+      : balanceType.includes("spiral")
+      ? ["Match tip color to existing balance", "Verify tube diameter (3/8\" or 1/2\")", "Confirm length (end to end)"]
+      : balanceType.includes("coil")
+      ? ["Match coil weight rating", "Verify coil series number", "Confirm single or double pack configuration"]
+      : balanceType.includes("tilt")
+      ? ["Match terminal / tip color exactly", "Verify sash position (top vs. bottom)", "Confirm jamb liner type"]
+      : balanceType.includes("oem")
+      ? ["Verify OEM family / brand and series", "Confirm length and configuration", "Send photos if unsure"]
+      : [];
 
   const CATEGORY_INTROS: Record<string, string> = {
     "Window Balances": "If your window won't stay open, slams shut, or feels too heavy to lift, the window balance is usually the cause. Balances wear out gradually — especially in older or frequently-used windows.",
@@ -372,6 +390,15 @@ export default function ProductDetail() {
                 <div className="text-slate-600 mb-6 leading-relaxed">
                   <p>{product.description}</p>
                 </div>
+              )}
+
+              {/* AWDP Standard Product Attributes */}
+              {productAttributes && Object.keys(productAttributes).length > 0 && (
+                <AttributeConfigurator
+                  attributes={productAttributes}
+                  soldAs={productSoldAs}
+                  notes={attrNotes.length > 0 ? attrNotes : undefined}
+                />
               )}
 
               {/* This Part Fixes… */}
