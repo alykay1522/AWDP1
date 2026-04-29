@@ -8,25 +8,7 @@ function patch(file, extraDeps) {
   if (!fs.existsSync(file)) return;
   const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
   if (pkg.scripts) delete pkg.scripts.preinstall;
-  for the **entire** `vercel-install.js` with this:
-
-```js
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-
-process.chdir(path.resolve(__dirname));
-
-function patch(file, extraDeps) {
-  if (!fs.existsSync(file)) return;
-  const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (pkg.scripts) delete pkg.scripts.preinstall;
   for (const s of ['dependencies', 'devDependencies', 'peerDependencies']) {
-    if (!pkg[s]) continue;
-    for (const k of Object.keys(pkg[s])) {
-      const v = pkg[s][k];
-      if (v.startsWith('workspace:')) {
-        const (const s of ['dependencies', 'devDependencies', 'peerDependencies']) {
     if (!pkg[s]) continue;
     for (const k of Object.keys(pkg[s])) {
       const v = pkg[s][k];
@@ -38,22 +20,10 @@ function patch(file, extraDeps) {
       }
     }
   }
-  if (extraDeps) Object rel = path.relative(path.dirname(file), 'lib/api-client-react');
-        pkg[s][k] = 'file:' + rel;
-      } else if (v.startsWith('catalog:')) {
-        pkg[s][k] = '*';
-      }
-    }
+  if (extraDeps) {
+    pkg.dependencies = pkg.dependencies || {};
+    Object.assign(pkg.dependencies, extraDeps);
   }
-  if (extraDeps) Object.assign(pkg.dependencies ||= {}, extraDeps);
-  fs.writeFileSync(file, JSON.stringify(pkg, null, 2));
-  console.log('Patched', file);
-}
-
-patch('package.json');
-patch('artifacts/awdp-site/package.json', {
-  '@replit/vite-plugin-runtime-error-modal': 'latest',
-  'tailwindcss': 'latest'.assign(pkg.dependencies ||= {}, extraDeps);
   fs.writeFileSync(file, JSON.stringify(pkg, null, 2));
   console.log('Patched', file);
 }
