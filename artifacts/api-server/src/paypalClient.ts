@@ -12,6 +12,18 @@ const BASE_URL =
 
 let _cachedToken: { token: string; expiresAt: number } | null = null;
 
+function assertValidPayPalOrderId(paypalOrderId: string): string {
+  const value = paypalOrderId.trim();
+
+  // PayPal order IDs are expected to be opaque tokens; enforce a strict safe charset
+  // and bounds to prevent path manipulation when constructing API URLs.
+  if (!/^[A-Za-z0-9-]{5,64}$/.test(value)) {
+    throw new Error("Invalid PayPal order ID format");
+  }
+
+  return value;
+}
+
 async function getAccessToken(): Promise<string> {
   if (_cachedToken && Date.now() < _cachedToken.expiresAt - 30_000) {
     return _cachedToken.token;
@@ -128,8 +140,9 @@ export async function capturePayPalOrder(
   }>;
 }> {
   const token = await getAccessToken();
+  const validatedOrderId = assertValidPayPalOrderId(paypalOrderId);
 
-  const res = await fetch(`${BASE_URL}/v2/checkout/orders/${paypalOrderId}/capture`, {
+  const res = await fetch(`${BASE_URL}/v2/checkout/orders/${encodeURIComponent(validatedOrderId)}/capture`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
