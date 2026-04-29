@@ -3,49 +3,38 @@ const path = require('path');
 const { execSync } = require('child_process');
 process.chdir(path.resolve(__dirname));
 
-function readPkg(f) { return JSON.parse(fs.readFileSync(f, 'utf8')); }
-
-const rootPkg = readPkg('package.json');
-const sitePkg = readPkg('artifacts/awdp-site/package.json');
-const libPkg = readPkg('lib/api-client-react/package.json');
-
+// Step 1: Remove pnpm-only preinstall guard from root
+var rootPkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 if (rootPkg.scripts) delete rootPkg.scripts.preinstall;
+fs.writeFileSync('package.json', JSON.stringify(rootPkg, null, 2));
+console.log('Step 1 done: removed preinstall guard');
 
-const merged = {};
-[rootPkg, sitePkg, libPkg].forEach(function(pkg) {
-  ['dependencies', 'devDependencies'].forEach(function(s) {
-    if (pkg[s]) {
-      Object.keys(pkg[s]).forEach(function(k) {
-        merged[k] = pkg[s][k];
-      });
+// Step 2: Patch awdp-site/package.json
+var sitePath = 'artifacts/awdp-site/package.json';
+var sitePkg = JSON.parse(fs.readFileSync(sitePath, 'utf8'));
+sitePkg.dependencies['@workspace/api-client-react'] = 'file:../../lib/api-client-react';
+sitePkg.dependencies['@replit/vite-plugin-runtime-error-modal'] = 'latest';
+sitePkg.devDependencies['tailwindcss'] = '^4.0.0';
+sitePkg.devDependencies['tw-animate-css'] = 'latest';
+sitePkg.devDependencies['@tailwindcss/typography'] = 'latest';
+fs.writeFileSync(sitePath, JSON.stringify(sitePkg, null, 2));
+console.log('Step 2 done: patched awdp-site');
+
+// Step 3: Patch lib/api-client-react/package.json
+var libPath = 'lib/api-client-react/package.json';
+var libPkg = JSON.parse(fs.readFileSync(libPath, 'utf8'));
+['dependencies', 'devDependencies', 'peerDependencies'].forEach(function(s) {
+  if (!libPkg[s]) return;
+  Object.keys(libPkg[s]).forEach(function(k) {
+    if (libPkg[s][k].startsWith('catalog:')) {
+      libPkg[s][k] = '*';
     }
   });
 });
+fs.writeFileSync(libPath, JSON.stringify(libPkg, null, 2));
+console.log('Step 3 done: patched api-client-react');
 
-merged['@replit/vite-plugin-runtime-error-modal'] = 'latest';
-merged['tailwindcss'] = 'latest';
-
-Object.keys(merged).forEach(function(k) {
-  if (merged[k].startsWith('workspace:')) {
-    merged[k] = 'file:lib/api-client-react';
-  } else if (merged[k].startsWith('catalog:')) {
-    merged[k] = '*';
-  }
-});
-
-rootPkg.dependencies = merged;
-delete rootPkg.devDependencies;
-fs.writeFileSync('package.json', JSON.stringify(rootPkg, null, 2));
-
-['dependencies', 'devDependencies', 'peerDependencies'].forEach(function(s) {
-  if (libPkg[s]) {
-    Object.keys(libPkg[s]).forEach(function(k) {
-      if (libPkg[s][k].startsWith('catalog:')) libPkg[s][k] = '*';
-    });
-  }
-});
-fs.writeFileSync('lib/api-client-react/package.json', JSON.stringify(libPkg, null, 2));
-
-console.log('All deps merged into root');
-execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
-console.log('Done');
+// Step 4: Install in awdp-site
+console.log('Step 4: installing dependencies...');
+execSync('cd artifacts/awdp-site && npm install --legacy-peer-deps', { stdio: 'inherit' });
+console.log('All done!');
