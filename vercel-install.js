@@ -21,6 +21,7 @@ var allDeps = {};
     Object.keys(pkg[section]).forEach(function(k) {
       var v = pkg[section][k];
       if (v.startsWith('workspace:')) return;
+      if (v.startsWith('file:')) return;
       if (v.startsWith('catalog:')) v = '*';
       allDeps[k] = v;
     });
@@ -45,20 +46,23 @@ var vite = [
   'import react from "@vitejs/plugin-react";',
   'import tailwindcss from "@tailwindcss/vite";',
   'import path from "path";',
+  'import { fileURLToPath } from "url";',
+  '',
+  'const siteDir = path.dirname(fileURLToPath(import.meta.url));',
   '',
   'export default defineConfig({',
   '  plugins: [react(), tailwindcss()],',
   '  resolve: {',
   '    alias: {',
-  '      "@": path.resolve(import.meta.dirname, "src"),',
-  '      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),',
-  '      "@workspace/api-client-react": path.resolve(import.meta.dirname, "..", "..", "lib", "api-client-react", "src", "index.ts"),',
+  '      "@": path.resolve(siteDir, "src"),',
+  '      "@assets": path.resolve(siteDir, "..", "..", "attached_assets"),',
+  '      "@workspace/api-client-react": path.resolve(siteDir, "..", "..", "lib", "api-client-react", "src", "index.ts"),',
   '    },',
   '    dedupe: ["react", "react-dom"],',
   '  },',
-  '  root: path.resolve(import.meta.dirname),',
+  '  root: siteDir,',
   '  build: {',
-  '    outDir: path.resolve(import.meta.dirname, "dist/public"),',
+  '    outDir: path.resolve(siteDir, "dist/public"),',
   '    emptyOutDir: true,',
   '  },',
   '});',
@@ -68,7 +72,12 @@ fs.writeFileSync('artifacts/awdp-site/vite.config.ts', vite);
 console.log('Step 3: rewrote vite.config.ts');
 
 console.log('Step 4: installing...');
-execSync('npm install --legacy-peer-deps --include=dev', { stdio: 'inherit' });
+try {
+  execSync('npm install --legacy-peer-deps --include=dev', { stdio: 'inherit' });
+} catch (err) {
+  console.error('Install failed in Step 4.');
+  throw err;
+}
 
 var target = path.resolve('node_modules');
 var link = path.resolve('artifacts/awdp-site/node_modules');
