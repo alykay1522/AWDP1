@@ -68,8 +68,9 @@ var vite = [
   '});',
   ''
 ].join('\n');
-fs.writeFileSync('artifacts/awdp-site/vite.config.ts', vite);
-console.log('Step 3: rewrote vite.config.ts');
+fs.writeFileSync('artifacts/awdp-site/vite.config.mts', vite);
+try { fs.rmSync('artifacts/awdp-site/vite.config.ts', { force: true }); } catch (e) {}
+console.log('Step 3: rewrote vite.config.mts');
 
 console.log('Step 4: installing...');
 try {
