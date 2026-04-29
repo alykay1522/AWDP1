@@ -12,6 +12,7 @@ const sitePkg = JSON.parse(fs.readFileSync('artifacts/awdp-site/package.json', '
 sitePkg.dependencies['@workspace/api-client-react'] = 'file:../../lib/api-client-react';
 sitePkg.dependencies['@replit/vite-plugin-runtime-error-modal'] = 'latest';
 fs.writeFileSync('artifacts/awdp-site/package.json', JSON.stringify(sitePkg, null, 2));
+sitePkg.dependencies['tailwindcss'] = 'latest';
 console.log('Patched awdp-site');
 
 // 3. Patch api-client-react: catalog protocol -> real version
