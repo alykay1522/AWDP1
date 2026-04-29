@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "corepack enable && pnpm install --no-frozen-lockfile",
+  "installCommand": "npm i -g pnpm@9.15.0 && pnpm install --no-frozen-lockfile",
   "buildCommand": "cd artifacts/awdp-site && pnpm exec vite build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
