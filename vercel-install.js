@@ -43,15 +43,12 @@ console.log('Step 2: merged ' + Object.keys(allDeps).length + ' deps into root')
 
 var vite = [
   'import { defineConfig } from "vite";',
-  'import react from "@vitejs/plugin-react";',
-  'import tailwindcss from "@tailwindcss/vite";',
   'import path from "path";',
   'import { fileURLToPath } from "url";',
   '',
   'const siteDir = path.dirname(fileURLToPath(import.meta.url));',
   '',
   'export default defineConfig({',
-  '  plugins: [react(), tailwindcss()],',
   '  resolve: {',
   '    alias: {',
   '      "@": path.resolve(siteDir, "src"),',
