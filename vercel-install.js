@@ -1,42 +1,51 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-
 process.chdir(path.resolve(__dirname));
 
-function patch(file, extraDeps) {
-  if (!fs.existsSync(file)) return;
-  const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (pkg.scripts) delete pkg.scripts.preinstall;
-  for (const s of ['dependencies', 'devDependencies', 'peerDependencies']) {
-    if (!pkg[s]) continue;
-    for (const k of Object.keys(pkg[s])) {
-      const v = pkg[s][k];
-      if (v.startsWith('workspace:')) {
-        const rel = path.relative(path.dirname(file), 'lib/api-client-react');
-        pkg[s][k] = 'file:' + rel;
-      } else if (v.startsWith('catalog:')) {
-        pkg[s][k] = '*';
-      }
+function readPkg(f) { return JSON.parse(fs.readFileSync(f, 'utf8')); }
+
+const rootPkg = readPkg('package.json');
+const sitePkg = readPkg('artifacts/awdp-site/package.json');
+const libPkg = readPkg('lib/api-client-react/package.json');
+
+if (rootPkg.scripts) delete rootPkg.scripts.preinstall;
+
+const merged = {};
+[rootPkg, sitePkg, libPkg].forEach(function(pkg) {
+  ['dependencies', 'devDependencies'].forEach(function(s) {
+    if (pkg[s]) {
+      Object.keys(pkg[s]).forEach(function(k) {
+        merged[k] = pkg[s][k];
+      });
     }
-  }
-  if (extraDeps) {
-    pkg.dependencies = pkg.dependencies || {};
-    Object.assign(pkg.dependencies, extraDeps);
-  }
-  fs.writeFileSync(file, JSON.stringify(pkg, null, 2));
-  console.log('Patched', file);
-}
-
-patch('package.json');
-patch('artifacts/awdp-site/package.json', {
-  '@replit/vite-plugin-runtime-error-modal': 'latest',
-  'tailwindcss': 'latest'
+  });
 });
-patch('lib/api-client-react/package.json');
 
-console.log('Installing root deps...');
+merged['@replit/vite-plugin-runtime-error-modal'] = 'latest';
+merged['tailwindcss'] = 'latest';
+
+Object.keys(merged).forEach(function(k) {
+  if (merged[k].startsWith('workspace:')) {
+    merged[k] = 'file:lib/api-client-react';
+  } else if (merged[k].startsWith('catalog:')) {
+    merged[k] = '*';
+  }
+});
+
+rootPkg.dependencies = merged;
+delete rootPkg.devDependencies;
+fs.writeFileSync('package.json', JSON.stringify(rootPkg, null, 2));
+
+['dependencies', 'devDependencies', 'peerDependencies'].forEach(function(s) {
+  if (libPkg[s]) {
+    Object.keys(libPkg[s]).forEach(function(k) {
+      if (libPkg[s][k].startsWith('catalog:')) libPkg[s][k] = '*';
+    });
+  }
+});
+fs.writeFileSync('lib/api-client-react/package.json', JSON.stringify(libPkg, null, 2));
+
+console.log('All deps merged into root');
 execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
-
-console.log('Installing awdp-site deps...');
-execSync('cd artifacts/awdp-site && npm install --legacy-peer-deps', { stdio: 'inherit' });
+console.log('Done');
