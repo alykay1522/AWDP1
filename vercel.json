@@ -1,8 +1,8 @@
 {
-  "framework": null,
-  "installCommand": "node vercel-install.js",
-  "buildCommand": "cd artifacts/awdp-site && npm install tailwindcss --legacy-peer-deps && npx vite build",
-  "outputDirectory": "artifacts/awdp-site/dist/public",
+  "framework": "vite",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
+  "outputDirectory": "artifacts/awdp-site/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
