@@ -14,9 +14,11 @@
     "@replit/vite-plugin-runtime-error-modal": "latest",
     "lib-api-client-react": "file:../../lib/api-client-react"
   },
-  "devDependencies": {
-    "vite": "^5.0.0",
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0"
+ "devDependencies": {
+  "vite": "^5.0.0",
+  "@vitejs/plugin-react": "^5.0.4",
+  "@tailwindcss/vite": "^4.1.14",
+  "autoprefixer": "^10.4.0",
+  "postcss": "^8.4.0"
   }
 }
