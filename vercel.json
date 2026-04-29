@@ -1,7 +1,7 @@
 {
   "framework": null,
-  "installCommand": "npm i -g pnpm@8.15.9 && pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd artifacts/awdp-site && pnpm exec vite build",
+  "installCommand": "node vercel-install.js",
+  "buildCommand": "cd artifacts/awdp-site && npx vite build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
