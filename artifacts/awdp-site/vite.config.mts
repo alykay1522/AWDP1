@@ -1,27 +1,21 @@
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const siteDir = path.dirname(fileURLToPath(import.meta.url));
-
-export default defineConfig(async () => {
-  const { default: react } = await import("@vitejs/plugin-react");
-  const { default: tailwindcss } = await import("@tailwindcss/vite");
-
-  return {
-    plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        "@": path.resolve(siteDir, "src"),
-        "@assets": path.resolve(siteDir, "..", "..", "attached_assets"),
-        "@workspace/api-client-react": path.resolve(siteDir, "..", "..", "lib", "api-client-react", "src", "index.ts"),
-      },
-      dedupe: ["react", "react-dom"],
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "src"),
+      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "@workspace/api-client-react": path.resolve(import.meta.dirname, "..", "..", "lib", "api-client-react", "src", "index.ts"),
     },
-    root: siteDir,
-    build: {
-      outDir: path.resolve(siteDir, "dist/public"),
-      emptyOutDir: true,
-    },
-  };
+    dedupe: ["react", "react-dom"],
+  },
+  root: path.resolve(import.meta.dirname),
+  build: {
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true,
+  },
 });

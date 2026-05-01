@@ -1,7 +1,7 @@
 {
   "framework": null,
-  "installCommand": "npm install --workspaces --include=dev --legacy-peer-deps",
-  "buildCommand": "npm run build --workspace artifacts/awdp-site",
+  "installCommand": "node vercel-install.js",
+  "buildCommand": "cd artifacts/awdp-site && npx vite build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
