@@ -3,65 +3,32 @@ const path = require('path');
 const { execSync } = require('child_process');
 process.chdir(path.resolve(__dirname));
 
-// 1. Remove pnpm files
+// 1. Remove pnpm files that confuse npm
 ['pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc'].forEach(function(f) {
   try { fs.unlinkSync(f); } catch(e) {}
 });
-console.log('1. Cleaned pnpm files');
 
-// 2. Read all package.json files
+// 2. Remove preinstall guard that blocks npm
 var rootPkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-var sitePkg = JSON.parse(fs.readFileSync('artifacts/awdp-site/package.json', 'utf8'));
-var libPkg = JSON.parse(fs.readFileSync('lib/api-client-react/package.json', 'utf8'));
-
-// 3. Remove pnpm guard and workspaces
 if (rootPkg.scripts) delete rootPkg.scripts.preinstall;
-delete rootPkg.workspaces;
-
-// 4. Merge ALL deps into root
-var allDeps = {};
-[rootPkg, sitePkg, libPkg].forEach(function(pkg) {
-  ['dependencies', 'devDependencies'].forEach(function(section) {
-    if (!pkg[section]) return;
-    Object.keys(pkg[section]).forEach(function(k) {
-      var v = pkg[section][k];
-      if (v.startsWith('workspace:')) return;
-      if (v.startsWith('catalog:')) v = '*';
-      allDeps[k] = v;
-    });
-  });
-});
-
-// 5. Fix versions and remove Replit packages
-allDeps['tailwindcss'] = '^4.0.0';
-allDeps['tw-animate-css'] = 'latest';
-allDeps['@tailwindcss/typography'] = 'latest';
-allDeps['@tanstack/react-query'] = '^5.28.0';
-delete allDeps['@replit/vite-plugin-runtime-error-modal'];
-delete allDeps['@replit/vite-plugin-cartographer'];
-delete allDeps['@replit/vite-plugin-dev-banner'];
-
-rootPkg.dependencies = allDeps;
-delete rootPkg.devDependencies;
 fs.writeFileSync('package.json', JSON.stringify(rootPkg, null, 2));
-console.log('2. Merged ' + Object.keys(allDeps).length + ' deps into root');
 
-// 6. Install at ROOT
-execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
+// 3. Hide root package.json so npm installs in awdp-site only
+fs.renameSync('package.json', '_package.json.bak');
 
-// 7. Verify key packages
-var ok = 0;
-var missing = [];
-['wouter', 'react', 'vite', 'tailwindcss', '@vitejs/plugin-react', '@tailwindcss/vite'].forEach(function(pkg) {
-  if (fs.existsSync(path.join('node_modules', pkg))) { ok++; }
-  else { missing.push(pkg); }
+// 4. Install all deps in awdp-site
+console.log('Installing dependencies...');
+execSync('cd artifacts/awdp-site && npm install --include=dev --legacy-peer-deps', { stdio: 'inherit' });
+
+// 5. Restore root package.json
+fs.renameSync('_package.json.bak', 'package.json');
+
+// 6. Verify
+var nm = 'artifacts/awdp-site/node_modules';
+var count = fs.readdirSync(nm).length;
+['wouter','react','vite','tailwindcss','@vitejs/plugin-react'].forEach(function(p) {
+  var exists = fs.existsSync(path.join(nm, p));
+  console.log(p + ': ' + (exists ? 'OK' : 'MISSING'));
 });
-console.log('3. Verified: ' + ok + ' found' + (missing.length ? ', MISSING: ' + missing.join(', ') : ''));
-
-// 8. Symlink so Vite finds everything from awdp-site
-var link = path.resolve('artifacts/awdp-site/node_modules');
-try { fs.rmSync(link, { recursive: true, force: true }); } catch(e) {}
-fs.symlinkSync(path.resolve('node_modules'), link, 'dir');
-console.log('4. Symlinked node_modules into awdp-site');
-
-console.log('ALL DONE');
+console.log('Total modules: ' + count);
+console.log('Done');
