@@ -12,6 +12,7 @@
   "dependencies": {
     "@paypal/react-paypal-js": "^9.1.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "react-helmet-async": "^3.0.0"
   },
   "devDependencies": {
@@ -74,6 +75,5 @@
     "vite": "^5.2.0",
     "wouter": "^3.3.5",
     "zod": "^3.22.0"
-
   }
 }
