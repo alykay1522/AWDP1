@@ -36,7 +36,7 @@ minimumReleaseAgeExclude:
   - stripe-replit-sync
 
 onlyBuiltDependencies:
-  - '@swc/core'
+  '@tanstack/react-query': ^5.100.6
   - esbuild
   - msw
   - sharp
