@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "node ../../vercel-install.cjs",
+  "installCommand": "node ./vercel-install.cjs",
   "buildCommand": "npx vite build",
   "outputDirectory": "dist/public",
   "rewrites": [
