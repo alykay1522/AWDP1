@@ -25,13 +25,6 @@ import { pool } from "@workspace/db";
 
 const PgSession = connectPgSimple(session);
 
-/** Comma-separated browser origins allowed to call the API with credentials (e.g. https://www.example.com). When set, session cookies use SameSite=None for cross-site logins. */
-const trustedFrontendOrigins =
-  process.env.TRUSTED_FRONTEND_ORIGINS?.split(",")
-    .map((o) => o.trim())
-    .filter((o) => o.length > 0) ?? [];
-const crossOriginBrowserClients = trustedFrontendOrigins.length > 0;
-
 const app: Express = express();
 app.disable("etag");
 // Trust Replit's reverse proxy so secure cookies work over HTTPS
