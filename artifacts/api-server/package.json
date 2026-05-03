@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start",
+    "dev": "node ./dev.mjs",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -41,7 +41,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "@types/compression": "^1.8.1",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/cookie-parser": "^1.4.10",

@@ -3,8 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "workspaces": [
-    "artifacts/awdp-site",
-    "lib/api-client-react"
+    "artifacts/*",
+    "lib/*",
+    "lib/integrations/*",
+    "scripts"
   ],
   "scripts": {
     "build": "npm --workspace artifacts/awdp-site run build"
