@@ -16,29 +16,26 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Install dependencies
-        run: pnpm install
+        run: npm install --workspaces --include=dev --legacy-peer-deps
 
       - name: Build awdp-site
-        run: pnpm --filter ./artifacts/awdp-site build
+        run: npm run build --workspace artifacts/awdp-site
 
       - name: Copy CNAME to build output
         run: cp CNAME artifacts/awdp-site/dist/public/
