@@ -22,9 +22,15 @@ export default function AdminLogin() {
         credentials: "include",
         body: JSON.stringify({ password: pw }),
       });
+      const contentType = res.headers.get("content-type") ?? "";
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error || "Login failed");
+      }
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          "The site did not reach the API (got HTML instead of JSON). Host the Express server and route /api to it, or build the storefront with VITE_API_BASE_URL pointing at your API origin.",
+        );
       }
       return res.json();
     },
