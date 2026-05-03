@@ -26,16 +26,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm install --workspaces --include=dev --legacy-peer-deps
+        run: pnpm install --frozen-lockfile
 
       - name: Build awdp-site
-        run: npm run build --workspace artifacts/awdp-site
+        run: pnpm --filter awdp-site run build
 
       - name: Copy CNAME to build output
         run: cp CNAME artifacts/awdp-site/dist/public/
