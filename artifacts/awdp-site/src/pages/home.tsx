@@ -12,6 +12,7 @@ import heroBg from "@assets/hero_hardware_bg.png";
 import heroBgWebp from "@assets/hero_hardware_bg.webp";
 import ctaBg from "@assets/cta_hardware_bg.png";
 import ctaBgWebp from "@assets/cta_hardware_bg.webp";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
 const BASE_URL = "https://www.allwindowdoorparts.com";
 
@@ -41,7 +42,7 @@ const organizationSchema = {
   logo: `${BASE_URL}/opengraph.jpg`,
   image: `${BASE_URL}/opengraph.jpg`,
   telephone: "+17855330244",
-  email: "Info@allwindowdoorparts.com",
+  email: SITE_CUSTOMER_EMAIL,
   description: "Veteran-owned supplier of replacement window and door hardware with over 40 years of industry experience. Specialists in obsolete and hard-to-find parts including casement operators, sash balances, patio door rollers, locks, weatherstripping, and more.",
   priceRange: "$$",
   foundingDate: "1984",
@@ -56,7 +57,7 @@ const organizationSchema = {
     "@type": "ContactPoint",
     telephone: "+17855330244",
     contactType: "customer service",
-    email: "Info@allwindowdoorparts.com",
+    email: SITE_CUSTOMER_EMAIL,
     availableLanguage: "English",
   },
   hasOfferCatalog: {
@@ -88,7 +89,7 @@ const faqSchema = {
       name: "How does the Free Parts Identification service work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Send us photos of the part you need to identify at Info@allwindowdoorparts.com or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.",
+        text: `Send us photos of the part you need to identify at ${SITE_CUSTOMER_EMAIL} or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.`,
       },
     },
     {
@@ -153,7 +154,7 @@ const faqSchema = {
 const FAQ_ITEMS = [
   {
     q: "How does the Free Parts Identification service work?",
-    a: "Send us photos of the part you need to Info@allwindowdoorparts.com or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.",
+    a: `Send us photos of the part you need to ${SITE_CUSTOMER_EMAIL} or through our online form. Our experts with decades of industry experience will identify the part and send you a direct link to purchase the exact replacement — completely free with no obligation.`,
   },
   {
     q: "Do you carry obsolete or discontinued window and door parts?",
@@ -221,7 +222,7 @@ function FaqSection() {
             <p className="text-slate-500 text-sm mb-4">Still have questions? We're happy to help.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild variant="outline" className="font-bold">
-                <a href="mailto:info@allwindowdoorparts.com"><Mail className="w-4 h-4 mr-2" aria-hidden="true" />Email Us</a>
+                <a href={SITE_CUSTOMER_MAILTO}><Mail className="w-4 h-4 mr-2" aria-hidden="true" />Email Us</a>
               </Button>
               <Button asChild className="font-bold bg-red-600 hover:bg-red-700 text-white border-0">
                 <Link href="/parts-identification"><PackageSearch className="w-4 h-4 mr-2" aria-hidden="true" />Free Parts ID</Link>
@@ -329,7 +330,7 @@ export default function Home() {
             {/* Hero email nudge */}
             <p className="mt-6 text-slate-400 text-sm flex items-center gap-2">
               <Mail className="w-4 h-4" aria-hidden="true" />
-              Questions? Email <a href="mailto:info@allwindowdoorparts.com" className="text-blue-300 font-bold hover:text-white transition-colors">info@allwindowdoorparts.com</a>
+              Questions? Email <a href={SITE_CUSTOMER_MAILTO} className="text-blue-300 font-bold hover:text-white transition-colors">{SITE_CUSTOMER_EMAIL}</a>
             </p>
           </div>
         </div>
@@ -703,7 +704,7 @@ export default function Home() {
                   <Link href="/parts-identification">Upload a Photo Now</Link>
                 </Button>
                 <Button size="lg" variant="ghost" className="w-fit text-white border border-white/30 hover:bg-white/10 h-12 px-8 text-base" asChild>
-                  <a href="mailto:info@allwindowdoorparts.com" onClick={() => analytics.track("CTA Clicked", { label: "Email Us", location: "parts_id_cta" })}>
+                  <a href={SITE_CUSTOMER_MAILTO} onClick={() => analytics.track("CTA Clicked", { label: "Email Us", location: "parts_id_cta" })}>
                     <Mail className="w-4 h-4 mr-2" aria-hidden="true" /> Email Us
                   </a>
                 </Button>
@@ -849,7 +850,7 @@ export default function Home() {
             <p className="text-slate-500 mb-4 text-sm">Have a question before you order? We're here to help.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild variant="outline" className="font-bold">
-                <a href="mailto:info@allwindowdoorparts.com"><Mail className="w-4 h-4 mr-2" aria-hidden="true" /> info@allwindowdoorparts.com</a>
+                <a href={SITE_CUSTOMER_MAILTO}><Mail className="w-4 h-4 mr-2" aria-hidden="true" /> {SITE_CUSTOMER_EMAIL}</a>
               </Button>
               <Button asChild className="font-bold">
                 <Link href="/parts-identification"><PackageSearch className="w-4 h-4 mr-2" aria-hidden="true" /> Free Parts ID</Link>
