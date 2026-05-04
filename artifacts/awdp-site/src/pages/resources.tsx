@@ -378,7 +378,9 @@ export default function Resources() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((pdf) => {
                 const colors = CATEGORY_COLORS[pdf.category] ?? CATEGORY_COLORS["Hardware & Accessories"];
-                const typeKey = pdf.type in TYPE_ICONS ? (pdf.type as keyof typeof TYPE_ICONS) : "Reference";
+                const typeKey = Object.prototype.hasOwnProperty.call(TYPE_ICONS, pdf.type)
+                  ? (pdf.type as keyof typeof TYPE_ICONS)
+                  : "Reference";
                 return (
                   <article
                     key={pdf.id}
