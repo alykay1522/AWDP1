@@ -59,6 +59,8 @@ interface ProductsResponse {
 interface Category { id: number; name: string; productCount?: number; }
 
 const PAGE_SIZE = 50;
+/** Rows per POST to `/api/admin/products/import` (server also enforces MAX_PRODUCT_IMPORT_ROWS per request). */
+const PRODUCT_IMPORT_CHUNK = 400;
 
 function useDebounced<T>(value: T, delay: number): T {
   const [deb, setDeb] = useState(value);
@@ -190,28 +192,52 @@ export default function AdminProductsList() {
       const rows = parseCsv(text);
       if (rows.length === 0) { toast({ title: "Empty file", description: "No rows found in the CSV", variant: "destructive" }); return; }
 
-      const res = await fetch("/api/admin/products/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error ?? "Import failed");
+      const acc = { inserted: 0, updated: 0, errored: 0, skipped: 0, needsPricing: 0 };
+      const errSamples: string[] = [];
+      const totalChunks = Math.ceil(rows.length / PRODUCT_IMPORT_CHUNK);
+      const longWait = 600_000;
+
+      for (let c = 0; c < totalChunks; c++) {
+        const slice = rows.slice(c * PRODUCT_IMPORT_CHUNK, (c + 1) * PRODUCT_IMPORT_CHUNK);
+        const res = await fetch("/api/admin/products/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: slice }),
+          signal: AbortSignal.timeout(longWait),
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(result.error ?? `Import failed (batch ${c + 1}/${totalChunks})`);
+        }
+        acc.inserted += result.inserted ?? 0;
+        acc.updated += result.updated ?? 0;
+        acc.errored += result.errored ?? 0;
+        acc.skipped += result.skipped ?? 0;
+        acc.needsPricing += result.needsPricing ?? 0;
+        if (Array.isArray(result.errors)) {
+          for (const line of result.errors as string[]) {
+            if (errSamples.length < 12) errSamples.push(line);
+          }
+        }
+      }
 
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["admin-categories-list"] });
       qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
       const parts = [
-        result.inserted  && `${result.inserted} added`,
-        result.updated   && `${result.updated} updated`,
-        result.needsPricing && `${result.needsPricing} need pricing`,
-        result.skipped   && `${result.skipped} blank rows skipped`,
-        result.errored   && `${result.errored} errors`,
+        acc.inserted && `${acc.inserted} added`,
+        acc.updated && `${acc.updated} updated`,
+        acc.needsPricing && `${acc.needsPricing} need pricing`,
+        acc.skipped && `${acc.skipped} blank rows skipped`,
+        acc.errored && `${acc.errored} errors`,
       ].filter(Boolean).join(" · ");
+      const descBits = [parts || "No changes"];
+      if (totalChunks > 1) descBits.push(`${totalChunks} batches`);
+      if (errSamples.length) descBits.push(errSamples.join("; "));
       toast({
-        title: result.errored > 0 ? "Import finished with errors" : "Import complete",
-        description: parts || "No changes",
-        variant: result.errored > 0 && !result.inserted && !result.updated ? "destructive" : "default",
+        title: acc.errored > 0 ? "Import finished with errors" : "Import complete",
+        description: descBits.join(" — "),
+        variant: acc.errored > 0 && !acc.inserted && !acc.updated ? "destructive" : "default",
       });
     } catch (e: any) {
       toast({ title: "Import failed", description: e.message, variant: "destructive" });
@@ -309,7 +335,8 @@ export default function AdminProductsList() {
             Export All CSV
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
-            onClick={() => fileInputRef.current?.click()} disabled={importing}>
+            onClick={() => fileInputRef.current?.click()} disabled={importing}
+            title={`Imports in chunks of ${PRODUCT_IMPORT_CHUNK} rows. Columns match Export plus optional cost/dealer columns for markup pricing.`}>
             {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             Import CSV
           </Button>

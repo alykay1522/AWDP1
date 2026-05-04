@@ -1,3 +1,4 @@
+import type { Server } from "node:http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
@@ -17,10 +18,18 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
+const server = app.listen(port, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
+  }
+
+  // Bulk product import / large admin requests can exceed the default Node HTTP timeouts.
+  const bulkMs = Number(process.env.API_BULK_REQUEST_TIMEOUT_MS ?? "600000");
+  if (Number.isFinite(bulkMs) && bulkMs > 0) {
+    server.timeout = bulkMs;
+    server.headersTimeout = bulkMs + 60000;
+    (server as Server & { requestTimeout?: number }).requestTimeout = bulkMs;
   }
 
   logger.info({ port }, "Server listening");
