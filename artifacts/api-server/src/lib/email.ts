@@ -33,7 +33,7 @@ export interface ContactSubmission {
 export async function forwardContactEmail(submission: ContactSubmission): Promise<void> {
   const forwardTo = getContactForwardEmails();
   if (forwardTo.length === 0) {
-    console.warn("[email] CONTACT_FORWARD_EMAILS unset or empty — skipping staff forward for contact");
+    console.warn("[email] No valid staff forward addresses — skipping staff forward for contact");
     return;
   }
 
@@ -108,7 +108,7 @@ export interface PartsIdSubmission {
 export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promise<void> {
   const forwardTo = getContactForwardEmails();
   if (forwardTo.length === 0) {
-    console.warn("[email] CONTACT_FORWARD_EMAILS unset or empty — skipping staff forward for parts ID");
+    console.warn("[email] No valid staff forward addresses — skipping staff forward for parts ID");
     return;
   }
 
