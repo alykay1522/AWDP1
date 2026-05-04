@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.js",
   "dependencies": {
+    "@tanstack/react-query": "catalog:",
     "react": "^18.2.0"
   }
 }

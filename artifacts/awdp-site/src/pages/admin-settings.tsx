@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { SITE_CUSTOMER_EMAIL } from "@/lib/siteContact";
 
 interface Settings {
   businessName: string;
@@ -50,7 +51,7 @@ export default function AdminSettings() {
   const [form, setForm] = useState<Settings>({
     businessName: "All Window Door Parts",
     phone: "785-533-0244",
-    email: "Info@allwindowdoorparts.com",
+    email: SITE_CUSTOMER_EMAIL,
     address: "",
     orderMinimum: "50",
     bannerEnabled: "false",
