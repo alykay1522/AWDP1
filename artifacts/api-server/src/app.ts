@@ -118,8 +118,10 @@ app.use(
   }),
 );
 app.use(cors({ credentials: true }));
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
+const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT ?? "32mb";
+app.use(express.json({ limit: jsonBodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: jsonBodyLimit }));
 
 // Session middleware — uses PostgreSQL store for persistence across restarts
 app.use(

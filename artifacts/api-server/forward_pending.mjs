@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import pg from "pg";
 
 const FROM_ADDRESS = "info@allwindowdoorparts.com";
-const DEFAULT_FORWARD_EMAILS = "thepolak@wefixitusa.com,alyshameade.1522@gmail.com";
 
 function isValidSingleForwardEmail(value) {
   const s = value.trim();
@@ -11,21 +10,21 @@ function isValidSingleForwardEmail(value) {
   return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(s);
 }
 
-/** Same as src/lib/notifyRecipients.ts — CONTACT_FORWARD_EMAILS comma-separated override. */
+/** Same as src/lib/notifyRecipients.ts — set CONTACT_FORWARD_EMAILS (comma-separated). */
 function getContactForwardEmails() {
   const raw = process.env.CONTACT_FORWARD_EMAILS?.trim();
-  const src = raw && raw.length > 0 ? raw : DEFAULT_FORWARD_EMAILS;
-  const list = src
+  if (!raw) return [];
+  return raw
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
     .filter(isValidSingleForwardEmail);
-  if (list.length > 0) return list;
-  const fromDefault = DEFAULT_FORWARD_EMAILS.split(",")
-    .map((s) => s.trim())
-    .filter(isValidSingleForwardEmail);
-  if (fromDefault.length > 0) return fromDefault;
-  return ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
+}
+
+const forwardTo = getContactForwardEmails();
+if (forwardTo.length === 0) {
+  console.error("Set CONTACT_FORWARD_EMAILS (comma-separated) before running this script.");
+  process.exit(1);
 }
 
 const transporter = nodemailer.createTransport({
@@ -101,7 +100,7 @@ for (const row of rows) {
   try {
     await transporter.sendMail({
       from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
-      to: getContactForwardEmails(),
+      to: forwardTo,
       replyTo: email,
       subject: `[FORWARDED] Parts ID Request [${ticket_id}] from ${name}`,
       html,

@@ -40,6 +40,10 @@ export EMAIL_APP_PASSWORD="..."
 export CHECKOUT_PAYPAL_ONLY="true"
 # Only needed when CHECKOUT_PAYPAL_ONLY is false and you use card checkout
 export STRIPE_SECRET_KEY="sk_test_..."
+# Optional — large admin JSON / long imports (defaults are usually fine)
+# export API_JSON_BODY_LIMIT="32mb"
+# export MAX_PRODUCT_IMPORT_ROWS="10000"
+# export API_BULK_REQUEST_TIMEOUT_MS="600000"
 ```
 
 ### Vercel / production
@@ -48,7 +52,18 @@ Set at least: `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT
 
 **Product variants:** DB columns `variant_group_id`, `variant_label`, and JSON `attributes` on `products` link sibling SKUs; `GET /api/products/:sku/variants` and the product page handle groups when data is present.
 
-**Admin CSV:** `POST /api/admin/csv-import` (multipart file). **Export:** `GET /api/admin/products/export` (authenticated admin session).
+**Admin CSV (two flows):**
+- **Catalog upsert (SKUs, prices, stock):** Admin → Products → **Import CSV** parses client-side then `POST /api/admin/products/import` with `{ rows }`. Large files are sent in **400-row batches** from the UI. Re-importing the same SKU is an upsert (idempotent updates). Optional env: `MAX_PRODUCT_IMPORT_ROWS` (default `10000` per request), `API_JSON_BODY_LIMIT` (default `32mb` for `express.json`), `API_BULK_REQUEST_TIMEOUT_MS` (default `600000` HTTP server timeout for long imports).
+- **CLI bulk import (same API as the UI):** With the API running, `ADMIN_PASSWORD` set, and a UTF-8 CSV whose headers match export columns (plus optional `cost` / dealer columns per server `normalizeRow`):  
+  `pnpm --filter @workspace/api-server run bulk-product-import -- path/to/products.csv`  
+  (or `node artifacts/api-server/scripts/bulk-product-import.mjs …`; optional `API_BASE`, `CHUNK_SIZE`).
+- **Description-only matcher:** `POST /api/admin/csv-import?mode=preview|apply` (multipart `file`) — matches scraped titles to existing products and updates descriptions; not the same as catalog import.
+
+**Export:** `GET /api/admin/products/export` (authenticated admin session).
+
+**Resources / PDFs (Vercel):** Public `GET /api/resources` returns `{ resources }` from `pdf_resources` (active only). The storefront **Resources** page merges that JSON with static `PDF_RESOURCES` in `artifacts/awdp-site/src/pages/resources.tsx` (measurement guides, external catalog URLs). Self-hosted PDFs: add files under `artifacts/awdp-site/public/resources/` (tracked folder includes `.gitkeep`); they are served at **`/resources/<filename>.pdf`** on Vite and on Vercel with the static frontend. DB-backed rows can use full `https://` URLs or same-origin paths like `/resources/foo.pdf`.
+
+**`awdp_automation.py` (repo root):** WooCommerce maintenance via `config_awdp.json` — fetches products, can emit `price_updates.csv`, cleanup lists, `products_export.json` (sync stub), etc. Those formats target **WooCommerce IDs**, not the AWDP admin import. To feed AWDP, export a catalog CSV from Woo (or your ETL) with columns compatible with `GET /api/admin/products/export` / `normalizeRow` (see `artifacts/api-server/src/routes/adminProducts.ts`), then import via admin or `bulk-product-import.mjs`.
 
 ### Non-obvious caveats
 

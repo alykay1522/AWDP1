@@ -63,6 +63,14 @@ export function Layout({ children }: { children: ReactNode }) {
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
+    if (checkoutPayPalOnly) {
+      toast({
+        title: "Card checkout unavailable",
+        description: "Please use PayPal to complete your order.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (belowMinimum) {
       toast({
         title: "Minimum Order Not Met",
