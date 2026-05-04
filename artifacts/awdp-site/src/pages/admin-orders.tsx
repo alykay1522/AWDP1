@@ -339,7 +339,7 @@ export default function AdminOrders() {
                             <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{Number(order.shippingCost) === 0 ? "TBD" : fmt(order.shippingCost)}</span></div>
                             <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Total</span><span>{fmt(order.total)}</span></div>
                           </div>
-                          {order.stripeSessionId && !checkoutPayPalOnly && (
+                          {order.stripeSessionId && (
                             <a
                               href={`https://dashboard.stripe.com/payments/${order.stripePaymentIntentId ?? ""}`}
                               target="_blank" rel="noopener noreferrer"
