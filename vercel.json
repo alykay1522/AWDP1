@@ -1,9 +1,15 @@
 {
-  "framework": null,
-  "installCommand": "node vercel-install.js",
-  "buildCommand": "cd artifacts/awdp-site && npx vite build",
-  "outputDirectory": "artifacts/awdp-site/dist/public",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+    "installCommand": "npm i -g pnpm && pnpm install --no-frozen-lockfile",
+    "buildCommand": "cd artifacts/api-server && node build.mjs && cd ../awdp-site && npx vite build",
+    "outputDirectory": "artifacts/awdp-site/dist/public",
+    "functions": {
+          "api/server.js": {
+                  "includeFiles": "artifacts/api-server/dist/**",
+                  "maxDuration": 10
+          }
+    },
+    "rewrites": [
+          { "source": "/api/(.*)", "destination": "/api/server" },
+          { "source": "/(.*)", "destination": "/index.html" }
+    ]
 }
