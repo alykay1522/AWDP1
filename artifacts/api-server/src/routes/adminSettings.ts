@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   // Business info
   businessName: "All Window Door Parts",
   phone: "785-533-0244",
-  email: "Info@allwindowdoorparts.com",
+  email: "info@allwindowdoorparts.com",
   address: "",
   orderMinimum: "50",
   bannerEnabled: "false",

@@ -35,8 +35,8 @@ type SeedProduct = {
 };
 
 const BATCH_SIZE = 100;
-// Full catalog threshold: if DB has fewer products than this, load the full export
-const FULL_CATALOG_THRESHOLD = 10000;
+// If the DB already has at least this many products, skip auto-seed on startup (~4k catalog).
+const FULL_CATALOG_THRESHOLD = 3500;
 
 function loadFullCatalog(): SeedProduct[] | null {
   // Try several paths where the full export might live
