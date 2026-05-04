@@ -1,8 +1,7 @@
 import nodemailer from "nodemailer";
+import { getContactForwardEmails } from "./notifyRecipients.js";
 
 const FROM_ADDRESS = "info@allwindowdoorparts.com";
-const CONTACT_RECIPIENTS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
-const PARTS_ID_RECIPIENTS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
 
 function createTransporter() {
   const password = process.env.EMAIL_APP_PASSWORD;
@@ -32,6 +31,12 @@ export interface ContactSubmission {
 }
 
 export async function forwardContactEmail(submission: ContactSubmission): Promise<void> {
+  const forwardTo = getContactForwardEmails();
+  if (forwardTo.length === 0) {
+    console.warn("[email] CONTACT_FORWARD_EMAILS unset or empty — skipping staff forward for contact");
+    return;
+  }
+
   const { name, email, phone, subject, message } = submission;
   const subjectLine = subject
     ? `Contact Form: ${subject}`
@@ -81,7 +86,7 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
   const transporter = createTransporter();
   await transporter.sendMail({
     from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
-    to: CONTACT_RECIPIENTS,
+    to: forwardTo,
     replyTo: email,
     subject: subjectLine,
     html,
@@ -101,6 +106,12 @@ export interface PartsIdSubmission {
 }
 
 export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promise<void> {
+  const forwardTo = getContactForwardEmails();
+  if (forwardTo.length === 0) {
+    console.warn("[email] CONTACT_FORWARD_EMAILS unset or empty — skipping staff forward for parts ID");
+    return;
+  }
+
   const { ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64 } = submission;
 
   const html = `
@@ -175,7 +186,7 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
 
   await transporter.sendMail({
     from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
-    to: PARTS_ID_RECIPIENTS,
+    to: forwardTo,
     replyTo: email,
     subject: `Parts ID Request [${ticketId}] from ${name}`,
     html,

@@ -20,13 +20,35 @@ AWDP (All Window Door Parts) is a pnpm workspace monorepo with an Express 5 API 
 export DATABASE_URL="postgresql://awdp:awdp123@localhost:5432/awdp"
 export PORT=3000
 export SESSION_SECRET="dev-session-secret-12345"
-export ADMIN_PASSWORD="admin123"
-export STRIPE_SECRET_KEY="sk_test_placeholder"
+# Admin login password — set only via env (never commit production values)
+export ADMIN_PASSWORD="your-local-admin-password"
 export PAYPAL_CLIENT_ID="paypal_test_placeholder"
 export PAYPAL_CLIENT_SECRET="paypal_test_placeholder"
 export PAYPAL_MODE="sandbox"
 export NODE_ENV=development
 ```
+
+Optional / feature-specific:
+
+```bash
+# Comma-separated staff inboxes: contact form, parts-ID forwards, order owner alerts (required for outbound mail to staff)
+export CONTACT_FORWARD_EMAILS="ops@example.com,orders@example.com"
+# SMTP app password for info@allwindowdoorparts.com (required to actually send mail)
+export EMAIL_APP_PASSWORD="..."
+# PayPal-only: disables Stripe checkout session, fulfill route, and Stripe webhook registration.
+# If unset: PayPal-only when STRIPE_SECRET_KEY is missing or contains "placeholder"; set to false to use Stripe with a real key.
+export CHECKOUT_PAYPAL_ONLY="true"
+# Only needed when CHECKOUT_PAYPAL_ONLY is false and you use card checkout
+export STRIPE_SECRET_KEY="sk_test_..."
+```
+
+### Vercel / production
+
+Set at least: `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, `CHECKOUT_PAYPAL_ONLY=true`, and point the frontend’s API base to your API (same-origin `/api` if using a combined deployment, or configure the site’s proxy / env so `/api` hits the API server).
+
+**Product variants:** DB columns `variant_group_id`, `variant_label`, and JSON `attributes` on `products` link sibling SKUs; `GET /api/products/:sku/variants` and the product page handle groups when data is present.
+
+**Admin CSV:** `POST /api/admin/csv-import` (multipart file). **Export:** `GET /api/admin/products/export` (authenticated admin session).
 
 ### Non-obvious caveats
 
@@ -37,5 +59,5 @@ export NODE_ENV=development
 - **sharp native binaries**: `sharp` is in `onlyBuiltDependencies` in `pnpm-workspace.yaml`. If you see sharp errors, ensure `pnpm install` ran successfully.
 - **Root typecheck**: `npx tsc --build --emitDeclarationOnly` passes for the shared libraries. Individual package typechecks (`api-server`, `awdp-site`) have pre-existing type errors that don't affect runtime builds.
 - **No separate linter**: The project has no ESLint/Biome config. TypeScript checking is the primary static analysis tool.
-- **Stripe/PayPal**: Placeholder keys work for dev (checkout routes will fail at actual payment processing but the app runs fine).
+- **Checkout**: With `CHECKOUT_PAYPAL_ONLY` (or no usable Stripe key), only PayPal checkout is shown; Stripe routes return 503.
 - **Admin login**: POST to `/api/admin/login` with `{ "password": "<ADMIN_PASSWORD>" }` to authenticate admin sessions.

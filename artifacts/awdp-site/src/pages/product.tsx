@@ -307,7 +307,9 @@ export default function ProductDetail() {
         path={`/product/${product.sku}`}
         description={seoDescription}
         image={product.imageUrl ?? undefined}
+        imageAlt={productAlt}
         type="product"
+        keywords={[product.sku, product.category, ...(product.tags ?? [])].filter(Boolean).join(", ")}
         structuredData={[
           productSchema,
           {

@@ -22,6 +22,7 @@ import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import sitemapRouter from "./routes/sitemap";
 import { pool } from "@workspace/db";
+import { isPayPalCheckoutOnly } from "./lib/checkoutMode.js";
 
 const PgSession = connectPgSimple(session);
 
@@ -73,25 +74,29 @@ app.use(
 // Gzip/Brotli compression for all responses
 app.use(compression());
 
-// Stripe webhook MUST be registered before express.json() — needs raw Buffer body
-app.post(
-  "/api/stripe/webhook",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const signature = req.headers["stripe-signature"];
-    if (!signature) {
-      return res.status(400).json({ error: "Missing stripe-signature header" });
+// Stripe webhook MUST be registered before express.json() — needs raw Buffer body (skipped when PayPal-only)
+if (!isPayPalCheckoutOnly()) {
+  app.post(
+    "/api/stripe/webhook",
+    express.raw({ type: "application/json" }),
+    async (req, res) => {
+      const signature = req.headers["stripe-signature"];
+      if (!signature) {
+        return res.status(400).json({ error: "Missing stripe-signature header" });
+      }
+      try {
+        const sig = Array.isArray(signature) ? signature[0] : signature;
+        await WebhookHandlers.processWebhook(req.body as Buffer, sig);
+        res.status(200).json({ received: true });
+      } catch (err: any) {
+        logger.error({ err }, "Stripe webhook error");
+        res.status(400).json({ error: "Webhook processing failed" });
+      }
     }
-    try {
-      const sig = Array.isArray(signature) ? signature[0] : signature;
-      await WebhookHandlers.processWebhook(req.body as Buffer, sig);
-      res.status(200).json({ received: true });
-    } catch (err: any) {
-      logger.error({ err }, "Stripe webhook error");
-      res.status(400).json({ error: "Webhook processing failed" });
-    }
-  }
-);
+  );
+} else {
+  logger.info("Stripe webhook disabled (CHECKOUT_PAYPAL_ONLY)");
+}
 
 app.use(
   pinoHttp({
