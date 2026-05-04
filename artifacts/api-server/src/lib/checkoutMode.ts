@@ -1,5 +1,8 @@
 /**
- * PayPal-only checkout: Stripe session + webhook routes are disabled.
+ * PayPal-only checkout: blocks *new* Stripe Checkout sessions (POST /checkout/session).
+ *
+ * POST /checkout/fulfill is not gated here so in-flight or legacy paid Stripe sessions can still
+ * complete after CHECKOUT_PAYPAL_ONLY / env changes.
  *
  * - Set CHECKOUT_PAYPAL_ONLY=true (or 1) to force PayPal-only even with a live Stripe key.
  * - Set CHECKOUT_PAYPAL_ONLY=false to allow Stripe when STRIPE_SECRET_KEY is configured.

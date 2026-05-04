@@ -237,16 +237,12 @@ router.get("/checkout/order/:orderId", async (req, res) => {
   }
 });
 
-// POST /api/checkout/webhook-fulfill — Called from Stripe webhook to fulfill orders
+// POST /api/checkout/fulfill — Completes a Stripe Checkout session (success page, retries, ops).
+// Intentionally NOT gated on isPayPalCheckoutOnly(): new Stripe sessions are blocked at POST
+// /checkout/session, but a customer may land here with session_id after a config flip or old tab;
+// returning 503 would strand already-paid checkouts in "pending".
 router.post("/checkout/fulfill", async (req, res) => {
   try {
-    if (isPayPalCheckoutOnly()) {
-      return res.status(503).json({
-        error: "stripe_checkout_disabled",
-        message: "Stripe fulfillment is disabled for this deployment.",
-      });
-    }
-
     const { sessionId } = req.body as { sessionId: string };
     if (!sessionId) return res.status(400).json({ error: "sessionId required" });
 

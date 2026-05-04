@@ -4,7 +4,6 @@ import { PageSeo } from "@/components/page-seo";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { SITE_CUSTOMER_EMAIL } from "@/lib/siteContact";
 
 type Settings = Record<string, string>;
 
@@ -55,7 +54,7 @@ export default function About() {
           "description": "Veteran-owned supplier of replacement window and door hardware parts with over 40 years of industry experience. We specialize in hard-to-find, obsolete, and brand-specific parts.",
           "url": "https://www.allwindowdoorparts.com",
           "telephone": "+17855330244",
-          "email": SITE_CUSTOMER_EMAIL,
+          "email": "Info@allwindowdoorparts.com",
           "image": "https://www.allwindowdoorparts.com/opengraph.jpg",
           "foundingDate": "1984",
           "areaServed": "USA",
