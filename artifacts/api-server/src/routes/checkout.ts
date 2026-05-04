@@ -5,8 +5,14 @@ import { eq, inArray } from "drizzle-orm";
 import { getUncachableStripeClient } from "../stripeClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
+import { isPayPalCheckoutOnly } from "../lib/checkoutMode.js";
 
 const router = Router();
+
+// GET /api/checkout/options — public; tells the storefront whether Stripe checkout is available
+router.get("/checkout/options", (_req, res) => {
+  res.json({ checkoutPayPalOnly: isPayPalCheckoutOnly() });
+});
 
 const CartItemSchema = z.object({
   sku: z.string(),
@@ -81,6 +87,13 @@ async function serverPriceItems(
 // POST /api/checkout/session — Create a Stripe checkout session
 router.post("/checkout/session", async (req, res) => {
   try {
+    if (isPayPalCheckoutOnly()) {
+      return res.status(503).json({
+        error: "stripe_checkout_disabled",
+        message: "Card checkout is not available. Please complete your order with PayPal.",
+      });
+    }
+
     const parsed = CheckoutRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
@@ -224,7 +237,10 @@ router.get("/checkout/order/:orderId", async (req, res) => {
   }
 });
 
-// POST /api/checkout/webhook-fulfill — Called from Stripe webhook to fulfill orders
+// POST /api/checkout/fulfill — Completes a Stripe Checkout session (success page, retries, ops).
+// Intentionally NOT gated on isPayPalCheckoutOnly(): new Stripe sessions are blocked at POST
+// /checkout/session, but a customer may land here with session_id after a config flip or old tab;
+// returning 503 would strand already-paid checkouts in "pending".
 router.post("/checkout/fulfill", async (req, res) => {
   try {
     const { sessionId } = req.body as { sessionId: string };
