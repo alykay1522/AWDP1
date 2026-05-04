@@ -11,12 +11,12 @@ process.chdir(repoRoot);
   } catch (e) {}
 });
 
+var backupPath = path.join(repoRoot, "_package.json.bak");
+fs.copyFileSync("package.json", backupPath);
+
 var rootPkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
 if (rootPkg.scripts) delete rootPkg.scripts.preinstall;
 fs.writeFileSync("package.json", JSON.stringify(rootPkg, null, 2));
-
-var backupPath = path.join(repoRoot, "_package.json.bak");
-fs.renameSync("package.json", "_package.json.bak");
 
 function restoreRootPackageJson() {
   try {
