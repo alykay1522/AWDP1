@@ -607,10 +607,8 @@ setSuggestionsOpen(data.length > 0);
               <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
-          ) : productsData?.products.length ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
-                {productsData.products.map((product) => (
+          ) :{Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
+  productsData.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
