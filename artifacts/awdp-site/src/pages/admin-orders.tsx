@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Package, DollarSign, Clock, CheckCircle2, Truck, XCircle,
@@ -97,6 +97,14 @@ export default function AdminOrders() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [checkoutPayPalOnly, setCheckoutPayPalOnly] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/checkout/options")
+      .then((r) => r.json())
+      .then((d: { checkoutPayPalOnly?: boolean }) => setCheckoutPayPalOnly(Boolean(d.checkoutPayPalOnly)))
+      .catch(() => setCheckoutPayPalOnly(false));
+  }, []);
 
   const { data, isLoading, isError, refetch } = useQuery<AdminOrdersResponse>({
     queryKey: ["admin-orders"],
@@ -260,7 +268,8 @@ export default function AdminOrders() {
                           <StatusBadge status={order.status} />
                           {order.stripePaymentIntentId && (
                             <span className="text-xs text-muted-foreground font-mono">
-                              Stripe: {order.stripePaymentIntentId.slice(-8)}
+                              {checkoutPayPalOnly ? "Stripe (legacy): " : "Stripe: "}
+                              {order.stripePaymentIntentId.slice(-8)}
                             </span>
                           )}
                         </div>

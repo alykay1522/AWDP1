@@ -20,6 +20,12 @@ interface PdfResource {
   sortOrder?: number;
 }
 
+/**
+ * Curated PDFs merged with GET /api/resources (DB). Self-hosted files: place under
+ * `artifacts/awdp-site/public/` so Vite serves them at site root (e.g. `/catalogs/foo.pdf`);
+ * on Vercel, static assets in the frontend `public/` deploy with the site. Object-storage URLs
+ * (e.g. `/api/storage/public-objects/...`) are served by the API when configured.
+ */
 const PDF_RESOURCES: PdfResource[] = [
   {
     id: "casement-sash-no-glass",
@@ -193,7 +199,12 @@ export default function Resources() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const resources = data?.resources ?? [];
+  const resources = useMemo(() => {
+    const fromApi = data?.resources ?? [];
+    const seen = new Set(fromApi.map((r) => r.url));
+    const extras = PDF_RESOURCES.filter((p) => !seen.has(p.url));
+    return [...fromApi, ...extras];
+  }, [data?.resources]);
 
   const allTypes = useMemo(
     () => ["All", ...Array.from(new Set(resources.map((r) => r.type)))],
@@ -230,7 +241,7 @@ export default function Resources() {
         title="PDF Resources — Measurement Guides & Part Catalogs | All Window Door Parts"
         description="Free PDF measurement guides, product catalogs, and how-to references for BiltBest casement, double hung, and patio door replacement parts."
         canonical="/resources"
-        schemaMarkup={[pageSchema, breadcrumbSchema]}
+        structuredData={[pageSchema, breadcrumbSchema]}
       />
 
       {/* Hero */}
@@ -251,7 +262,7 @@ export default function Resources() {
           <div className="mt-4 flex flex-wrap gap-3 text-sm text-primary-foreground/70">
             <span className="flex items-center gap-1.5">
               <FileText className="w-4 h-4" />
-              {PDF_RESOURCES.length} documents
+              {resources.length} documents
             </span>
             <span className="flex items-center gap-1.5">
               <BookOpen className="w-4 h-4" />
@@ -333,7 +344,7 @@ export default function Resources() {
                   )}
                   {cat}
                   <span className={`text-xs ml-0.5 ${isActive ? "text-primary/60" : "text-slate-400"}`}>
-                    ({cat === "All" ? PDF_RESOURCES.length : PDF_RESOURCES.filter((r) => r.category === cat).length})
+                    ({cat === "All" ? resources.length : resources.filter((r) => r.category === cat).length})
                   </span>
                 </button>
               );
@@ -367,6 +378,9 @@ export default function Resources() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((pdf) => {
                 const colors = CATEGORY_COLORS[pdf.category] ?? CATEGORY_COLORS["Hardware & Accessories"];
+                const typeKey = Object.prototype.hasOwnProperty.call(TYPE_ICONS, pdf.type)
+                  ? (pdf.type as keyof typeof TYPE_ICONS)
+                  : "Reference";
                 return (
                   <article
                     key={pdf.id}
@@ -380,11 +394,11 @@ export default function Resources() {
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className={`p-2 rounded-lg ${colors.bg}`}>
                           <span className={colors.text}>
-                            {TYPE_ICONS[pdf.type]}
+                            {TYPE_ICONS[typeKey]}
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-1.5 justify-end">
-                          <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TYPE_BADGE_COLORS[pdf.type]}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TYPE_BADGE_COLORS[typeKey]}`}>
                             {pdf.type}
                           </span>
                         </div>

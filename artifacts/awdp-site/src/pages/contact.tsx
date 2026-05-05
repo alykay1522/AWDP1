@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from "lucide-react";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -61,7 +62,7 @@ export default function Contact() {
       <PageSeo
         title="Contact Us — Window & Door Parts Help"
         path="/contact"
-        description="Contact All Window Door Parts at 785-533-0244 or Info@allwindowdoorparts.com. Veteran-owned window and door replacement parts supplier, 40+ years experience. We help you find the right part."
+        description={`Contact All Window Door Parts at 785-533-0244 or ${SITE_CUSTOMER_EMAIL}. Veteran-owned window and door replacement parts supplier, 40+ years experience. We help you find the right part.`}
         keywords="contact all window door parts, window parts phone number, door hardware customer service, 785-533-0244"
         structuredData={{
           "@context": "https://schema.org",
@@ -70,7 +71,7 @@ export default function Contact() {
           name: "All Window Door Parts",
           url: "https://www.allwindowdoorparts.com",
           telephone: "+17855330244",
-          email: "Info@allwindowdoorparts.com",
+          email: SITE_CUSTOMER_EMAIL,
           description: "Veteran-owned supplier of window and door replacement parts with 40+ years of experience. Specialists in obsolete and hard-to-find window and door hardware.",
           priceRange: "$$",
           openingHoursSpecification: {
@@ -84,7 +85,7 @@ export default function Contact() {
             "@type": "ContactPoint",
             telephone: "+17855330244",
             contactType: "customer service",
-            email: "Info@allwindowdoorparts.com",
+            email: SITE_CUSTOMER_EMAIL,
             availableLanguage: "English",
           },
         }}
@@ -122,7 +123,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider mb-1">Email</h4>
-                    <a href="mailto:Info@allwindowdoorparts.com" className="text-base font-medium text-slate-700 hover:text-primary hover:underline break-all">Info@allwindowdoorparts.com</a>
+                    <a href={SITE_CUSTOMER_MAILTO} className="text-base font-medium text-slate-700 hover:text-primary hover:underline break-all">{SITE_CUSTOMER_EMAIL}</a>
                   </div>
                 </div>
 

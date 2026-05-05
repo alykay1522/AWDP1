@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
+import { getContactForwardEmails } from "./lib/notifyRecipients.js";
 
-const OWNER_EMAILS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
 const FROM_EMAIL = "info@allwindowdoorparts.com";
 
 function createTransporter() {
@@ -132,7 +132,7 @@ function buildOwnerHtml(o: OrderEmailPayload): string {
     </div>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">
-    All Window Door Parts &mdash; 785-533-0244 &mdash; Info@AllWindowDoorParts.com
+    All Window Door Parts &mdash; 785-533-0244 &mdash; info@allwindowdoorparts.com
   </div>
 </body>
 </html>`;
@@ -187,12 +187,12 @@ function buildCustomerHtml(o: OrderEmailPayload): string {
     <p style="margin-top:24px">Questions about your order? Contact us:</p>
     <ul style="margin:8px 0;padding-left:20px">
       <li><strong>Phone:</strong> <a href="tel:785-533-0244">785-533-0244</a> (Mon-Fri 8am-5pm CST)</li>
-      <li><strong>Email:</strong> <a href="mailto:Info@AllWindowDoorParts.com">Info@AllWindowDoorParts.com</a></li>
+      <li><strong>Email:</strong> <a href="mailto:info@allwindowdoorparts.com">info@allwindowdoorparts.com</a></li>
     </ul>
     <p>Thank you for choosing All Window Door Parts — veteran owned and operated with 40+ years of experience.</p>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">
-    All Window Door Parts &mdash; 785-533-0244 &mdash; Info@AllWindowDoorParts.com
+    All Window Door Parts &mdash; 785-533-0244 &mdash; info@allwindowdoorparts.com
   </div>
 </body>
 </html>`;
@@ -202,18 +202,23 @@ export async function sendOrderNotification(payload: OrderEmailPayload): Promise
   const transporter = createTransporter();
   if (!transporter) return;
 
+  const staffInboxes = getContactForwardEmails();
   const subject = `New Order ${payload.orderId} — $${payload.total}`;
 
-  try {
-    await transporter.sendMail({
-      from: `"All Window Door Parts Orders" <${FROM_EMAIL}>`,
-      to: OWNER_EMAILS,
-      subject,
-      html: buildOwnerHtml(payload),
-    });
-    console.log("[email] Owner notification sent");
-  } catch (err) {
-    console.error("[email] Failed to send owner notification:", err);
+  if (staffInboxes.length > 0) {
+    try {
+      await transporter.sendMail({
+        from: `"All Window Door Parts Orders" <${FROM_EMAIL}>`,
+        to: staffInboxes,
+        subject,
+        html: buildOwnerHtml(payload),
+      });
+      console.log("[email] Owner notification sent");
+    } catch (err) {
+      console.error("[email] Failed to send owner notification:", err);
+    }
+  } else {
+    console.warn("[email] CONTACT_FORWARD_EMAILS unset or empty — skipping owner order notification");
   }
 
   if (payload.customerEmail) {

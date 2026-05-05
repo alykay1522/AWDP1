@@ -4,7 +4,7 @@ import * as os from "os";
 import * as fs from "fs";
 import { db } from "@workspace/db";
 import { productsTable } from "@workspace/db/schema";
-import { ilike, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -214,28 +214,26 @@ router.post("/", upload.single("file"), async (req, res) => {
       });
     }
 
-    // Apply mode — update products
-    let updated = 0;
-    let skipped = 0;
-
-    for (const match of results) {
-      if (!match.willUpdateDescription || !match.matchedSku) {
-        skipped++;
-        continue;
-      }
-
-      await db
-        .update(productsTable)
-        .set({ description: match.newDescription })
-        .where(sql`${productsTable.sku} = ${match.matchedSku}`);
-
-      updated++;
+    // Apply mode — batched parallel updates (same semantics as sequential; faster on large CSVs)
+    const pending = results.filter((m) => m.willUpdateDescription && m.matchedSku);
+    const skipped = results.length - pending.length;
+    const CONCURRENCY = 32;
+    for (let i = 0; i < pending.length; i += CONCURRENCY) {
+      const slice = pending.slice(i, i + CONCURRENCY);
+      await Promise.all(
+        slice.map((m) =>
+          db
+            .update(productsTable)
+            .set({ description: m.newDescription })
+            .where(eq(productsTable.sku, m.matchedSku!)),
+        ),
+      );
     }
 
     return res.json({
       mode: "apply",
       totalRows: rows.length,
-      updated,
+      updated: pending.length,
       skipped,
     });
   } catch (err: any) {
