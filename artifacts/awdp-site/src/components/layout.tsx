@@ -122,9 +122,11 @@ export function Layout({ children }: { children: ReactNode }) {
       navSuggDebounce.current = setTimeout(async () => {
         try {
           const res = await fetch(`/api/products/search-suggestions?q=${encodeURIComponent(val)}`);
-          const data: string[] = await res.json();
-          setNavSuggestions(data);
-          setNavSuggestionsOpen(data.length > 0);
+          const raw = await res.json();
+const data = Array.isArray(raw) ? raw : [];
+setNavSuggestions(data);
+setNavSuggestionsOpen(data.length > 0);
+
         } catch { /* ignore */ }
       }, 280);
     } else {
