@@ -13,10 +13,12 @@ export default function CheckoutSuccess() {
   const [fulfilled, setFulfilled] = useState(false);
 
   useEffect(() => {
-    // Clear the cart on successful payment
     clearCart();
+  }, [clearCart]);
 
-    // Notify the server to fulfill the order
+  useEffect(() => {
+    // Stripe success URL includes session_id; PayPal returns without it — call fulfill whenever
+    // session_id is present so paid Stripe checkouts complete even if the site is now PayPal-only.
     if (sessionId && !fulfilled) {
       setFulfilled(true);
       fetch("/api/checkout/fulfill", {
@@ -25,7 +27,7 @@ export default function CheckoutSuccess() {
         body: JSON.stringify({ sessionId }),
       }).catch(() => {});
     }
-  }, [sessionId]);
+  }, [sessionId, fulfilled]);
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center py-16 px-4">
@@ -76,10 +78,10 @@ export default function CheckoutSuccess() {
               <Phone className="w-4 h-4" /> 785-533-0244
             </a>
             <a
-              href="mailto:Info@allwindowdoorparts.com"
+              href="mailto:info@allwindowdoorparts.com"
               className="flex items-center justify-center gap-2 text-sm text-primary hover:underline font-medium"
             >
-              <Mail className="w-4 h-4" /> Info@allwindowdoorparts.com
+              <Mail className="w-4 h-4" /> info@allwindowdoorparts.com
             </a>
           </div>
         </div>
