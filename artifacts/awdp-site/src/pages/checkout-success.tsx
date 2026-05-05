@@ -15,6 +15,7 @@ export default function CheckoutSuccess() {
 
   useEffect(() => {
     clearCart();
+  }, [clearCart]);
   }, []);
 
   useEffect(() => {
@@ -79,6 +80,10 @@ export default function CheckoutSuccess() {
               <Phone className="w-4 h-4" /> 785-533-0244
             </a>
             <a
+              href="mailto:info@allwindowdoorparts.com"
+              className="flex items-center justify-center gap-2 text-sm text-primary hover:underline font-medium"
+            >
+              <Mail className="w-4 h-4" /> info@allwindowdoorparts.com
               href={SITE_CUSTOMER_MAILTO}
               className="flex items-center justify-center gap-2 text-sm text-primary hover:underline font-medium"
             >
