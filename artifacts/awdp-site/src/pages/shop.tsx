@@ -212,9 +212,10 @@ export default function Shop() {
       suggDebounce.current = setTimeout(async () => {
         try {
           const res = await fetch(`/api/products/search-suggestions?q=${encodeURIComponent(val)}`);
-          const data: string[] = await res.json();
-          setSuggestions(data);
-          setSuggestionsOpen(data.length > 0);
+          const raw = await res.json();
+const data = Array.isArray(raw) ? raw : [];
+setSuggestions(data);
+setSuggestionsOpen(data.length > 0);
         } catch { /* ignore */ }
       }, 280);
     } else {
