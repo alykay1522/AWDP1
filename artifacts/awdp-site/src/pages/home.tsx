@@ -508,8 +508,8 @@ export default function Home() {
                   <Skeleton className="h-6 w-1/3" />
                 </div>
               ))
-            ) : featuredProducts?.length ? (
-              featuredProducts.map((product) => (
+            ) : {Array.isArray(featuredProducts) && featuredProducts.length > 0 ? (
+  featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))
             ) : (
