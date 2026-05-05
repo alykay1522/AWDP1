@@ -1,0 +1,17 @@
+name: Fix lockfile
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          LINE=$(grep -n "^  '@floating-ui/core@1.7.5':" pnpm-lock.yaml | tail -1 | cut -d: -f1)
+          sed -i "${LINE},$((LINE+1))d" pnpm-lock.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git diff --cached --quiet || git commit -m "fix: remove duplicate key in pnpm-lock.yaml"
+          git push
