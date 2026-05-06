@@ -607,14 +607,14 @@ setSuggestionsOpen(data.length > 0);
               <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
-          ) :{Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
+          ) : Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
   productsData.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {/* Pagination */}
-              {productsData.totalPages > 1 && (
+              {(productsData?.totalPages ?? 0) > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-12">
                   <Button
                     variant="outline"
