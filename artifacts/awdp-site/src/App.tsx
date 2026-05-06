@@ -138,8 +138,8 @@ function AppContent() {
         <Route component={NotFound} />
       </Switch>
     </Layout>
-  );
-}
+ <Route path="/identify-balance" element={<BalanceWizard />} /> );
+
 
 function App() {
   return (
