@@ -1,6 +1,6 @@
 {
     "installCommand": "npm i -g pnpm && pnpm install --no-frozen-lockfile",
-    "buildCommand": "cd artifacts/api-server && node build.mjs && cd ../awdp-site && npx vite build",
++    "buildCommand": "cd artifacts/api-server && node build.mjs && npx esbuild src/index.ts --outfile=dist/serverless.cjs --bundle --platform=node --format=cjs && cd ../awdp-site && npx vite build",
     "outputDirectory": "artifacts/awdp-site/dist/public",
     "functions": {
           "api/server.js": {
