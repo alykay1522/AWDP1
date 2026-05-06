@@ -30,7 +30,7 @@ import GuideWindowOperator from "@/pages/guide-window-operator";
 import GuideDoorLock from "@/pages/guide-door-lock";
 import GuideGlazingBead from "@/pages/guide-glazing-bead";
 import Resources from "@/pages/resources";
-
+import BalanceWizard from "./components/BalanceWizard";
 // Admin pages
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
