@@ -3,6 +3,7 @@ import { Link, useSearch } from "wouter";
 import { useCart } from "@/lib/cart";
 import { CheckCircle2, Package, Phone, Mail, ArrowRight, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
 export default function CheckoutSuccess() {
   const search = useSearch();
@@ -15,6 +16,7 @@ export default function CheckoutSuccess() {
   useEffect(() => {
     clearCart();
   }, [clearCart]);
+  }, []);
 
   useEffect(() => {
     // Stripe success URL includes session_id; PayPal returns without it — call fulfill whenever
@@ -82,6 +84,10 @@ export default function CheckoutSuccess() {
               className="flex items-center justify-center gap-2 text-sm text-primary hover:underline font-medium"
             >
               <Mail className="w-4 h-4" /> info@allwindowdoorparts.com
+              href={SITE_CUSTOMER_MAILTO}
+              className="flex items-center justify-center gap-2 text-sm text-primary hover:underline font-medium"
+            >
+              <Mail className="w-4 h-4" /> {SITE_CUSTOMER_EMAIL}
             </a>
           </div>
         </div>
