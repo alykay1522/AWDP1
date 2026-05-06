@@ -1,6 +1,24 @@
 import { useState } from "react";
 
-const initialState = {
+type WizardData = {
+  windowType: string;
+  balanceType: string;
+  length: string;
+  stamp: string;
+  width: string;
+  tilt: boolean | null;
+};
+
+type Product = {
+  type: string;
+  length: string;
+  width: string;
+  stamp: string;
+  name: string;
+  sku: string;
+};
+
+const initialState: WizardData = {
   windowType: "",
   balanceType: "",
   length: "",
@@ -10,14 +28,15 @@ const initialState = {
 };
 
 export default function BalanceWizard() {
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState(initialState);
-  const [results, setResults] = useState([]);
+  const [step, setStep] = useState<number>(1);
+  const [data, setData] = useState<WizardData>(initialState);
+  const [results, setResults] = useState<Product[]>([]);
 
-  const update = (values) =>
+  const update = (values: Partial<WizardData>) => {
     setData((prev) => ({ ...prev, ...values }));
+  };
 
-  const next = (values = {}) => {
+  const next = (values: Partial<WizardData> = {}) => {
     update(values);
     setStep((s) => s + 1);
   };
@@ -30,8 +49,8 @@ export default function BalanceWizard() {
     setResults([]);
   };
 
-  // 🔴 Replace with real product data later
-  const mockProducts = [
+  // 🔴 Replace with real data later
+  const mockProducts: Product[] = [
     {
       type: "channel",
       length: "28",
@@ -60,7 +79,6 @@ export default function BalanceWizard() {
     <div style={{ maxWidth: 600, margin: "40px auto" }}>
       <h2>Find Your Window Balance</h2>
 
-      {/* STEP 1 */}
       {step === 1 && (
         <>
           <p>What type of window?</p>
@@ -69,7 +87,6 @@ export default function BalanceWizard() {
         </>
       )}
 
-      {/* STEP 2 */}
       {step === 2 && (
         <>
           <p>What does your balance look like?</p>
@@ -87,7 +104,6 @@ export default function BalanceWizard() {
         </>
       )}
 
-      {/* CHANNEL FLOW */}
       {step === 3 && data.balanceType === "channel" && (
         <>
           <p>Channel length (inches)</p>
@@ -103,7 +119,7 @@ export default function BalanceWizard() {
 
       {step === 4 && data.balanceType === "channel" && (
         <>
-          <p>Stamp code (example: 2830)</p>
+          <p>Stamp code</p>
           <input
             type="text"
             value={data.stamp}
@@ -127,7 +143,7 @@ export default function BalanceWizard() {
 
       {step === 6 && data.balanceType === "channel" && (
         <>
-          <p>Does the window tilt inward?</p>
+          <p>Does window tilt?</p>
           <button onClick={() => next({ tilt: true })}>Yes</button>
           <button onClick={() => next({ tilt: false })}>No</button>
           <br /><br />
@@ -137,24 +153,23 @@ export default function BalanceWizard() {
 
       {step === 7 && data.balanceType === "channel" && (
         <>
-          <p>Ready to find your balance</p>
-          <button onClick={matchProducts}>Find Matches</button>
+          <p>Find matches</p>
+          <button onClick={matchProducts}>Search</button>
           <button onClick={back}>Back</button>
         </>
       )}
 
-      {/* RESULTS */}
       {step === 99 && (
         <>
           <h3>Results</h3>
 
           {results.length === 0 ? (
-            <p>No matches found. Try adjusting inputs.</p>
+            <p>No matches found</p>
           ) : (
             results.map((r) => (
-              <div key={r.sku} style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}>
+              <div key={r.sku}>
                 <strong>{r.name}</strong>
-                <div>SKU: {r.sku}</div>
+                <div>{r.sku}</div>
               </div>
             ))
           )}
