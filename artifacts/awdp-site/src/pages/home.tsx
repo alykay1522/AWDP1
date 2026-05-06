@@ -256,11 +256,21 @@ export default function Home() {
 
   const c = (key: string) => settingsData?.settings?.[key] || HERO_DEFAULTS[key] || "";
 
-  const { data: featuredProducts, isLoading } = useGetFeaturedProducts({
+   const { data: rawFeaturedProducts, isLoading } = useGetFeaturedProducts({
     query: {
       queryKey: getGetFeaturedProductsQueryKey(),
     }
   });
+
+  // DEBUG: log the raw API response so you can verify its shape in DevTools
+  console.log('[AWDP DEBUG] useGetFeaturedProducts raw data:', rawFeaturedProducts);
+
+  // Normalize — API may return Product[] directly OR { products: Product[] }
+  const featuredProducts = Array.isArray(rawFeaturedProducts)
+    ? rawFeaturedProducts
+    : Array.isArray((rawFeaturedProducts as any)?.products)
+      ? (rawFeaturedProducts as any).products
+      : [];
 
   return (
     <div className="flex flex-col">
