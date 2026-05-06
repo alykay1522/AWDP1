@@ -68,6 +68,7 @@ export default function AdminLogin() {
                 <div className="relative">
                   <Input
                     id="password"
+                                      name="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
