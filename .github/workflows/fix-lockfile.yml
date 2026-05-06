@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          LINE=$(grep -n "^  '@floating-ui/core@1.7.5':" pnpm-lock.yaml | tail -1 | cut -d: -f1)
+          LINE=$(grep -n "^  '@floating-ui/core@1.7.5':" pnpm-lock.yaml | head -1 | cut -d: -f1)
           sed -i "${LINE},$((LINE+1))d" pnpm-lock.yaml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
