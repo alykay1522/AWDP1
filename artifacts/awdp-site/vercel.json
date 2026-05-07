@@ -16,6 +16,6 @@
   "build": {
     "env": {},
     "command": "pnpm build",
-    "outputDirectory": "dist"
+    "outputDirectory": "dist/public"
   }
 }
