@@ -1,21 +1,20 @@
 {
-  "name": "awdp-monorepo",
-  "private": true,
+  "name": "my-vite-project",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.15.9",
-  "workspaces": [
-    "artifacts/*",
-    "lib/*",
-    "lib/integrations/*",
-    "scripts"
-  ],
+  "private": true,
   "scripts": {
-    "build": "npm --workspace artifacts/awdp-site run build"
-  {
-  "devDependencies": {
-    "vite": "^4.0.0"
-  }
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "vercel": "^53.1.0"
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "vite": "^4.4.0",
+    "@vitejs/plugin-vue": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
