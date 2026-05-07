@@ -11,10 +11,11 @@
   ],
   "scripts": {
     "build": "npm --workspace artifacts/awdp-site run build"
-  {
+  },
   "devDependencies": {
     "vite": "^4.0.0"
 
+  },
   "dependencies": {
     "vercel": "^53.1.0"
   }
