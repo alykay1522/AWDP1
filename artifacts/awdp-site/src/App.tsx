@@ -2,6 +2,8 @@ import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wo
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/lib/cart";
@@ -28,7 +30,7 @@ import GuideWindowOperator from "@/pages/guide-window-operator";
 import GuideDoorLock from "@/pages/guide-door-lock";
 import GuideGlazingBead from "@/pages/guide-glazing-bead";
 import Resources from "@/pages/resources";
-
+import BalanceWizard from "./components/BalanceWizard";
 // Admin pages
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -136,8 +138,8 @@ function AppContent() {
         <Route component={NotFound} />
       </Switch>
     </Layout>
-  );
-}
+ <Route path="/identify-balance" element={<BalanceWizard />} /> );
+
 
 function App() {
   return (
@@ -153,6 +155,8 @@ function App() {
           </TooltipProvider>
         </CartProvider>
       </QueryClientProvider>
+      <Analytics />
+      <SpeedInsights />
     </HelmetProvider>
   );
 }

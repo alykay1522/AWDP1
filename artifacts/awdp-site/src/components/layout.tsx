@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { ReactNode, useState, useRef } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
 const SHOP_CATEGORIES = [
   ["Window Balances",               "Window+Balances"],
@@ -40,8 +41,16 @@ export function Layout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutPayPalOnly, setCheckoutPayPalOnly] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/checkout/options")
+      .then((r) => r.json())
+      .then((d: { checkoutPayPalOnly?: boolean }) => setCheckoutPayPalOnly(Boolean(d.checkoutPayPalOnly)))
+      .catch(() => setCheckoutPayPalOnly(false));
+  }, []);
 
   // Nav search autocomplete
   const [navSuggestions, setNavSuggestions]       = useState<string[]>([]);
@@ -54,6 +63,14 @@ export function Layout({ children }: { children: ReactNode }) {
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
+    if (checkoutPayPalOnly) {
+      toast({
+        title: "Card checkout unavailable",
+        description: "Please use PayPal to complete your order.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (belowMinimum) {
       toast({
         title: "Minimum Order Not Met",
@@ -105,9 +122,11 @@ export function Layout({ children }: { children: ReactNode }) {
       navSuggDebounce.current = setTimeout(async () => {
         try {
           const res = await fetch(`/api/products/search-suggestions?q=${encodeURIComponent(val)}`);
-          const data: string[] = await res.json();
-          setNavSuggestions(data);
-          setNavSuggestionsOpen(data.length > 0);
+          const raw = await res.json();
+const data = Array.isArray(raw) ? raw : [];
+setNavSuggestions(data);
+setNavSuggestionsOpen(data.length > 0);
+
         } catch { /* ignore */ }
       }, 280);
     } else {
@@ -433,22 +452,26 @@ export function Layout({ children }: { children: ReactNode }) {
                         </div>
                       </div>
 
-                      <Button
-                        className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
-                        onClick={handleCheckout}
-                        disabled={checkoutLoading || belowMinimum}
-                      >
-                        {checkoutLoading ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                        ) : (
-                          <><Lock className="w-4 h-4" /> Pay with Card — ${totalPrice.toFixed(2)}</>
-                        )}
-                      </Button>
-                      <div className="relative flex items-center gap-2">
-                        <div className="flex-1 border-t" />
-                        <span className="text-xs text-muted-foreground">or</span>
-                        <div className="flex-1 border-t" />
-                      </div>
+                      {!checkoutPayPalOnly && (
+                        <Button
+                          className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                          onClick={handleCheckout}
+                          disabled={checkoutLoading || belowMinimum}
+                        >
+                          {checkoutLoading ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
+                          ) : (
+                            <><Lock className="w-4 h-4" /> Pay with Card — ${totalPrice.toFixed(2)}</>
+                          )}
+                        </Button>
+                      )}
+                      {!checkoutPayPalOnly && (
+                        <div className="relative flex items-center gap-2">
+                          <div className="flex-1 border-t" />
+                          <span className="text-xs text-muted-foreground">or</span>
+                          <div className="flex-1 border-t" />
+                        </div>
+                      )}
                       <PayPalCheckoutButton
                         items={items}
                         totalPrice={totalPrice}
@@ -460,7 +483,10 @@ export function Layout({ children }: { children: ReactNode }) {
                         }}
                       />
                       <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-                        <Lock className="w-3 h-3" /> SSL encrypted · Visa · MC · Amex · PayPal
+                        <Lock className="w-3 h-3" />{" "}
+                        {checkoutPayPalOnly
+                          ? "Secure checkout with PayPal"
+                          : "SSL encrypted · Visa · MC · Amex · PayPal"}
                       </p>
                     </div>
                   )}
@@ -620,7 +646,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 text-accent">@</div>
-                  <a href="mailto:Info@allwindowdoorparts.com" className="hover:text-white transition-colors break-all">Info@allwindowdoorparts.com</a>
+                  <a href={SITE_CUSTOMER_MAILTO} className="hover:text-white transition-colors break-all">{SITE_CUSTOMER_EMAIL}</a>
                 </li>
               </ul>
               

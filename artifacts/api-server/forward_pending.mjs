@@ -2,7 +2,30 @@ import nodemailer from "nodemailer";
 import pg from "pg";
 
 const FROM_ADDRESS = "info@allwindowdoorparts.com";
-const PARTS_ID_RECIPIENTS = ["thepolak@wefixitusa.com", "alyshameade.1522@gmail.com"];
+
+function isValidSingleForwardEmail(value) {
+  const s = value.trim();
+  if (!s) return false;
+  if (/[,;\r\n\t?&#%]/.test(s)) return false;
+  return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(s);
+}
+
+/** Same as src/lib/notifyRecipients.ts — set CONTACT_FORWARD_EMAILS (comma-separated). */
+function getContactForwardEmails() {
+  const raw = process.env.CONTACT_FORWARD_EMAILS?.trim();
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter(isValidSingleForwardEmail);
+}
+
+const forwardTo = getContactForwardEmails();
+if (forwardTo.length === 0) {
+  console.error("Set CONTACT_FORWARD_EMAILS (comma-separated) before running this script.");
+  process.exit(1);
+}
 
 const transporter = nodemailer.createTransport({
   host: "mail.allwindowdoorparts.com",
@@ -77,7 +100,7 @@ for (const row of rows) {
   try {
     await transporter.sendMail({
       from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
-      to: PARTS_ID_RECIPIENTS,
+      to: forwardTo,
       replyTo: email,
       subject: `[FORWARDED] Parts ID Request [${ticket_id}] from ${name}`,
       html,

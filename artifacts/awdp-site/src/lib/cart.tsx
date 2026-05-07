@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { toast } from "@/hooks/use-toast";
 
@@ -71,9 +71,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(

@@ -132,8 +132,7 @@ export default function Categories() {
   });
 
   // Filter out categories with 0 visible products
-  const categories = (categoriesRaw ?? []).filter((c) => (c.productCount ?? 0) > 0);
-
+const categories = (Array.isArray(categoriesRaw) ? categoriesRaw : []).filter((c) => (c.productCount ?? 0) > 0);
   return (
     <div className="bg-slate-50 min-h-screen">
       <PageSeo

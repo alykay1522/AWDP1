@@ -8,7 +8,6 @@ autoInstallPeers: false
 
 catalog:
   '@replit/vite-plugin-cartographer': ^0.5.1
-  '@replit/vite-plugin-dev-banner': ^0.1.1
   '@replit/vite-plugin-runtime-error-modal': ^0.0.6
   '@tailwindcss/vite': ^4.1.14
   '@tanstack/react-query': ^5.90.21
@@ -39,6 +38,7 @@ onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
   - msw
+  - sharp
   - unrs-resolver
 
 overrides:
@@ -47,12 +47,12 @@ overrides:
   brace-expansion: '>=2.0.3'
   '@google-cloud/storage>fast-xml-parser': '>=5.7.0'
   '@google-cloud/storage>uuid': '>=14.0.0'
-  'gaxios>uuid': '>=14.0.0'
-  'teeny-request>uuid': '>=14.0.0'
-  'http-proxy-agent>@tootallnate/once': '>=3.0.1'
+  gaxios>uuid: '>=14.0.0'
+  teeny-request>uuid: '>=14.0.0'
+  http-proxy-agent>@tootallnate/once: '>=3.0.1'
   lodash: '>=4.18.0'
   path-to-regexp: '>=8.4.0'
-  picomatch@^2: '2.3.2'
+  picomatch@^2: 2.3.2
   picomatch@^4: '>=4.0.4'
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-arm64': '-'
@@ -75,32 +75,9 @@ overrides:
   '@tailwindcss/oxide>@tailwindcss/oxide-linux-x64-musl': '-'
   '@tailwindcss/oxide>@tailwindcss/oxide-win32-arm64-msvc': '-'
   '@tailwindcss/oxide>@tailwindcss/oxide-win32-x64-msvc': '-'
+  # Pin esbuild only; do not strip @esbuild/* platform packages — that breaks the
+  # native binary (host vs binary version mismatch) on local Windows/Linux installs.
   esbuild: 0.27.3
-  esbuild>@esbuild/aix-ppc64: '-'
-  esbuild>@esbuild/android-arm: '-'
-  esbuild>@esbuild/android-arm64: '-'
-  esbuild>@esbuild/android-x64: '-'
-  esbuild>@esbuild/darwin-arm64: '-'
-  esbuild>@esbuild/darwin-x64: '-'
-  esbuild>@esbuild/freebsd-arm64: '-'
-  esbuild>@esbuild/freebsd-x64: '-'
-  esbuild>@esbuild/linux-arm: '-'
-  esbuild>@esbuild/linux-arm64: '-'
-  esbuild>@esbuild/linux-ia32: '-'
-  esbuild>@esbuild/linux-loong64: '-'
-  esbuild>@esbuild/linux-mips64el: '-'
-  esbuild>@esbuild/linux-ppc64: '-'
-  esbuild>@esbuild/linux-riscv64: '-'
-  esbuild>@esbuild/linux-s390x: '-'
-  esbuild>@esbuild/netbsd-arm64: '-'
-  esbuild>@esbuild/netbsd-x64: '-'
-  esbuild>@esbuild/openbsd-arm64: '-'
-  esbuild>@esbuild/openbsd-x64: '-'
-  esbuild>@esbuild/openharmony-arm64: '-'
-  esbuild>@esbuild/sunos-x64: '-'
-  esbuild>@esbuild/win32-arm64: '-'
-  esbuild>@esbuild/win32-ia32: '-'
-  esbuild>@esbuild/win32-x64: '-'
   lightningcss>lightningcss-android-arm64: '-'
   lightningcss>lightningcss-darwin-arm64: '-'
   lightningcss>lightningcss-darwin-x64: '-'
@@ -110,7 +87,6 @@ overrides:
   lightningcss>lightningcss-linux-arm64-musl: '-'
   lightningcss>lightningcss-linux-x64-musl: '-'
   lightningcss>lightningcss-win32-arm64-msvc: '-'
-  lightningcss>lightningcss-win32-x64-msvc: '-'
   rollup>@rollup/rollup-android-arm-eabi: '-'
   rollup>@rollup/rollup-android-arm64: '-'
   rollup>@rollup/rollup-darwin-arm64: '-'
@@ -134,4 +110,3 @@ overrides:
   rollup>@rollup/rollup-win32-arm64-msvc: '-'
   rollup>@rollup/rollup-win32-ia32-msvc: '-'
   rollup>@rollup/rollup-win32-x64-gnu: '-'
-  rollup>@rollup/rollup-win32-x64-msvc: '-'

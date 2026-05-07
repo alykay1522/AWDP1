@@ -212,9 +212,10 @@ export default function Shop() {
       suggDebounce.current = setTimeout(async () => {
         try {
           const res = await fetch(`/api/products/search-suggestions?q=${encodeURIComponent(val)}`);
-          const data: string[] = await res.json();
-          setSuggestions(data);
-          setSuggestionsOpen(data.length > 0);
+          const raw = await res.json();
+const data = Array.isArray(raw) ? raw : [];
+setSuggestions(data);
+setSuggestionsOpen(data.length > 0);
         } catch { /* ignore */ }
       }, 280);
     } else {
@@ -606,16 +607,14 @@ export default function Shop() {
               <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
-          ) : productsData?.products.length ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
-                {productsData.products.map((product) => (
+          ) : Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
+  productsData.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {/* Pagination */}
-              {productsData.totalPages > 1 && (
+              {(productsData?.totalPages ?? 0) > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-12">
                   <Button
                     variant="outline"

@@ -454,11 +454,22 @@ router.post("/admin/products/bulk-rename", async (req, res) => {
 
 // POST /api/admin/products/import — upsert products from CSV rows (parsed client-side)
 // Accepts both AWDP-format SKUs (update) and raw supplier part numbers (insert as new).
+// The admin UI sends multiple chunked requests for very large files (see MAX_PRODUCT_IMPORT_ROWS).
 router.post("/admin/products/import", async (req, res) => {
   try {
     const { rows } = req.body as { rows: Record<string, string>[] };
     if (!Array.isArray(rows) || rows.length === 0) {
       return res.status(400).json({ error: "No rows provided" });
+    }
+
+    const maxRows = Math.min(
+      100_000,
+      Math.max(1, Number.parseInt(process.env.MAX_PRODUCT_IMPORT_ROWS ?? "10000", 10) || 10_000),
+    );
+    if (rows.length > maxRows) {
+      return res.status(413).json({
+        error: `This request has ${rows.length} rows; maximum per request is ${maxRows}. Use smaller batches or raise MAX_PRODUCT_IMPORT_ROWS.`,
+      });
     }
 
     let inserted = 0, updated = 0, errored = 0, skipped = 0, needsPricing = 0;
