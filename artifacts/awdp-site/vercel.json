@@ -1,21 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node",
-      "config": { "zeroConfig": true }
-    }
-  ],
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist/public",
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "build": {
-    "env": {},
-    "command": "pnpm build",
-    "outputDirectory": "dist/public"
-  }
+  ]
 }
