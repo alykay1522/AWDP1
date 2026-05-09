@@ -140,7 +140,7 @@ function AppContent() {
       </Switch>
     </Layout>
   );
-
+}
 
 function App() {
   return (
