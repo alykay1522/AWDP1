@@ -16,7 +16,6 @@ export default function CheckoutSuccess() {
   useEffect(() => {
     clearCart();
   }, [clearCart]);
-  }, []);
 
   useEffect(() => {
     // Stripe success URL includes session_id; PayPal returns without it — call fulfill whenever
