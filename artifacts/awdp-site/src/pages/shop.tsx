@@ -150,8 +150,37 @@ function useFilteredProducts(params: {
       if (params.maxPrice)   q.set("maxPrice",    String(params.maxPrice));
       if (params.inStockOnly) q.set("inStockOnly", "true");
       const res = await fetch(`/api/products?${q}`);
-      if (!res.ok) throw new Error("Failed to load products");
-      return res.json();
+      const text = await res.text();
+      if (!res.ok) {
+        try {
+          const body = text ? JSON.parse(text) : {};
+          const msg =
+            typeof (body as { error?: string }).error === "string"
+              ? (body as { error: string }).error
+              : `HTTP ${res.status}`;
+          throw new Error(`Failed to load products: ${msg}`);
+        } catch (e) {
+          if (e instanceof Error && e.message.startsWith("Failed to load products:")) throw e;
+          throw new Error(
+            res.status === 404
+              ? "Failed to load products: HTTP 404 — /api/products not found. On Vercel, deploy with Root Directory at the monorepo root or artifacts/awdp-site so /api routes exist, or set VITE_API_BASE_URL to your API origin at build time."
+              : `Failed to load products: HTTP ${res.status}`,
+          );
+        }
+      }
+      const trimmed = text.trimStart();
+      if (trimmed.startsWith("<") || (trimmed.length > 0 && !trimmed.startsWith("{"))) {
+        throw new Error(
+          "Failed to load products: response was not JSON (often the app HTML shell). Set VITE_API_BASE_URL to your hosted API origin at build time, or ensure Vercel includes serverless routes under /api.",
+        );
+      }
+      let data: ProductsResponse;
+      try {
+        data = JSON.parse(text || "{}") as ProductsResponse;
+      } catch {
+        throw new Error("Failed to load products: invalid JSON from /api/products.");
+      }
+      return data;
     },
     placeholderData: (prev) => prev,
     retry: 3,
