@@ -2,10 +2,15 @@
   "version": 2,
   "buildCommand": "pnpm build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/index.html"
+
     }
   ]
 }
