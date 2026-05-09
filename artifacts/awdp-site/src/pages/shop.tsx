@@ -610,9 +610,9 @@ setSuggestionsOpen(data.length > 0);
           ) : Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
-                {productsData.products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+                {productsData.products.map((product) => {
+                  return <ProductCard key={product.id} product={product} />;
+                })}
               </div>
 
               {/* Pagination */}
