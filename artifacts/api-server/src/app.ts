@@ -134,12 +134,18 @@ app.use(
     secret: process.env.SESSION_SECRET || "change-me-in-production",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: "lax",
-    },
+    cookie: (() => {
+      const sameSite = process.env.SESSION_COOKIE_SAME_SITE === "none" ? "none" : "lax";
+      const secure = sameSite === "none" ? true : process.env.NODE_ENV === "production";
+      return {
+        httpOnly: true,
+        secure,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        // Lax: same-site subdomains. SESSION_COOKIE_SAME_SITE=none when the storefront uses VITE_API_BASE_URL
+        // to a host that is not same-site with the API (cross-site fetch + credentials).
+        sameSite,
+      };
+    })(),
   })
 );
 
