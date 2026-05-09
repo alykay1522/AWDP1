@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@9.15.9",
+  "dependencies": {
+    "nodemailer": "^8.0.5",
+    "pg": "^8.13.0"
+  },
   "scripts": {
     "dev": "pnpm --filter awdp-site run dev",
     "build": "pnpm --filter awdp-site run build",

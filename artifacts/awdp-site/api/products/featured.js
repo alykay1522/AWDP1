@@ -28,12 +28,14 @@ export default async function handler(req, res) {
 
   try {
     const result = await db.query(
-      `SELECT id, sku, name, price, category, "inStock", "imageUrl",
-              "originalPrice", description, supplier, subcategory,
-              "compatibleBrands", specifications
+      `SELECT id, sku, name, price, category, in_stock AS "inStock", image_url AS "imageUrl",
+              original_price AS "originalPrice", description, supplier, subcategory,
+              compatible_brands AS "compatibleBrands", specifications
        FROM products
-       WHERE "inStock" = true
-       ORDER BY "createdAt" DESC
+       WHERE in_stock = true
+         AND image_url IS NOT NULL AND image_url != ''
+         AND CAST(price AS NUMERIC) >= 50
+       ORDER BY RANDOM()
        LIMIT 8`
     );
 
