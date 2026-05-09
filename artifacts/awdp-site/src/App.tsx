@@ -135,12 +135,11 @@ function AppContent() {
         <Route path="/guides/door-lock" component={GuideDoorLock} />
         <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
         <Route path="/resources" component={Resources} />
-        <Route path="/identify-balance" component={BalanceWizard} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
-  );
-}
+ <Route path="/identify-balance" element={<BalanceWizard />} /> );
+
 
 function App() {
   return (
