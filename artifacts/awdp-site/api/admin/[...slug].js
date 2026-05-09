@@ -3,8 +3,10 @@
  * The old api/admin/login.js only checked ADMIN_PASSWORD and never set express-session cookies,
  * so auth-check and the rest of admin could never work on same-origin Vercel + separate API.
  *
- * Vercel env (server): API_SERVER_ORIGIN = https://your-express-host (no trailing slash)
- * Alternative: set VITE_API_BASE_URL at build so the browser hits Express directly (no proxy).
+ * Server env (first non-empty wins):
+ *   API_SERVER_ORIGIN, EXPRESS_API_ORIGIN, or VITE_API_BASE_URL
+ * (same value as the Express origin, no trailing slash). Vercel often sets only VITE_* for
+ * the build — add the same URL under Production env so serverless can read it for this proxy.
  * If storefront and API are on different sites, set SESSION_COOKIE_SAME_SITE=none on the API.
  */
 import { Readable } from "node:stream";
@@ -27,12 +29,20 @@ async function readBodyBuffer(req) {
   return Buffer.concat(chunks);
 }
 
+function resolveExpressOrigin() {
+  for (const key of ["API_SERVER_ORIGIN", "EXPRESS_API_ORIGIN", "VITE_API_BASE_URL"]) {
+    const v = process.env[key]?.trim()?.replace(/\/+$/, "");
+    if (v) return v;
+  }
+  return "";
+}
+
 export default async function handler(req, res) {
-  const base = process.env.API_SERVER_ORIGIN?.trim()?.replace(/\/+$/, "");
+  const base = resolveExpressOrigin();
   if (!base) {
     return res.status(503).json({
       error:
-        "Admin API not configured: set API_SERVER_ORIGIN on Vercel to your Express API origin, or build with VITE_API_BASE_URL so /api calls go to Express.",
+        "Admin API not configured: set API_SERVER_ORIGIN (or EXPRESS_API_ORIGIN, or VITE_API_BASE_URL) on Vercel to your Express API origin (no trailing slash). Ensure the variable is available to Serverless Functions, not only the build. Alternatively build with VITE_API_BASE_URL so the browser calls Express directly.",
     });
   }
 
