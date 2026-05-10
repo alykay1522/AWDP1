@@ -296,8 +296,8 @@ function inferResponseType(response: Response): "json" | "text" | "blob" {
 
   if (isJsonMediaType(mediaType)) return "json";
   if (mediaType == null) return "json";
-if (isTextMediaType(mediaType)) return "text";
-
+  if (isTextMediaType(mediaType)) return "text";
+  return "blob";
 }
 
 async function parseSuccessBody(
