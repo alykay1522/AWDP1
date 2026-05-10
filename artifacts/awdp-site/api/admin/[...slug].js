@@ -103,7 +103,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Invalid proxy path" });
   }
 
-  const target = `${originUrl.origin}${pathWithQuery}`;
   const headers = new Headers();
 
   for (const [key, val] of Object.entries(req.headers)) {
@@ -165,7 +164,7 @@ export default async function handler(req, res) {
       const safe = detail.length > 280 ? `${detail.slice(0, 280)}…` : detail;
       let detailOut = safe;
       if (isDns) {
-        detailOut = `${safe} ${dnsFailureHint(candUrl.host, i === 0 ? envKey : "API_SERVER_ORIGIN_FALLBACK")}`;
+        detailOut = `${safe} ${dnsFailureHint(candUrl.host, envKey, i > 0)}`;
       }
       return res.status(502).json({
         error: "Upstream API unreachable",
