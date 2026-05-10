@@ -117,7 +117,23 @@ app.use(
     },
   }),
 );
-app.use(cors({ credentials: true }));
+// credentials + wildcard Origin (*) is invalid in browsers → cross-site admin login shows "Failed to fetch".
+// origin: true reflects req.headers.origin so Access-Control-Allow-Origin matches the storefront (Vercel, etc.).
+const corsOrigins = process.env.CORS_ORIGINS?.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+app.use(
+  cors({
+    credentials: true,
+    ...(corsOrigins?.length
+      ? {
+          origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            if (corsOrigins.includes(origin)) return callback(null, true);
+            callback(new Error(`Not allowed by CORS: ${origin}`));
+          },
+        }
+      : { origin: true }),
+  }),
+);
 // Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
 const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT ?? "32mb";
 app.use(express.json({ limit: jsonBodyLimit }));

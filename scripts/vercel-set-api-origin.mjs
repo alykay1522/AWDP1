@@ -13,20 +13,47 @@
  *   VITE_API_BASE_URL — Vite build + functions fallback
  * for: production, preview
  */
+import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const origin = process.argv[2]?.trim().replace(/\/+$/, "");
-if (!origin || !/^https?:\/\//i.test(origin)) {
+const args = process.argv.slice(2).filter((a) => a !== "--");
+const origin = args.find((a) => /^https?:\/\//i.test(a))?.trim().replace(/\/+$/, "");
+if (!origin) {
   console.error("Usage: node scripts/vercel-set-api-origin.mjs https://your-express-host.com");
+  console.error('  (pnpm may insert "--"; that is OK)');
   process.exit(1);
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+if (!existsSync(join(root, ".vercel", "project.json"))) {
+  console.error(
+    [
+      "This folder is not linked to a Vercel project (.vercel/project.json missing).",
+      "",
+      "From the repo root, run once:",
+      "  npx vercel login",
+      "  npx vercel link",
+      "",
+      "Pick your AWDP team/account and the existing project when prompted.",
+      "Then run this script again.",
+      "",
+      "Or set variables in Vercel Dashboard → Project → Settings → Environment Variables:",
+      "  API_SERVER_ORIGIN = " + origin,
+      "  VITE_API_BASE_URL = " + origin,
+      "",
+      "Apply to Production and Preview, then Redeploy.",
+    ].join("\n"),
+  );
+  process.exit(1);
+}
+
+const npxBin = process.platform === "win32" ? "npx.cmd" : "npx";
+
 function runVercelEnvAdd(name, env) {
-  const args = [
+  const cliArgs = [
     "vercel",
     "env",
     "add",
@@ -38,10 +65,11 @@ function runVercelEnvAdd(name, env) {
     "--force",
     "--no-sensitive",
   ];
-  const r = spawnSync("npx", args, {
+  const r = spawnSync(npxBin, cliArgs, {
     cwd: root,
     stdio: "inherit",
-    shell: true,
+    shell: false,
+    env: process.env,
   });
   return r.status ?? 1;
 }

@@ -16,12 +16,21 @@ export default function AdminLogin() {
 
   const login = useMutation({
     mutationFn: async (pw: string) => {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ password: pw }),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ password: pw }),
+        });
+      } catch (e) {
+        const msg =
+          e instanceof TypeError
+            ? "Cannot reach the API (often CORS). Redeploy the API server with the latest code. If the shop and API use different domains, set SESSION_COOKIE_SAME_SITE=none on the API."
+            : String(e);
+        throw new Error(msg);
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Login failed");
