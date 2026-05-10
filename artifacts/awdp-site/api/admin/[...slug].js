@@ -37,6 +37,15 @@ function resolveExpressOrigin() {
   return "";
 }
 
+/** @param {unknown} e */
+function fetchErrorMessage(e) {
+  if (e instanceof Error && e.cause instanceof Error && e.cause.message) {
+    return e.cause.message;
+  }
+  if (e instanceof Error && e.message) return e.message;
+  return String(e);
+}
+
 export default async function handler(req, res) {
   const base = resolveExpressOrigin();
   if (!base) {
@@ -46,12 +55,28 @@ export default async function handler(req, res) {
     });
   }
 
+  let originUrl;
+  try {
+    originUrl = new URL(base);
+  } catch {
+    return res.status(503).json({
+      error:
+        "API_SERVER_ORIGIN is not a valid URL. Use the full origin, e.g. https://your-api.example.com (no trailing slash, no /api path).",
+    });
+  }
+  if (originUrl.pathname !== "/" && originUrl.pathname !== "") {
+    return res.status(503).json({
+      error:
+        "API_SERVER_ORIGIN must be origin only (e.g. https://api.example.com), not a URL with a path. Put /api routes in the request path, not in this variable.",
+    });
+  }
+
   const pathWithQuery = req.url || "/";
   if (!pathWithQuery.startsWith("/api/admin")) {
     return res.status(500).json({ error: "Invalid proxy path" });
   }
 
-  const target = `${base}${pathWithQuery}`;
+  const target = `${originUrl.origin}${pathWithQuery}`;
   const headers = new Headers();
 
   for (const [key, val] of Object.entries(req.headers)) {
@@ -62,7 +87,7 @@ export default async function handler(req, res) {
     else for (const v of val) headers.append(key, v);
   }
 
-  headers.set("host", new URL(base).host);
+  headers.set("host", originUrl.host);
 
   const xfProto = req.headers["x-forwarded-proto"];
   const xfHost = req.headers["x-forwarded-host"] ?? req.headers.host;
@@ -83,8 +108,18 @@ export default async function handler(req, res) {
       redirect: "manual",
     });
   } catch (e) {
-    console.error("[admin proxy] fetch error:", e);
-    return res.status(502).json({ error: "Upstream API unreachable" });
+    const detail = fetchErrorMessage(e);
+    console.error("[admin proxy] fetch error:", {
+      host: originUrl.host,
+      detail,
+      err: e,
+    });
+    const safe =
+      detail.length > 280 ? `${detail.slice(0, 280)}…` : detail;
+    return res.status(502).json({
+      error: "Upstream API unreachable",
+      detail: safe,
+    });
   }
 
   for (const c of upstream.headers.getSetCookie?.() ?? []) {

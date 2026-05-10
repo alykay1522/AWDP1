@@ -32,8 +32,12 @@ export default function AdminLogin() {
         throw new Error(msg);
       }
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Login failed");
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          detail?: string;
+        };
+        const parts = [data.error, data.detail].filter(Boolean);
+        throw new Error(parts.length ? parts.join(" — ") : "Login failed");
       }
       return res.json();
     },
