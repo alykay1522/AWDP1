@@ -3,11 +3,15 @@
  * The old api/admin/login.js only checked ADMIN_PASSWORD and never set express-session cookies,
  * so auth-check and the rest of admin could never work on same-origin Vercel + separate API.
  *
- * Server env (first non-empty wins):
+ * Server env (first non-empty wins for the primary upstream):
  *   API_SERVER_ORIGIN, EXPRESS_API_ORIGIN, or VITE_API_BASE_URL
  * (same value as the Express origin, no trailing slash). Vercel often sets only VITE_* for
  * the build — add the same URL under Production env so serverless can read it for this proxy.
  * If storefront and API are on different sites, set SESSION_COOKIE_SAME_SITE=none on the API.
+ *
+ * Optional: API_SERVER_ORIGIN_FALLBACK — second origin (no trailing slash). If the primary
+ * host fails DNS (ENOTFOUND), the proxy retries once against this origin so you can point
+ * production at a working URL (e.g. Railway) while fixing or removing a bad api.* subdomain.
  */
 import { Readable } from "node:stream";
 
@@ -32,9 +36,14 @@ async function readBodyBuffer(req) {
 function resolveExpressOrigin() {
   for (const key of ["API_SERVER_ORIGIN", "EXPRESS_API_ORIGIN", "VITE_API_BASE_URL"]) {
     const v = process.env[key]?.trim()?.replace(/\/+$/, "");
-    if (v) return v;
+    if (v) return { origin: v, envKey: key };
   }
-  return "";
+  return { origin: "", envKey: "" };
+}
+
+function resolveFallbackOrigin() {
+  const v = process.env.API_SERVER_ORIGIN_FALLBACK?.trim()?.replace(/\/+$/, "");
+  return v || "";
 }
 
 /** @param {unknown} e */
@@ -46,8 +55,22 @@ function fetchErrorMessage(e) {
   return String(e);
 }
 
+function dnsFailureHint(host, envKey, isFallbackCandidate) {
+  if (isFallbackCandidate) {
+    return (
+      `DNS could not resolve ${host}. Set API_SERVER_ORIGIN_FALLBACK to a hostname that exists in public DNS ` +
+      `(your Express HTTPS origin), or fix the primary API_SERVER_ORIGIN / VITE_API_BASE_URL.`
+    );
+  }
+  return (
+    `DNS could not resolve ${host}. Either add a public DNS record for that hostname (e.g. CNAME to your API host), ` +
+    `or change ${envKey} (and VITE_API_BASE_URL if used for builds) on Vercel to the real HTTPS origin where Express runs ` +
+    `(for example your platform URL). Optional: set API_SERVER_ORIGIN_FALLBACK to a working origin for an automatic retry.`
+  );
+}
+
 export default async function handler(req, res) {
-  const base = resolveExpressOrigin();
+  const { origin: base, envKey } = resolveExpressOrigin();
   if (!base) {
     return res.status(503).json({
       error:
@@ -55,9 +78,13 @@ export default async function handler(req, res) {
     });
   }
 
+  const fallbackBase = resolveFallbackOrigin();
+  const originCandidates = [base];
+  if (fallbackBase && fallbackBase !== base) originCandidates.push(fallbackBase);
+
   let originUrl;
   try {
-    originUrl = new URL(base);
+    originUrl = new URL(originCandidates[0]);
   } catch {
     return res.status(503).json({
       error:
@@ -76,7 +103,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Invalid proxy path" });
   }
 
-  const target = `${originUrl.origin}${pathWithQuery}`;
   const headers = new Headers();
 
   for (const [key, val] of Object.entries(req.headers)) {
@@ -100,25 +126,58 @@ export default async function handler(req, res) {
   }
 
   let upstream;
-  try {
-    upstream = await fetch(target, {
-      method: req.method,
-      headers,
-      body: body && body.length ? body : undefined,
-      redirect: "manual",
-    });
-  } catch (e) {
-    const detail = fetchErrorMessage(e);
-    console.error("[admin proxy] fetch error:", {
-      host: originUrl.host,
-      detail,
-      err: e,
-    });
-    const safe =
-      detail.length > 280 ? `${detail.slice(0, 280)}…` : detail;
+  let lastErr;
+  for (let i = 0; i < originCandidates.length; i++) {
+    const cand = originCandidates[i];
+    let candUrl;
+    try {
+      candUrl = new URL(cand);
+    } catch {
+      continue;
+    }
+    if (candUrl.pathname !== "/" && candUrl.pathname !== "") continue;
+
+    const targetUrl = `${candUrl.origin}${pathWithQuery}`;
+    const h = new Headers(headers);
+    h.set("host", candUrl.host);
+
+    try {
+      upstream = await fetch(targetUrl, {
+        method: req.method,
+        headers: h,
+        body: body && body.length ? body : undefined,
+        redirect: "manual",
+      });
+      lastErr = undefined;
+      break;
+    } catch (e) {
+      lastErr = e;
+      const detail = fetchErrorMessage(e);
+      const isDns = /ENOTFOUND|getaddrinfo/i.test(detail);
+      console.error("[admin proxy] fetch error:", {
+        host: candUrl.host,
+        candidateIndex: i,
+        detail,
+        err: e,
+      });
+      if (isDns && i + 1 < originCandidates.length) continue;
+      const safe = detail.length > 280 ? `${detail.slice(0, 280)}…` : detail;
+      let detailOut = safe;
+      if (isDns) {
+        detailOut = `${safe} ${dnsFailureHint(candUrl.host, envKey, i > 0)}`;
+      }
+      return res.status(502).json({
+        error: "Upstream API unreachable",
+        detail: detailOut,
+      });
+    }
+  }
+
+  if (!upstream) {
+    const detail = lastErr ? fetchErrorMessage(lastErr) : "No valid upstream origin";
     return res.status(502).json({
       error: "Upstream API unreachable",
-      detail: safe,
+      detail,
     });
   }
 
