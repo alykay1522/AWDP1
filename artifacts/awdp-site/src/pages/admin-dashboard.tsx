@@ -5,6 +5,7 @@ import {
   Package, ShoppingBag, DollarSign, Clock, Wrench, MessageSquare,
   TrendingUp, PlusCircle, Settings, FolderTree, ChevronRight,
   ImageIcon, Tag, Loader2, CheckCircle2, AlertCircle, Upload,
+  PenLine, FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
@@ -151,10 +152,13 @@ export default function AdminDashboard() {
   const quickActions = [
     { label: "Add New Product", icon: <PlusCircle className="w-4 h-4" />, href: "/admin/products/new", color: "bg-primary text-white hover:bg-primary/90" },
     { label: "Manage Products", icon: <Package className="w-4 h-4" />, href: "/admin/products", color: "bg-white border hover:bg-slate-50" },
+    { label: "Catalog CSV", icon: <Upload className="w-4 h-4" />, href: "/admin/products#catalog-csv", color: "bg-amber-600 text-white hover:bg-amber-700" },
     { label: "View Orders", icon: <ShoppingBag className="w-4 h-4" />, href: "/admin/orders", color: "bg-white border hover:bg-slate-50" },
     { label: "Manage Categories", icon: <FolderTree className="w-4 h-4" />, href: "/admin/categories", color: "bg-white border hover:bg-slate-50" },
+    { label: "Site Content", icon: <PenLine className="w-4 h-4" />, href: "/admin/content", color: "bg-white border hover:bg-slate-50" },
+    { label: "PDF Resources", icon: <FileText className="w-4 h-4" />, href: "/admin/resources", color: "bg-white border hover:bg-slate-50" },
     { label: "Site Settings", icon: <Settings className="w-4 h-4" />, href: "/admin/settings", color: "bg-white border hover:bg-slate-50" },
-    { label: "CSV Import", icon: <Upload className="w-4 h-4" />, href: "/admin/csv-import", color: "bg-teal-600 text-white hover:bg-teal-700" },
+    { label: "Description CSV", icon: <Upload className="w-4 h-4" />, href: "/admin/csv-import", color: "bg-teal-600 text-white hover:bg-teal-700" },
   ];
 
   return (

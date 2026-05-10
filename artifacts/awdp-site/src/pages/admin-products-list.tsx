@@ -93,6 +93,17 @@ export default function AdminProductsList() {
   // Reset to page 1 whenever filters change
   useEffect(() => { setPage(1); }, [debouncedSearch, catFilter, stockFilter]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const scrollIfHash = () => {
+      if (window.location.hash !== "#catalog-csv") return;
+      document.getElementById("catalog-csv")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    scrollIfHash();
+    window.addEventListener("hashchange", scrollIfHash);
+    return () => window.removeEventListener("hashchange", scrollIfHash);
+  }, []);
+
   // ── Fetch products (server-side) ──────────────────────────────────────────
   const params = new URLSearchParams({
     page:  String(page),
@@ -358,6 +369,27 @@ export default function AdminProductsList() {
       </div>
 
       <div className="p-4 md:p-6 space-y-4">
+
+        <section
+          id="catalog-csv"
+          className="rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-orange-50/80 p-5 shadow-sm text-sm text-amber-950"
+        >
+          <h2 className="text-base font-semibold text-amber-950 mb-1.5 flex items-center gap-2">
+            <Upload className="w-4 h-4 text-amber-700" aria-hidden />
+            Catalog CSV (full product rows)
+          </h2>
+          <p className="text-amber-900/90 leading-relaxed mb-2">
+            Use <strong>Export All CSV</strong> and <strong>Import CSV</strong> in the bar above for catalog upserts (SKU, price, stock, titles, etc.).
+            Large files import in batches of {PRODUCT_IMPORT_CHUNK} rows per request, matching the admin export column layout.
+          </p>
+          <p className="text-amber-900/85 leading-relaxed">
+            For a separate flow that matches scraped titles to existing SKUs and updates <em>descriptions only</em>, use{" "}
+            <Link href="/admin/csv-import" className="font-medium text-amber-950 underline underline-offset-2 hover:text-amber-800">
+              Description CSV import
+            </Link>
+            .
+          </p>
+        </section>
 
         {/* Filters */}
         <div className="bg-white rounded-xl border shadow-sm p-4 flex flex-col md:flex-row gap-3">

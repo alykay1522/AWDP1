@@ -1,18 +1,22 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
-  ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
-  FileText, PenLine, RefreshCcw,
+  ChevronRight, ExternalLink, LogOut,
+  RefreshCcw, Globe,
 } from "lucide-react";
 import { useAdminLogout } from "@/lib/useAdminAuth";
+
+const WEBSITE_SECTION_PATHS = ["/admin/content", "/admin/settings", "/admin/resources", "/admin/csv-import"] as const;
 
 interface NavItem {
   href: string;
   label: string;
   icon: ReactNode;
   exact?: boolean;
+  /** When set, overrides default path-prefix active detection (e.g. grouped Website routes). */
+  activeMatch?: (path: string) => boolean;
   children?: { href: string; label: string }[];
 }
 
@@ -24,6 +28,7 @@ const NAV: NavItem[] = [
     icon: <Package className="w-4 h-4" />,
     children: [
       { href: "/admin/products", label: "All Products" },
+      { href: "/admin/products#catalog-csv", label: "Catalog CSV" },
       { href: "/admin/products/new", label: "Add New" },
       { href: "/admin/products/bulk-editor", label: "Bulk Editor" },
     ],
@@ -35,18 +40,54 @@ const NAV: NavItem[] = [
   { href: "/admin/images", label: "Product Images", icon: <ImageIcon className="w-4 h-4" /> },
   { href: "/admin/prices", label: "Price Monitor", icon: <DollarSign className="w-4 h-4" /> },
   { href: "/admin/price-sync", label: "Price Sync", icon: <RefreshCcw className="w-4 h-4" /> },
-  { href: "/admin/content", label: "Site Content", icon: <PenLine className="w-4 h-4" /> },
-  { href: "/admin/resources", label: "PDF Resources", icon: <FileText className="w-4 h-4" /> },
-  { href: "/admin/settings", label: "Site Settings", icon: <Settings className="w-4 h-4" /> },
+  {
+    href: "/admin/content",
+    label: "Website",
+    icon: <Globe className="w-4 h-4" />,
+    activeMatch: (path) => WEBSITE_SECTION_PATHS.some((p) => path === p || path.startsWith(`${p}/`)),
+    children: [
+      { href: "/admin/content", label: "Hero & page copy" },
+      { href: "/admin/settings", label: "Business & SEO" },
+      { href: "/admin/resources", label: "PDF resources" },
+      { href: "/admin/csv-import", label: "Description CSV" },
+    ],
+  },
 ];
 
 function isActive(path: string, href: string, exact?: boolean) {
   if (exact) return path === href;
-  return path.startsWith(href);
+  const base = href.split("#")[0];
+  return path.startsWith(base);
+}
+
+function itemActive(path: string, item: NavItem): boolean {
+  if (item.activeMatch) return item.activeMatch(path);
+  return isActive(path, item.href, item.exact);
+}
+
+function childActive(path: string, href: string, currentHash: string) {
+  const [base, hashFrag] = href.split("#");
+  if (path !== base) return false;
+  const want = hashFrag ? `#${hashFrag}` : "";
+  const h = currentHash || "";
+  if (!want) return !h;
+  return h === want;
+}
+
+function useHashSync(pathname: string) {
+  const [hash, setHash] = useState(() => (typeof window !== "undefined" ? window.location.hash : ""));
+  useEffect(() => {
+    setHash(typeof window !== "undefined" ? window.location.hash : "");
+    const onHash = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [pathname]);
+  return hash;
 }
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const urlHash = useHashSync(location);
   const logout = useAdminLogout();
 
   return (
@@ -60,9 +101,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 py-4 px-2 space-y-0.5">
           {NAV.map((item) => {
-            const active = isActive(location, item.href, item.exact);
+            const active = itemActive(location, item);
             return (
-              <div key={item.href}>
+              <div key={item.href + item.label}>
                 <Link
                   href={item.href}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -78,10 +119,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                   <div className="ml-7 mt-0.5 space-y-0.5">
                     {item.children.map((child) => (
                       <Link
-                        key={child.href}
+                        key={child.href + child.label}
                         href={child.href}
                         className={`flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors ${
-                          location === child.href
+                          childActive(location, child.href, urlHash)
                             ? "text-white font-semibold"
                             : "text-slate-400 hover:text-white"
                         }`}

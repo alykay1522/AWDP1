@@ -11,7 +11,11 @@
     "dev": "pnpm --filter awdp-site run dev",
     "build": "pnpm --filter awdp-site run build",
     "preview": "pnpm --filter awdp-site run serve",
-    "vercel:set-api": "node scripts/vercel-set-api-origin.mjs"
+    "vercel:set-api": "node scripts/vercel-set-api-origin.mjs",
+    "typecheck:libs": "tsc --build --emitDeclarationOnly"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=18"

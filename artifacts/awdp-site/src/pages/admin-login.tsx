@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Redirect } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAdminAuth } from "@/lib/useAdminAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,18 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-400 text-sm">Loading…</div>
+      </div>
+    );
+  }
+  if (isAuthenticated) {
+    return <Redirect to="/admin" />;
+  }
 
   const login = useMutation({
     mutationFn: async (pw: string) => {
