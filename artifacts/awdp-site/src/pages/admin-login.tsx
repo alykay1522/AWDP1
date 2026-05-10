@@ -71,13 +71,28 @@ export default function AdminLogin() {
             <CardDescription>Enter your admin password to continue.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
+              {/* Chromium: password-only forms should expose a username field for a11y / password managers */}
+              <label htmlFor="admin-login-username" className="sr-only">
+                Username
+              </label>
+              <Input
+                id="admin-login-username"
+                name="username"
+                type="text"
+                defaultValue="admin"
+                autoComplete="username"
+                readOnly
+                tabIndex={-1}
+                aria-hidden="true"
+                className="sr-only"
+              />
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                                      name="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
