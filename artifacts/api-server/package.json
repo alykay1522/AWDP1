@@ -8,6 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "bulk-product-import": "node ./scripts/bulk-product-import.mjs",
+    "prepare-admin-sessions": "node ./scripts/prepare-admin-sessions.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

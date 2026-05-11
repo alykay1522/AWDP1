@@ -91,6 +91,8 @@ Production admin login: `https://allwindowdoorparts.com/admin/login`.
 
 The backend is deployed as Vercel serverless functions through the catch-all API route. Set at least: `DATABASE_URL` (a real hosted Postgres URL, never `localhost` / `127.0.0.1` in production), `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, and `CHECKOUT_PAYPAL_ONLY=true`. The storefront should use same-origin `/api`; do not point `API_SERVER_ORIGIN`, `EXPRESS_API_ORIGIN`, or `VITE_API_BASE_URL` back to the same Vercel site for admin routes.
 
+Before deploying the serverless backend against a new hosted Postgres database, run `DATABASE_URL="..." NODE_ENV=production pnpm --filter @workspace/api-server run prepare-admin-sessions`. This creates `admin_sessions` and `idx_session_expire` through controlled tooling; the expire index is created with `CREATE INDEX CONCURRENTLY` rather than blocking Vercel cold starts with inline DDL.
+
 If production still shows any of these responses, it is running the pre-serverless API shims or stale Vercel env:
 
 - `GET /api/login` -> `{"error":"Method not allowed"}` means the legacy `api/login` shim is still deployed. `/api/login` is obsolete; use `POST /api/admin/login`.

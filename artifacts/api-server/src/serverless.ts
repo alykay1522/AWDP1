@@ -7,17 +7,16 @@ let readyPromise: Promise<void> | undefined;
 
 function ensureReady(): Promise<void> {
   if (!readyPromise) {
-    readyPromise = pool.query(`
-      CREATE TABLE IF NOT EXISTS admin_sessions (
-        "sid" varchar NOT NULL COLLATE "default",
-        "sess" json NOT NULL,
-        "expire" timestamp(6) NOT NULL,
-        CONSTRAINT session_pkey PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE
-      );
-      CREATE INDEX IF NOT EXISTS idx_session_expire ON admin_sessions (expire);
+    readyPromise = pool.query<{ exists: boolean }>(`
+      SELECT to_regclass('public.admin_sessions') IS NOT NULL AS "exists"
     `)
-      .then(() => {
-        logger.info("serverless admin_sessions table ready");
+      .then((result) => {
+        if (result.rows[0]?.exists !== true) {
+          throw new Error(
+            "admin_sessions table is missing. Run `pnpm --filter @workspace/api-server run prepare-admin-sessions` before deploying.",
+          );
+        }
+        logger.info("serverless admin_sessions table verified");
       })
       .catch((err) => {
         readyPromise = undefined;
