@@ -22,6 +22,7 @@ function ensureReady(): Promise<void> {
       .catch((err) => {
         readyPromise = undefined;
         logger.warn({ err }, "serverless database startup failed");
+        throw err;
       });
   }
 
