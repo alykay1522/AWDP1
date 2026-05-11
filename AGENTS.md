@@ -103,6 +103,19 @@ Set at least: `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT
 
 **`awdp_automation.py` (repo root):** WooCommerce maintenance via `config_awdp.json` — fetches products, can emit `price_updates.csv`, cleanup lists, `products_export.json` (sync stub), etc. Those formats target **WooCommerce IDs**, not the AWDP admin import. To feed AWDP, export a catalog CSV from Woo (or your ETL) with columns compatible with `GET /api/admin/products/export` / `normalizeRow` (see `artifacts/api-server/src/routes/adminProducts.ts`), then import via admin or `bulk-product-import.mjs`.
 
+### PostgreSQL setup (Cloud VM)
+
+PostgreSQL 16 is not pre-installed on fresh Cloud VMs. Install and configure once:
+```bash
+sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-16 postgresql-client-16
+sudo pg_ctlcluster 16 main start
+sudo -u postgres psql -c "CREATE USER awdp WITH PASSWORD 'awdp123';"
+sudo -u postgres psql -c "CREATE DATABASE awdp OWNER awdp;"
+```
+After DB setup, push the schema: `DATABASE_URL="postgresql://awdp:awdp123@localhost:5432/awdp" pnpm --filter @workspace/db run push`
+
+TypeScript (5.9) must be installed globally for typechecks: `npm install -g typescript@5.9`
+
 ### Non-obvious caveats
 
 - **API server dev command builds then starts**: `pnpm --filter @workspace/api-server run dev` runs esbuild first, then `node dist/index.mjs`. There is no hot-reload — restart after code changes.
