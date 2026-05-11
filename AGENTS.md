@@ -91,6 +91,14 @@ Production admin login: `https://allwindowdoorparts.com/admin/login`.
 
 The backend is deployed as Vercel serverless functions through the catch-all API route. Set at least: `DATABASE_URL` (a real hosted Postgres URL, never `localhost` / `127.0.0.1` in production), `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, and `CHECKOUT_PAYPAL_ONLY=true`. The storefront should use same-origin `/api`; do not point `API_SERVER_ORIGIN`, `EXPRESS_API_ORIGIN`, or `VITE_API_BASE_URL` back to the same Vercel site for admin routes.
 
+If production still shows any of these responses, it is running the pre-serverless API shims or stale Vercel env:
+
+- `GET /api/login` -> `{"error":"Method not allowed"}` means the legacy `api/login` shim is still deployed. `/api/login` is obsolete; use `POST /api/admin/login`.
+- `GET /api/admin/session` -> `{"error":"Upstream API unreachable", ...}` means the legacy admin proxy shim is still deployed or old `API_SERVER_ORIGIN` / `EXPRESS_API_ORIGIN` / `VITE_API_BASE_URL` values are still active.
+- `GET /api/products` -> `connect ECONNREFUSED 127.0.0.1:5432` means Vercel is using a localhost `DATABASE_URL`; replace it with the hosted Postgres connection string and redeploy.
+
+Cutover checklist: deploy the branch containing the catch-all `api/[...path].mjs` / `artifacts/awdp-site/api/[...path].js`, remove the old API-origin env vars from Vercel, set the hosted `DATABASE_URL`, then redeploy `https://allwindowdoorparts.com`.
+
 **Product variants:** DB columns `variant_group_id`, `variant_label`, and JSON `attributes` on `products` link sibling SKUs; `GET /api/products/:sku/variants` and the product page handle groups when data is present.
 
 **Admin CSV (two flows):**
