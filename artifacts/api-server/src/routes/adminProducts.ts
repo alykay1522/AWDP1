@@ -3,7 +3,7 @@ import multer from "multer";
 import * as os from "os";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
-import { eq, sql, inArray, ilike } from "drizzle-orm";
+import { and, eq, sql, inArray, ilike } from "drizzle-orm";
 import { z } from "zod";
 import AdmZip from "adm-zip";
 import * as fs from "fs";
