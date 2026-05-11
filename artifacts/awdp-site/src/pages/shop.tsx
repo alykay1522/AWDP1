@@ -163,7 +163,7 @@ function useFilteredProducts(params: {
           if (e instanceof Error && e.message.startsWith("Failed to load products:")) throw e;
           throw new Error(
             res.status === 404
-              ? "Failed to load products: HTTP 404 — /api/products not found. On Vercel, deploy with Root Directory at the monorepo root or artifacts/awdp-site so /api routes exist, or set VITE_API_BASE_URL to your API origin at build time."
+              ? "Failed to load products: HTTP 404 — /api/products not found. Redeploy the Vercel serverless backend and confirm the /api catch-all route is included."
               : `Failed to load products: HTTP ${res.status}`,
           );
         }
@@ -171,7 +171,7 @@ function useFilteredProducts(params: {
       const trimmed = text.trimStart();
       if (trimmed.startsWith("<") || (trimmed.length > 0 && !trimmed.startsWith("{"))) {
         throw new Error(
-          "Failed to load products: response was not JSON (often the app HTML shell). Set VITE_API_BASE_URL to your hosted API origin at build time, or ensure Vercel includes serverless routes under /api.",
+          "Failed to load products: response was not JSON (often the app HTML shell). Redeploy and confirm Vercel includes the same-origin /api serverless catch-all route.",
         );
       }
       let data: ProductsResponse;

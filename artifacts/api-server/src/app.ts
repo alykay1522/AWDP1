@@ -157,8 +157,8 @@ app.use(
         httpOnly: true,
         secure,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        // Lax: same-site subdomains. SESSION_COOKIE_SAME_SITE=none when the storefront uses VITE_API_BASE_URL
-        // to a host that is not same-site with the API (cross-site fetch + credentials).
+        // Lax is correct for the same-origin Vercel serverless backend.
+        // Use SESSION_COOKIE_SAME_SITE=none only for an intentional cross-site API deployment.
         sameSite,
       };
     })(),
