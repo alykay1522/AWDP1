@@ -22,10 +22,13 @@ const sslConfig = (() => {
   return { rejectUnauthorized: true };
 })();
 
+const poolMin = Number(process.env.PG_POOL_MIN ?? (process.env.VERCEL ? "0" : "2"));
+const poolMax = Number(process.env.PG_POOL_MAX ?? (process.env.VERCEL ? "2" : "10"));
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  min: 2,
-  max: 10,
+  min: poolMin,
+  max: poolMax,
   idleTimeoutMillis: 60000,
   connectionTimeoutMillis: 10000,
   ssl: sslConfig,
