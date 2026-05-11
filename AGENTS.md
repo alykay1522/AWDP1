@@ -89,7 +89,7 @@ Expected verification checks:
 Production storefront: `https://allwindowdoorparts.com`.
 Production admin login: `https://allwindowdoorparts.com/admin/login`.
 
-Set at least: `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, `CHECKOUT_PAYPAL_ONLY=true`, and point the frontend’s API base to your API (same-origin `/api` if using a combined deployment, or configure the site’s proxy / env so `/api` hits the API server).
+The backend is deployed as Vercel serverless functions through the catch-all API route. Set at least: `DATABASE_URL` (a real hosted Postgres URL, never `localhost` / `127.0.0.1` in production), `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, and `CHECKOUT_PAYPAL_ONLY=true`. The storefront should use same-origin `/api`; do not point `API_SERVER_ORIGIN`, `EXPRESS_API_ORIGIN`, or `VITE_API_BASE_URL` back to the same Vercel site for admin routes.
 
 **Product variants:** DB columns `variant_group_id`, `variant_label`, and JSON `attributes` on `products` link sibling SKUs; `GET /api/products/:sku/variants` and the product page handle groups when data is present.
 
@@ -129,4 +129,4 @@ TypeScript (5.9) must be installed globally for typechecks: `npm install -g type
 - **Root typecheck**: `npx tsc --build --emitDeclarationOnly` passes for the shared libraries. Individual package typechecks (`api-server`, `awdp-site`) have pre-existing type errors that don't affect runtime builds.
 - **No separate linter**: The project has no ESLint/Biome config. TypeScript checking is the primary static analysis tool.
 - **Checkout**: With `CHECKOUT_PAYPAL_ONLY` (or no usable Stripe key), only PayPal checkout is shown; Stripe routes return 503.
-- **Admin login**: Local UI is `http://localhost:5173/admin/login`; production UI is `https://allwindowdoorparts.com/admin/login`. POST to `/api/admin/login` with `{ "password": "<ADMIN_PASSWORD>" }` to authenticate admin sessions.
+- **Admin login**: Local UI is `http://localhost:5173/admin/login`; production UI is `https://allwindowdoorparts.com/admin/login`. POST to `/api/admin/login` with `{ "password": "<ADMIN_PASSWORD>" }` to authenticate admin sessions. `/api/login` is legacy and should not be used.

@@ -57,4 +57,8 @@ router.get("/admin/auth-check", requireAdmin, (_req: Request, res: Response) => 
   res.json({ authenticated: true });
 });
 
+router.get("/admin/session", (req: Request, res: Response) => {
+  res.json({ authenticated: (req.session as any)?.adminAuthenticated === true });
+});
+
 export default router;
