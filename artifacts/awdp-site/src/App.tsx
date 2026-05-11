@@ -72,7 +72,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Redirect to="/admin/login" />;
+    return <Redirect to="/admin/login" replace />;
   }
 
   return <>{children}</>;
