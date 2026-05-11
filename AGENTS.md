@@ -46,6 +46,44 @@ export STRIPE_SECRET_KEY="sk_test_..."
 # export API_BULK_REQUEST_TIMEOUT_MS="600000"
 ```
 
+### Cursor Cloud VM setup / smoke test
+
+Use this checklist when validating a fresh Cloud VM:
+
+```bash
+export DATABASE_URL="postgresql://awdp:awdp123@localhost:5432/awdp"
+export PORT=3000
+export SESSION_SECRET="dev-session-secret-12345"
+export ADMIN_PASSWORD="your-local-admin-password"
+export PAYPAL_CLIENT_ID="paypal_test_placeholder"
+export PAYPAL_CLIENT_SECRET="paypal_test_placeholder"
+export PAYPAL_MODE="sandbox"
+export CHECKOUT_PAYPAL_ONLY="true"
+export NODE_ENV=development
+
+service postgresql start
+pg_isready
+DATABASE_URL="$DATABASE_URL" pnpm --filter @workspace/db run push
+pnpm --filter @workspace/api-server run dev
+```
+
+In another terminal:
+
+```bash
+cd artifacts/awdp-site
+pnpm run dev
+```
+
+Expected verification checks:
+
+- `curl http://localhost:3000/api/healthz` returns `{"status":"ok"}`.
+- `curl http://localhost:5173/api/healthz` returns `{"status":"ok"}` through the Vite proxy.
+- `cd artifacts/awdp-site && pnpm run build` completes successfully.
+- Admin login is at `http://localhost:5173/admin/login`; authenticate with the `ADMIN_PASSWORD` env value.
+- `GET /api/products?limit=3` should return products when the DB is populated (a verified seeded/imported VM had 35,051 products).
+- Browser smoke path: open storefront, browse to Shop, add a product to cart, then visit Admin.
+- There is no ESLint/Biome linter in this project; TypeScript/build checks are the static checks.
+
 ### Vercel / production
 
 Set at least: `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` (`live` in production), `CONTACT_FORWARD_EMAILS`, `EMAIL_APP_PASSWORD`, `CHECKOUT_PAYPAL_ONLY=true`, and point the frontend’s API base to your API (same-origin `/api` if using a combined deployment, or configure the site’s proxy / env so `/api` hits the API server).
