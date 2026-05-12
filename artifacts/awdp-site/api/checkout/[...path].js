@@ -1,7 +1,9 @@
+import { createAwdpApiHandler } from "../../vercel-serverless-bridge.js";
+
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-export { default } from "../../../api-server/dist/serverless.mjs";
+export default createAwdpApiHandler("checkout");
