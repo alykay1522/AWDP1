@@ -118,20 +118,33 @@ app.use(
   }),
 );
 // credentials + wildcard Origin (*) is invalid in browsers → cross-site admin login shows "Failed to fetch".
-// origin: true reflects req.headers.origin so Access-Control-Allow-Origin matches the storefront (Vercel, etc.).
-const corsOrigins = process.env.CORS_ORIGINS?.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+// Dynamic delegate: if CORS_ORIGINS is set but omits the live custom domain, same-host browser Origins still work.
+const configuredCorsOrigins =
+  process.env.CORS_ORIGINS?.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean) ?? [];
+
 app.use(
-  cors({
-    credentials: true,
-    ...(corsOrigins?.length
-      ? {
-          origin: (origin, callback) => {
-            if (!origin) return callback(null, true);
-            if (corsOrigins.includes(origin)) return callback(null, true);
-            callback(new Error(`Not allowed by CORS: ${origin}`));
-          },
-        }
-      : { origin: true }),
+  cors((req, callback) => {
+    const credentials = true;
+    const originHeader = req.header("Origin");
+
+    if (!originHeader) {
+      return callback(null, { origin: true, credentials });
+    }
+    if (configuredCorsOrigins.length === 0) {
+      return callback(null, { origin: true, credentials });
+    }
+    if (configuredCorsOrigins.includes(originHeader)) {
+      return callback(null, { origin: true, credentials });
+    }
+    try {
+      const originHost = new URL(originHeader).hostname;
+      if (originHost === req.hostname) {
+        return callback(null, { origin: true, credentials });
+      }
+    } catch {
+      /* ignore malformed Origin */
+    }
+    return callback(new Error(`Not allowed by CORS: ${originHeader}`));
   }),
 );
 // Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
