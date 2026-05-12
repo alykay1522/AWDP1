@@ -1,16 +1,14 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import pg from "pg";
+import type { Pool } from "pg";
 import * as schema from "./schema";
 
-const { Pool } = pg;
+const { Pool: PgPool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
+type AppDb = NodePgDatabase<typeof schema>;
 
-const sslConfig = (() => {
+function buildSslConfig(): pg.ClientConfig["ssl"] {
   if (process.env.NODE_ENV !== "production") return undefined;
   if (process.env.DATABASE_URL?.includes("sslmode=disable")) {
     throw new Error(
@@ -20,24 +18,80 @@ const sslConfig = (() => {
     );
   }
   return { rejectUnauthorized: true };
-})();
+}
 
-const poolMin = Number(process.env.PG_POOL_MIN ?? (process.env.VERCEL ? "0" : "2"));
-const poolMax = Number(process.env.PG_POOL_MAX ?? (process.env.VERCEL ? "2" : "10"));
+function createPoolInstance(): Pool {
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      "DATABASE_URL must be set. Did you forget to provision a database?",
+    );
+  }
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  min: poolMin,
-  max: poolMax,
-  idleTimeoutMillis: 60000,
-  connectionTimeoutMillis: 10000,
-  ssl: sslConfig,
+  const poolMin = Number(process.env.PG_POOL_MIN ?? (process.env.VERCEL ? "0" : "2"));
+  const poolMax = Number(process.env.PG_POOL_MAX ?? (process.env.VERCEL ? "2" : "10"));
+
+  const p = new PgPool({
+    connectionString: process.env.DATABASE_URL,
+    min: poolMin,
+    max: poolMax,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 10000,
+    ssl: buildSslConfig(),
+  });
+
+  p.on("error", (err: Error) => {
+    console.error("Unexpected pool error", err);
+  });
+
+  return p;
+}
+
+let poolInstance: Pool | undefined;
+
+/** Prefer this in new code; `pool` is a lazy Proxy for backwards compatibility. */
+export function getPool(): Pool {
+  if (!poolInstance) poolInstance = createPoolInstance();
+  return poolInstance;
+}
+
+/**
+ * Lazy pool: avoids throwing during module evaluation when DATABASE_URL is unset
+ * or when production SSL rules fail — callers get errors on first query instead.
+ */
+export const pool = new Proxy({} as Pool, {
+  get(_target, prop, receiver) {
+    const p = getPool();
+    const value = Reflect.get(p, prop, receiver);
+    if (typeof value === "function") {
+      return (value as (...a: unknown[]) => unknown).bind(p);
+    }
+    return value;
+  },
 });
 
-pool.on("error", (err: Error) => {
-  console.error("Unexpected pool error", err);
-});
+let dbInstance: AppDb | undefined;
 
-export const db = drizzle(pool, { schema });
+function getDb(): AppDb {
+  if (!dbInstance) {
+    /** Drizzle touches the pool at construction — must not run at @workspace/db import time. */
+    dbInstance = drizzle(getPool(), { schema });
+  }
+  return dbInstance;
+}
+
+/**
+ * Lazy Drizzle client: `drizzle(pool)` would probe the pool Proxy immediately and
+ * defeat lazy DB connection; first route/handler access initializes the pool + ORM.
+ */
+export const db = new Proxy({} as AppDb, {
+  get(_target, prop, receiver) {
+    const d = getDb();
+    const value = Reflect.get(d, prop, receiver);
+    if (typeof value === "function") {
+      return (value as (...a: unknown[]) => unknown).bind(d);
+    }
+    return value;
+  },
+});
 
 export * from "./schema";

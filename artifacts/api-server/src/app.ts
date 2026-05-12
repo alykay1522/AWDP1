@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -192,5 +192,23 @@ app.use("/api", adminSisterPriceSyncRouter);
 
 // Sitemap at root (not under /api so search engines can reach it)
 app.use(sitemapRouter);
+
+// CORS and other middleware can pass `next(err)` — without this, Express 5 can end the invocation
+// without a response (Vercel reports FUNCTION_INVOCATION_FAILED).
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  if (res.headersSent) {
+    return;
+  }
+  logger.error({ err }, "express error handler");
+  const message =
+    err && typeof err === "object" && "message" in err ? String((err as Error).message) : String(err);
+  if (message.startsWith("Not allowed by CORS:")) {
+    return res.status(403).json({ error: "Forbidden", detail: message });
+  }
+  return res.status(500).json({
+    error: "Internal server error",
+    ...(process.env.NODE_ENV === "production" ? {} : { detail: message }),
+  });
+});
 
 export default app;

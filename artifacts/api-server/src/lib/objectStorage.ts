@@ -1,4 +1,5 @@
-import { Storage, File } from "@google-cloud/storage";
+import type { File, Storage } from "@google-cloud/storage";
+import { createRequire } from "node:module";
 import { Readable } from "stream";
 import { randomUUID } from "crypto";
 import {
@@ -11,22 +12,53 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
-export const objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token",
+/** Avoid `import "@google-cloud/storage"` at load time — pulls gRPC and can crash cold starts. */
+const requireGcs = createRequire(import.meta.url);
+
+function createReplitObjectStorageClient(): Storage {
+  const { Storage: StorageCtor } = requireGcs("@google-cloud/storage") as typeof import("@google-cloud/storage");
+  return new StorageCtor({
+    credentials: {
+      audience: "replit",
+      subject_token_type: "access_token",
+      token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+      type: "external_account",
+      credential_source: {
+        url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+        format: {
+          type: "json",
+          subject_token_field_name: "access_token",
+        },
       },
+      universe_domain: "googleapis.com",
     },
-    universe_domain: "googleapis.com",
+    projectId: "",
+  });
+}
+
+let objectStorageClientInstance: Storage | undefined;
+
+/**
+ * Lazy GCS client: constructing `Storage` at module load runs for every API route
+ * (admin routes import this file). On Vercel there is no Replit sidecar — eager init
+ * can crash the whole `/api/*` serverless bundle before login runs.
+ */
+export function getObjectStorageClient(): Storage {
+  if (!objectStorageClientInstance) {
+    objectStorageClientInstance = createReplitObjectStorageClient();
+  }
+  return objectStorageClientInstance;
+}
+
+export const objectStorageClient = new Proxy({} as Storage, {
+  get(_target, prop, receiver) {
+    const c = getObjectStorageClient();
+    const value = Reflect.get(c, prop, receiver);
+    if (typeof value === "function") {
+      return (value as (...args: unknown[]) => unknown).bind(c);
+    }
+    return value;
   },
-  projectId: "",
 });
 
 export class ObjectNotFoundError extends Error {

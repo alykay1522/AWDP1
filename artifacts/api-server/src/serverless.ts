@@ -6,6 +6,9 @@ import { pool } from "@workspace/db";
 /** Vercel captures pino lines; localhost debug ingest may also receive the same payload. */
 function agentDebugLog(payload: Record<string, unknown>) {
   logger.info({ agentDebug: true, ...payload }, "agent-debug");
+  if (process.env.VERCEL) {
+    console.error("[agent-debug]", JSON.stringify({ sessionId: "0e9545", ...payload, t: Date.now() }));
+  }
   // #region agent log
   fetch("http://127.0.0.1:7256/ingest/d6a176f9-8366-4471-9af1-d6201858799f", {
     method: "POST",
@@ -93,6 +96,13 @@ function sendJson503(res: ServerResponse, body: Record<string, unknown>) {
   res.end(JSON.stringify(body));
 }
 
+function sendJson500(res: ServerResponse, body: Record<string, unknown>) {
+  if (res.headersSent || res.writableEnded) return;
+  res.statusCode = 500;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(body));
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   const url = typeof (req as { url?: string }).url === "string" ? (req as { url: string }).url.slice(0, 200) : "";
   agentDebugLog({
@@ -130,5 +140,24 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     message: "calling express app",
     data: { method: req.method, url },
   });
-  return app(req, res);
+  try {
+    await Promise.resolve(app(req, res));
+  } catch (err) {
+    agentDebugLog({
+      runId: "post-fix",
+      hypothesisId: "H6",
+      location: "serverless.ts:handler:expressCatch",
+      message: "express app threw or rejected",
+      data: {
+        errName: err && typeof err === "object" && "name" in err ? String((err as Error).name) : "unknown",
+        errMessage: err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400),
+      },
+    });
+    const detail =
+      err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400);
+    sendJson500(res, {
+      error: "Admin API request failed during handling.",
+      detail,
+    });
+  }
 }

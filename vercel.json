@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "pnpm build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
+  "functions": {
+    "artifacts/awdp-site/api/**/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api(?:/|$)).*)",

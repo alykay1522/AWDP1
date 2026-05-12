@@ -1,15 +1,21 @@
 import { Router, Request, Response } from "express";
-import OpenAI from "openai";
-import sharp from "sharp";
+import type OpenAI from "openai";
 import path from "path";
 import { db } from "@workspace/db";
 import { productsTable } from "@workspace/db/schema";
 import { isNull, or, eq, sql } from "drizzle-orm";
 import { objectStorageClient } from "../lib/objectStorage";
 
+/** Native module: must not load at app import time (breaks some Vercel / Node runtimes). */
+async function loadSharp() {
+  const mod = await import("sharp");
+  return mod.default;
+}
+
 const LOGO_PATH = path.join(__dirname, "assets", "awdp-logo.png");
 
 async function applyLogoWatermark(imageBuffer: Buffer): Promise<Buffer> {
+  const sharp = await loadSharp();
   const image = sharp(imageBuffer);
   const meta = await image.metadata();
   const imageWidth = meta.width ?? 1024;
@@ -32,7 +38,8 @@ async function applyLogoWatermark(imageBuffer: Buffer): Promise<Buffer> {
 
 const router = Router();
 
-function getOpenAI(): OpenAI {
+async function getOpenAI(): Promise<OpenAI> {
+  const { default: OpenAI } = await import("openai");
   const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
   const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
   if (!baseURL || !apiKey) throw new Error("OpenAI integration not configured");
@@ -64,7 +71,7 @@ router.post("/admin/products/generate-images", async (req: Request, res: Respons
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   try {
-    const openai = getOpenAI();
+    const openai = await getOpenAI();
     const bucketId = getBucketId();
 
     const products = await db
@@ -151,7 +158,7 @@ router.post("/admin/products/generate-prices", async (req: Request, res: Respons
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   try {
-    const openai = getOpenAI();
+    const openai = await getOpenAI();
 
     // Exclude obvious non-product entries (scraped info pages, PDFs)
     const products = await db
