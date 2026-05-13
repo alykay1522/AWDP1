@@ -1,12 +1,20 @@
 {
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
-    },
-    "api/**/*.mjs": {
-      "runtime": "nodejs20.x"
-    }
-  },
+  "version": 2,
+  "installCommand": "node vercel-install.cjs",
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "artifacts/awdp-site/dist/public",
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
