@@ -1,12 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
-    },
-    "api/**/*.mjs": {
-      "runtime": "nodejs20.x"
+    "api/**/*.{js,mjs}": {
+      "maxDuration": 60
     }
   },
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "artifacts/awdp-site/dist/public"
 }
