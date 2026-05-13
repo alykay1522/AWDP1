@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "version": 2,
   "installCommand": "node vercel-install.cjs",
   "buildCommand": "pnpm build",
@@ -17,4 +18,14 @@
       "destination": "/index.html"
     }
   ]
+=======
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/**/*.{js,mjs}": {
+      "maxDuration": 60
+    }
+  },
+  "buildCommand": "pnpm build",
+  "outputDirectory": "artifacts/awdp-site/dist/public"
+>>>>>>> 817cc2c20eeeea1826fdf915d46b589be9627c4c
 }
