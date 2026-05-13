@@ -1,5 +1,32 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "installCommand": "node vercel-install.cjs",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "artifacts/awdp-site/dist/public",
+  "functions": {
+    "api/**/*.{js,mjs}": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ]
+<<<<<<< HEAD
+}
+=======
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/**/*.{js,mjs}": {
       "maxDuration": 60
@@ -8,3 +35,4 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "artifacts/awdp-site/dist/public"
 }
+>>>>>>> 1f169b6c3db6e56cd982a5f6d6436d358e32227f
