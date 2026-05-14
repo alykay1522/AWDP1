@@ -5,7 +5,7 @@
   "functions": {
     "api/**/*.js": {
       "runtime": "nodejs20.x",
-      "includeFiles": ["../api-server/dist/**", "vercel-serverless-bridge.js"]
+      "includeFiles": "{../api-server/dist/**,vercel-serverless-bridge.js}"
     }
   },
   "rewrites": [
