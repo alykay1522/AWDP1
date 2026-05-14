@@ -8,7 +8,14 @@
     "artifacts/awdp-site/api/**/*.{js,mjs}": {
       "runtime": "nodejs20.x",
       "maxDuration": 60,
+<<<<<<< Updated upstream
       "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
+=======
+      "includeFiles": [
+        "artifacts/api-server/dist/**",
+        "artifacts/awdp-site/vercel-serverless-bridge.js"
+      ]
+>>>>>>> Stashed changes
     }
   },
   "rewrites": [

@@ -1,13 +1,32 @@
 /**
  * Shared Vercel → Express bootstrap (lives outside `/api` so it is not a public route).
  */
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const rootDir = path.dirname(fileURLToPath(import.meta.url));
-const SERVERLESS_HREF = pathToFileURL(
-  path.resolve(rootDir, "../api-server/dist/serverless.mjs"),
-).href;
+function resolveServerlessPath() {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  // Vercel recommends process.cwd() for assets added via includeFiles; dirname(import.meta.url)
+  // breaks when this file is bundled into api/*/[...path].js (extra "api/..." segment).
+  const candidates = [
+    path.join(process.cwd(), "api-server/dist/serverless.mjs"),
+    path.join(process.cwd(), "../api-server/dist/serverless.mjs"),
+    path.resolve(here, "../../api-server/dist/serverless.mjs"),
+    path.resolve(here, "../api-server/dist/serverless.mjs"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {
+      /* ignore */
+    }
+  }
+  return candidates[0];
+}
+
+const resolvedServerlessFsPath = resolveServerlessPath();
+const SERVERLESS_HREF = pathToFileURL(resolvedServerlessFsPath).href;
 
 let cachedHandler = null;
 
