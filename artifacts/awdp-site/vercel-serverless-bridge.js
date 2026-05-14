@@ -59,24 +59,6 @@ function clientErrorPayload(code, message, detail) {
 
 export function createAwdpApiHandler(segment) {
   return async function awdpApiEntry(req, res) {
-<<<<<<< Updated upstream
-=======
-    console.error(
-      JSON.stringify({
-        sessionId: "0e9545",
-        hypothesisId: "H-route",
-        msg: "awdp-api-segment-entry",
-        segment,
-        serverlessHref: SERVERLESS_HREF.slice(0, 200),
-        resolvedFsPath: resolvedServerlessFsPath.slice(0, 300),
-        cwd: typeof process.cwd === "function" ? process.cwd().slice(0, 200) : "",
-        method: req.method,
-        url: typeof req.url === "string" ? req.url.slice(0, 300) : "",
-        ts: Date.now(),
-      }),
-    );
-
->>>>>>> Stashed changes
     try {
       console.error(
         JSON.stringify({
