@@ -3,14 +3,9 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
   "functions": {
-    "api/**/*.{js,mjs}": {
+    "api/**/*.js": {
       "runtime": "nodejs20.x",
-<<<<<<< Updated upstream
       "includeFiles": "{../api-server/dist/**,vercel-serverless-bridge.js}"
-=======
-      "maxDuration": 60,
-      "includeFiles": ["../api-server/dist/**", "vercel-serverless-bridge.js"]
->>>>>>> Stashed changes
     }
   },
   "rewrites": [
