@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Pencil, Trash2, FileText, ExternalLink, Loader2,
-  Eye, EyeOff, GripVertical, Check, X, AlertCircle,
+  Eye, EyeOff, GripVertical, Check, X, AlertCircle, Upload, Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,87 @@ const TYPE_COLORS: Record<string, string> = {
   "How-To Guide":      "bg-teal-100 text-teal-700",
   "Reference":         "bg-slate-100 text-slate-600",
 };
+
+/** Rows per POST to `/api/admin/resources/import` (server enforces MAX_RESOURCE_IMPORT_ROWS, default 500). */
+const RESOURCE_IMPORT_CHUNK = 200;
+
+// ── CSV (client parse — same pattern as admin-products-list) ─────────────────
+
+function parseCsv(text: string): Record<string, string>[] {
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  if (lines.length < 2) return [];
+  function splitLine(line: string): string[] {
+    const fields: string[] = [];
+    let cur = "", inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuote) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQuote = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQuote = true;
+        else if (ch === ",") { fields.push(cur); cur = ""; }
+        else cur += ch;
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+  const headers = splitLine(lines[0]);
+  return lines.slice(1).filter((l) => l.trim()).map((l) => {
+    const vals = splitLine(l);
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = vals[i] ?? ""; });
+    return row;
+  });
+}
+
+/** Keep in sync with `normalizeResourceRow` in `artifacts/api-server/src/routes/adminResources.ts`. */
+function normalizeResourceImportRow(raw: Record<string, string>): Record<string, string> {
+  const lc: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const key = k.toLowerCase().replace(/[\s\-_.]+/g, "");
+    lc[key] = typeof v === "string" ? v.trim() : "";
+  }
+  function pick(...aliases: string[]): string {
+    for (const a of aliases) {
+      const v = lc[a];
+      if (v !== undefined && v !== "") return v;
+    }
+    return "";
+  }
+  return {
+    id: pick("id", "pk", "resourceid"),
+    title: pick("title", "name", "label"),
+    brand: pick("brand", "manufacturer", "make"),
+    category: pick("category", "group", "section"),
+    type: pick("type", "doctype", "documenttype", "resourcetype"),
+    url: pick("url", "pdfurl", "link", "href", "path"),
+    description: pick("description", "desc", "notes", "summary"),
+    sortOrder: pick("sortorder", "sort_order", "order", "position", "seq"),
+    isActive: pick("isactive", "active", "visible", "published", "enabled"),
+  };
+}
+
+function resourceRowIsBlank(norm: Record<string, string>): boolean {
+  return !norm.title && !norm.url && !norm.category && !norm.type && !norm.id;
+}
+
+function previewResourceRow(norm: Record<string, string>, line: number): string | null {
+  if (resourceRowIsBlank(norm)) return null;
+  const title = norm.title.trim();
+  const category = norm.category.trim();
+  const type = norm.type.trim();
+  const url = norm.url.trim();
+  if (title && category && type && url) return null;
+  const miss: string[] = [];
+  if (!title) miss.push("title");
+  if (!category) miss.push("category");
+  if (!type) miss.push("type");
+  if (!url) miss.push("url");
+  return `Line ${line}: missing ${miss.join(", ")}`;
+}
 
 // ── Form Dialog ───────────────────────────────────────────────────────────────
 
@@ -155,6 +236,18 @@ export default function AdminResourcesPage() {
   const [editing, setEditing] = useState<PdfResource | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
+  const bulkFileRef = useRef<HTMLInputElement>(null);
+  const [bulkRows, setBulkRows] = useState<Record<string, string>[] | null>(null);
+  const [bulkFileName, setBulkFileName] = useState("");
+  const [bulkBlankCount, setBulkBlankCount] = useState(0);
+  const [bulkRowWarnings, setBulkRowWarnings] = useState<string[]>([]);
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkExporting, setBulkExporting] = useState(false);
+  const [bulkLastResult, setBulkLastResult] = useState<{
+    inserted: number; updated: number; errored: number; skipped: number;
+    errors?: string[];
+  } | null>(null);
+
   const { data, isLoading } = useQuery<{ resources: PdfResource[] }>({
     queryKey: ["admin-resources"],
     queryFn: async () => {
@@ -206,6 +299,129 @@ export default function AdminResourcesPage() {
   const toggleActive = (r: PdfResource) =>
     updateMutation.mutate({ id: r.id, body: { isActive: !r.isActive } });
 
+  const handleBulkExport = async () => {
+    setBulkExporting(true);
+    try {
+      const res = await fetch("/api/admin/resources/export");
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error ?? "Export failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "awdp-pdf-resources.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Export complete", description: "awdp-pdf-resources.csv" });
+    } catch (e: unknown) {
+      toast({ title: "Export failed", description: e instanceof Error ? e.message : "Unknown error", variant: "destructive" });
+    } finally {
+      setBulkExporting(false);
+    }
+  };
+
+  const handleBulkPickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (bulkFileRef.current) bulkFileRef.current.value = "";
+    if (!file) return;
+
+    setBulkLastResult(null);
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      if (rows.length === 0) {
+        toast({ title: "Empty file", description: "No data rows found in the CSV", variant: "destructive" });
+        setBulkRows(null);
+        setBulkFileName("");
+        setBulkBlankCount(0);
+        setBulkRowWarnings([]);
+        return;
+      }
+      let blank = 0;
+      const warns: string[] = [];
+      rows.forEach((raw, i) => {
+        const norm = normalizeResourceImportRow(raw);
+        const line = i + 2;
+        if (resourceRowIsBlank(norm)) {
+          blank++;
+          return;
+        }
+        const w = previewResourceRow(norm, line);
+        if (w && warns.length < 80) warns.push(w);
+      });
+      setBulkRows(rows);
+      setBulkFileName(file.name);
+      setBulkBlankCount(blank);
+      setBulkRowWarnings(warns);
+      toast({ title: "CSV loaded", description: `${rows.length} row(s) — review and click Apply import` });
+    } catch (err: unknown) {
+      toast({ title: "Could not read file", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+    }
+  };
+
+  const handleBulkApply = async () => {
+    if (!bulkRows?.length) return;
+    setBulkImporting(true);
+    setBulkLastResult(null);
+    try {
+      const acc = { inserted: 0, updated: 0, errored: 0, skipped: 0 };
+      const errAgg: string[] = [];
+      const totalChunks = Math.ceil(bulkRows.length / RESOURCE_IMPORT_CHUNK);
+      const longWait = 600_000;
+
+      for (let c = 0; c < totalChunks; c++) {
+        const slice = bulkRows.slice(c * RESOURCE_IMPORT_CHUNK, (c + 1) * RESOURCE_IMPORT_CHUNK);
+        const res = await fetch("/api/admin/resources/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: slice }),
+          signal: AbortSignal.timeout(longWait),
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(result.error ?? `Import failed (batch ${c + 1}/${totalChunks})`);
+        }
+        acc.inserted += result.inserted ?? 0;
+        acc.updated += result.updated ?? 0;
+        acc.errored += result.errored ?? 0;
+        acc.skipped += result.skipped ?? 0;
+        if (Array.isArray(result.errors)) {
+          for (const line of result.errors as string[]) {
+            if (errAgg.length < 100) errAgg.push(line);
+          }
+        }
+      }
+
+      invalidate();
+      setBulkLastResult({ ...acc, errors: errAgg.length ? errAgg : undefined });
+      const parts = [
+        acc.inserted && `${acc.inserted} added`,
+        acc.updated && `${acc.updated} updated`,
+        acc.skipped && `${acc.skipped} blank skipped`,
+        acc.errored && `${acc.errored} errors`,
+      ].filter(Boolean).join(" · ");
+      toast({
+        title: acc.errored > 0 ? "Import finished with errors" : "Import complete",
+        description: [parts || "No changes", totalChunks > 1 ? `${totalChunks} batches` : ""].filter(Boolean).join(" — "),
+        variant: acc.errored > 0 && !acc.inserted && !acc.updated ? "destructive" : "default",
+      });
+    } catch (e: unknown) {
+      toast({ title: "Import failed", description: e instanceof Error ? e.message : "Unknown error", variant: "destructive" });
+    } finally {
+      setBulkImporting(false);
+    }
+  };
+
+  const clearBulkImport = () => {
+    setBulkRows(null);
+    setBulkFileName("");
+    setBulkBlankCount(0);
+    setBulkRowWarnings([]);
+    setBulkLastResult(null);
+  };
+
   const resources = data?.resources ?? [];
   const active = resources.filter((r) => r.isActive);
   const hidden = resources.filter((r) => !r.isActive);
@@ -236,6 +452,118 @@ export default function AdminResourcesPage() {
       </div>
 
       <div className="p-6 md:p-8 max-w-5xl">
+        {/* Bulk CSV import / export */}
+        <div className="bg-white border rounded-xl p-5 mb-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+            <div>
+              <h2 className="font-bold text-slate-800 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600" />
+                Bulk CSV import
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Export matches import columns. Rows with an existing <code className="text-xs bg-slate-100 px-1 rounded">id</code> are updated; rows without a matching id are inserted.
+              </p>
+              <p className="text-xs text-muted-foreground font-mono bg-slate-50 border rounded px-2 py-1.5 mt-2 inline-block">
+                id,title,brand,category,type,url,description,sortOrder,isActive
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={handleBulkExport}
+                disabled={bulkExporting}
+              >
+                {bulkExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                Export CSV
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => bulkFileRef.current?.click()}
+                disabled={bulkImporting}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Choose CSV
+              </Button>
+              <input
+                ref={bulkFileRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleBulkPickFile}
+              />
+            </div>
+          </div>
+
+          {bulkRows && (
+            <div className="mt-4 space-y-3 border-t pt-4">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-medium text-slate-700">{bulkFileName}</span>
+                <span className="text-muted-foreground">·</span>
+                <span>{bulkRows.length} row(s) parsed</span>
+                {bulkBlankCount > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-amber-700">{bulkBlankCount} blank (will skip)</span>
+                  </>
+                )}
+                {bulkRowWarnings.length > 0 && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-red-600">{bulkRowWarnings.length} row issue(s) in preview</span>
+                  </>
+                )}
+              </div>
+              {bulkRowWarnings.length > 0 && (
+                <div className="max-h-40 overflow-y-auto rounded-lg border border-red-100 bg-red-50/80 p-3 text-xs text-red-800 space-y-1">
+                  {bulkRowWarnings.map((w, i) => (
+                    <div key={i}>{w}</div>
+                  ))}
+                  {bulkRowWarnings.length >= 80 && (
+                    <div className="text-red-600 font-medium pt-1">Showing first 80 preview issues…</div>
+                  )}
+                </div>
+              )}
+              {bulkLastResult && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                  <p className="font-medium mb-1">Last import</p>
+                  <p>
+                    {bulkLastResult.inserted} added · {bulkLastResult.updated} updated ·{" "}
+                    {bulkLastResult.skipped} skipped · {bulkLastResult.errored} errors
+                  </p>
+                  {bulkLastResult.errors && bulkLastResult.errors.length > 0 && (
+                    <ul className="mt-2 max-h-32 overflow-y-auto text-xs text-red-700 list-disc pl-4 space-y-0.5">
+                      {bulkLastResult.errors.map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleBulkApply}
+                  disabled={bulkImporting}
+                  title={`Sends up to ${RESOURCE_IMPORT_CHUNK} rows per request; server default max 500 rows per batch (override with MAX_RESOURCE_IMPORT_ROWS).`}
+                >
+                  {bulkImporting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                  Apply import
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={clearBulkImport} disabled={bulkImporting}>
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

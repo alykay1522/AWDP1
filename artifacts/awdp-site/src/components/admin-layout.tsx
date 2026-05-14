@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
-  ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
+  ChevronRight, ExternalLink, LogOut,
   FileText, PenLine, RefreshCcw,
 } from "lucide-react";
 import { useAdminLogout } from "@/lib/useAdminAuth";
@@ -13,6 +13,8 @@ interface NavItem {
   label: string;
   icon: ReactNode;
   exact?: boolean;
+  /** Paths that keep this section highlighted and `children` visible (e.g. CSV tools). */
+  relatedPaths?: string[];
   children?: { href: string; label: string }[];
 }
 
@@ -22,10 +24,13 @@ const NAV: NavItem[] = [
     href: "/admin/products",
     label: "Products",
     icon: <Package className="w-4 h-4" />,
+    relatedPaths: ["/admin/csv-tool", "/admin/csv-import"],
     children: [
       { href: "/admin/products", label: "All Products" },
       { href: "/admin/products/new", label: "Add New" },
       { href: "/admin/products/bulk-editor", label: "Bulk Editor" },
+      { href: "/admin/csv-tool", label: "CSV tool" },
+      { href: "/admin/csv-import", label: "Description import" },
     ],
   },
   { href: "/admin/orders", label: "Orders", icon: <ShoppingBag className="w-4 h-4" /> },
@@ -45,6 +50,11 @@ function isActive(path: string, href: string, exact?: boolean) {
   return path.startsWith(href);
 }
 
+function sectionActive(path: string, item: NavItem): boolean {
+  if (isActive(path, item.href, item.exact)) return true;
+  return item.relatedPaths?.some((p) => path === p || path.startsWith(`${p}/`)) ?? false;
+}
+
 export function AdminLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const logout = useAdminLogout();
@@ -60,7 +70,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 py-4 px-2 space-y-0.5">
           {NAV.map((item) => {
-            const active = isActive(location, item.href, item.exact);
+            const active = sectionActive(location, item);
             return (
               <div key={item.href}>
                 <Link

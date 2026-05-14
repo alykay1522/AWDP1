@@ -4,7 +4,7 @@ import * as os from "os";
 import * as fs from "fs";
 import { db } from "@workspace/db";
 import { productsTable } from "@workspace/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -15,6 +15,80 @@ const upload = multer({
 });
 
 const router = Router();
+
+type DescriptionColumn = "description" | "long_description";
+
+function pgErrorCode(err: unknown): string | undefined {
+  let cur: unknown = err;
+  for (let d = 0; d < 6 && cur; d++) {
+    const c = cur as { code?: string; cause?: unknown };
+    if (typeof c.code === "string" && c.code.length > 0) return c.code;
+    cur = c.cause;
+  }
+  return undefined;
+}
+
+function csvImportDbMessage(err: unknown): string {
+  const base = err instanceof Error ? err.message : String(err);
+  const code = pgErrorCode(err);
+  if (code === "42P01") {
+    return `${base} — The products table was not found. Run: DATABASE_URL="…" pnpm --filter @workspace/db run push`;
+  }
+  if (code === "42703") {
+    return `${base} — A column on products does not match the app schema (expected description, or legacy long_description). Run drizzle push against this DATABASE_URL or inspect the table.`;
+  }
+  return base;
+}
+
+async function productsTableExists(): Promise<boolean> {
+  const r = await db.execute(sql`
+    select 1 as ok
+    from information_schema.tables
+    where table_schema = current_schema() and table_name = 'products'
+    limit 1
+  `);
+  return (r.rows as { ok?: number }[]).length > 0;
+}
+
+/** Prefer description; fall back to legacy long_description if present. */
+async function resolveDescriptionColumn(): Promise<DescriptionColumn> {
+  const r = await db.execute(sql`
+    select column_name::text as column_name
+    from information_schema.columns
+    where table_schema = current_schema()
+      and table_name = 'products'
+      and column_name in ('description', 'long_description')
+    order by case column_name
+      when 'description' then 0
+      when 'long_description' then 1
+      else 2
+    end
+    limit 1
+  `);
+  const row = (r.rows as { column_name?: string }[])[0];
+  const name = row?.column_name;
+  if (name === "description" || name === "long_description") {
+    return name;
+  }
+  throw new Error(
+    "Schema mismatch: products has neither description nor long_description. Align the database with lib/db/src/schema/products.ts (pnpm --filter @workspace/db run push).",
+  );
+}
+
+async function loadProductsForMatching(
+  descCol: DescriptionColumn,
+): Promise<Array<{ sku: string; name: string; description: string | null }>> {
+  if (descCol === "description") {
+    return db
+      .select({ sku: productsTable.sku, name: productsTable.name, description: productsTable.description })
+      .from(productsTable);
+  }
+  const r = await db.execute(sql`
+    select sku, name, long_description as description
+    from products
+  `);
+  return r.rows as Array<{ sku: string; name: string; description: string | null }>;
+}
 
 /* ── Simple CSV parser (no extra dep) ─────────────────────────────────── */
 function parseCsv(text: string): Record<string, string>[] {
@@ -196,10 +270,22 @@ router.post("/", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "CSV appears empty or malformed" });
     }
 
-    // Load all products from DB (name + sku + description) for matching
-    const allProducts = await db
-      .select({ sku: productsTable.sku, name: productsTable.name, description: productsTable.description })
-      .from(productsTable);
+    if (!(await productsTableExists())) {
+      return res.status(500).json({
+        error:
+          'The database has no "products" table in the current schema. Run: DATABASE_URL="…" pnpm --filter @workspace/db run push',
+      });
+    }
+
+    const descCol = await resolveDescriptionColumn();
+    const allProducts = await loadProductsForMatching(descCol);
+
+    if (allProducts.length === 0) {
+      return res.status(400).json({
+        error:
+          "Product catalog is empty (0 rows in products). Import or seed products before running this description CSV import.",
+      });
+    }
 
     const results = await buildMatchResults(rows, allProducts);
 
@@ -222,10 +308,16 @@ router.post("/", upload.single("file"), async (req, res) => {
       const slice = pending.slice(i, i + CONCURRENCY);
       await Promise.all(
         slice.map((m) =>
-          db
-            .update(productsTable)
-            .set({ description: m.newDescription })
-            .where(eq(productsTable.sku, m.matchedSku!)),
+          descCol === "description"
+            ? db
+                .update(productsTable)
+                .set({ description: m.newDescription })
+                .where(eq(productsTable.sku, m.matchedSku!))
+            : db.execute(sql`
+                update products
+                set long_description = ${m.newDescription}
+                where sku = ${m.matchedSku!}
+              `),
         ),
       );
     }
@@ -236,9 +328,9 @@ router.post("/", upload.single("file"), async (req, res) => {
       updated: pending.length,
       skipped,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[csv-import]", err);
-    return res.status(500).json({ error: err.message ?? "Import failed" });
+    return res.status(500).json({ error: csvImportDbMessage(err) || "Import failed" });
   }
 });
 

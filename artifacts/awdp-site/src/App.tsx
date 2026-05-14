@@ -45,6 +45,7 @@ import AdminSettings from "@/pages/admin-settings";
 import AdminImages from "@/pages/admin-images";
 import AdminBulkEditor from "@/pages/admin-bulk-editor";
 import AdminCsvImport from "@/pages/admin-csv-import";
+import AdminCsvTool from "@/pages/admin-csv-tool";
 import AdminContent from "@/pages/admin-content";
 import AdminResourcesPage from "@/pages/admin-resources";
 import AdminPriceSync from "@/pages/admin-price-sync";
@@ -102,6 +103,7 @@ function AppContent() {
             <Route path="/admin/prices" component={AdminPrices} />
             <Route path="/admin/settings" component={AdminSettings} />
             <Route path="/admin/csv-import" component={AdminCsvImport} />
+            <Route path="/admin/csv-tool" component={AdminCsvTool} />
             <Route path="/admin/content" component={AdminContent} />
             <Route path="/admin/resources" component={AdminResourcesPage} />
             <Route path="/admin/price-sync" component={AdminPriceSync} />
