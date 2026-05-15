@@ -6,7 +6,6 @@
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "functions": {
     "artifacts/awdp-site/api/**/*.{js,mjs}": {
-      "runtime": "nodejs20.x",
       "maxDuration": 60,
       "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
     }
