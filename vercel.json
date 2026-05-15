@@ -5,12 +5,20 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "functions": {
-    "artifacts/awdp-site/api/**/*.{js,mjs}": {
+    "api/**/*.mjs": {
       "maxDuration": 60,
       "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
     }
   },
   "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/index.html"
+    },
     {
       "source": "/((?!api(?:/|$)).*)",
       "destination": "/index.html"
