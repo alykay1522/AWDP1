@@ -9,13 +9,13 @@
  * Env:
  *   API_BASE       — default http://127.0.0.1:3000
  *   ADMIN_PASSWORD — required
- *   CHUNK_SIZE     — default 400 (must be <= MAX_PRODUCT_IMPORT_ROWS on server)
+ *   CHUNK_SIZE     — default 75 (must be <= MAX_PRODUCT_IMPORT_ROWS on server)
  */
 import fs from "node:fs";
 import path from "node:path";
 
 const API_BASE = (process.env.API_BASE ?? "http://127.0.0.1:3000").replace(/\/$/, "");
-const CHUNK = Math.max(1, Number.parseInt(process.env.CHUNK_SIZE ?? "400", 10) || 400);
+const CHUNK = Math.max(1, Number.parseInt(process.env.CHUNK_SIZE ?? "75", 10) || 75);
 const password = process.env.ADMIN_PASSWORD;
 
 function parseCsv(text) {
@@ -68,7 +68,7 @@ async function main() {
   if (!file || !password) {
     console.error(
       "Usage: ADMIN_PASSWORD=... node artifacts/api-server/scripts/bulk-product-import.mjs <file.csv>\n" +
-        "Optional: API_BASE=http://127.0.0.1:3000 CHUNK_SIZE=400",
+        "Optional: API_BASE=http://127.0.0.1:3000 CHUNK_SIZE=75",
     );
     process.exit(1);
   }

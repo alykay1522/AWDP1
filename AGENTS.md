@@ -31,10 +31,13 @@ export NODE_ENV=development
 Optional / feature-specific:
 
 ```bash
-# Comma-separated staff inboxes: contact form, parts-ID forwards, order owner alerts (required for outbound mail to staff)
-export CONTACT_FORWARD_EMAILS="ops@example.com,orders@example.com"
+# Comma-separated staff inboxes: contact form, parts-ID forwards, order owner alerts.
+# Defaults to thepolak@wefixitusa.com and alyshameade.1522@gmail.com when unset.
+export CONTACT_FORWARD_EMAILS="thepolak@wefixitusa.com,alyshameade.1522@gmail.com"
 # SMTP app password for info@allwindowdoorparts.com (required to actually send mail)
 export EMAIL_APP_PASSWORD="..."
+# Optional — public site origin for admin links in notification emails (else VERCEL_URL or production default)
+# export SITE_URL="https://www.allwindowdoorparts.com"
 # PayPal-only: disables Stripe checkout session, fulfill route, and Stripe webhook registration.
 # If unset: PayPal-only when STRIPE_SECRET_KEY is missing or contains "placeholder"; set to false to use Stripe with a real key.
 export CHECKOUT_PAYPAL_ONLY="true"

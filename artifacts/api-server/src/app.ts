@@ -215,6 +215,14 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   logger.error({ err }, "express error handler");
   const message =
     err && typeof err === "object" && "message" in err ? String((err as Error).message) : String(err);
+  const errType =
+    err && typeof err === "object" && "type" in err ? String((err as { type?: string }).type) : "";
+  if (errType === "entity.too.large" || /entity too large/i.test(message)) {
+    return res.status(413).json({
+      error: "Request body too large",
+      detail: `Send smaller import batches or raise API_JSON_BODY_LIMIT (current: ${jsonBodyLimit}).`,
+    });
+  }
   if (message.startsWith("Not allowed by CORS:")) {
     return res.status(403).json({ error: "Forbidden", detail: message });
   }

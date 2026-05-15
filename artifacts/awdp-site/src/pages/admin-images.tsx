@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 
 interface ProductImage {
   id: number; filename: string; objectName: string; url: string; uploadedAt: string;
@@ -124,10 +125,11 @@ export default function AdminImages() {
       const form = new FormData();
       form.append("file", file);
       const url = `/api/admin/products/upload-images-zip${forceOverwrite ? "?forceOverwrite=true" : ""}`;
-      const res = await fetch(url, { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
-      setZipResult(data);
+      const res = await fetch(url, { method: "POST", body: form, credentials: "include" });
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "ZIP upload failed"));
+      if (!parsed.json) throw new Error(readApiErrorMessage(res, parsed, "Invalid ZIP upload response"));
+      setZipResult(parsed.json as unknown as ZipResult);
       toast({ title: `ZIP imported: ${data.uploaded} images updated` });
     } catch (err: any) {
       setZipError(err.message);
@@ -147,10 +149,15 @@ export default function AdminImages() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/products/import-image-urls", { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Import failed");
-      setCsvResult(data);
+      const res = await fetch("/api/admin/products/import-image-urls", {
+        method: "POST",
+        body: form,
+        credentials: "include",
+      });
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Image URL import failed"));
+      if (!parsed.json) throw new Error(readApiErrorMessage(res, parsed, "Invalid image URL import response"));
+      setCsvResult(parsed.json as unknown as CsvResult);
       toast({ title: `CSV imported: ${data.updated} products updated` });
     } catch (err: any) {
       setCsvError(err.message);
@@ -170,10 +177,15 @@ export default function AdminImages() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/products/diagnose-zip", { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Diagnose failed");
-      setDiagResult(data);
+      const res = await fetch("/api/admin/products/diagnose-zip", {
+        method: "POST",
+        body: form,
+        credentials: "include",
+      });
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Diagnose failed"));
+      if (!parsed.json) throw new Error(readApiErrorMessage(res, parsed, "Invalid diagnose response"));
+      setDiagResult(parsed.json);
     } catch (err: any) {
       setDiagError(err.message);
     } finally {

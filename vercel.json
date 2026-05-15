@@ -8,6 +8,10 @@
     "api/**/*.mjs": {
       "maxDuration": 60,
       "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
+    },
+    "api/admin/**/*.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
     }
   },
   "rewrites": [

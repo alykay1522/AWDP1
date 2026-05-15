@@ -1,12 +1,15 @@
 import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
+import { adminPortalUrl } from "./adminSiteUrl.js";
 import { getContactForwardEmails } from "./notifyRecipients.js";
 
 const FROM_ADDRESS = "info@allwindowdoorparts.com";
 
-function createTransporter() {
+function createTransporter(): Transporter | null {
   const password = process.env.EMAIL_APP_PASSWORD;
   if (!password) {
-    throw new Error("EMAIL_APP_PASSWORD environment variable is not set");
+    console.warn("[email] EMAIL_APP_PASSWORD not set — skipping outbound mail");
+    return null;
   }
   return nodemailer.createTransport({
     host: "mail.allwindowdoorparts.com",
@@ -22,12 +25,26 @@ function createTransporter() {
   });
 }
 
+function formatSubmittedAt(iso?: string | Date | null): string {
+  const d = iso ? new Date(iso) : new Date();
+  if (Number.isNaN(d.getTime())) {
+    return new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
+  }
+  return d.toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export interface ContactSubmission {
   name: string;
   email: string;
   phone?: string | null;
   subject?: string | null;
   message: string;
+  submittedAt?: string | Date | null;
+  submissionId?: number | null;
 }
 
 export async function forwardContactEmail(submission: ContactSubmission): Promise<void> {
@@ -37,16 +54,25 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
     return;
   }
 
-  const { name, email, phone, subject, message } = submission;
+  const transporter = createTransporter();
+  if (!transporter) return;
+
+  const { name, email, phone, subject, message, submittedAt, submissionId } = submission;
   const subjectLine = subject
     ? `Contact Form: ${subject}`
     : `New Contact Message from ${name}`;
+  const adminLink = adminPortalUrl("/admin/contacts");
+  const when = formatSubmittedAt(submittedAt);
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 8px;">
         New Contact Form Submission
       </h2>
+      <p style="background: #f0f4ff; border-left: 4px solid #1e3a5f; padding: 10px 14px; margin: 0 0 16px; font-size: 13px;">
+        <strong>Submitted:</strong> ${escapeHtml(when)}
+        ${submissionId != null ? `<br/><strong>Record ID:</strong> #${submissionId}` : ""}
+      </p>
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr>
           <td style="padding: 8px 12px; background: #f5f7fa; font-weight: bold; width: 130px; vertical-align: top;">Name</td>
@@ -75,6 +101,11 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
           <td style="padding: 8px 12px; white-space: pre-wrap;">${escapeHtml(message)}</td>
         </tr>
       </table>
+      <p style="margin: 16px 0;">
+        <a href="${escapeHtml(adminLink)}" style="display: inline-block; background: #1e3a5f; color: #fff; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+          View in Admin Portal
+        </a>
+      </p>
       <hr style="border: none; border-top: 1px solid #e8eaed; margin: 24px 0;" />
       <p style="color: #666; font-size: 12px; margin: 0;">
         Submitted via allwindowdoorparts.com contact form.<br/>
@@ -83,7 +114,6 @@ export async function forwardContactEmail(submission: ContactSubmission): Promis
     </div>
   `;
 
-  const transporter = createTransporter();
   await transporter.sendMail({
     from: `"All Window Door Parts" <${FROM_ADDRESS}>`,
     to: forwardTo,
@@ -103,6 +133,8 @@ export interface PartsIdSubmission {
   windowDoorAge?: string | null;
   imageFileName?: string | null;
   imageBase64?: string | null;
+  submittedAt?: string | Date | null;
+  submissionId?: number | null;
 }
 
 export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promise<void> {
@@ -112,7 +144,25 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
     return;
   }
 
-  const { ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64 } = submission;
+  const transporter = createTransporter();
+  if (!transporter) return;
+
+  const {
+    ticketId,
+    name,
+    email,
+    phone,
+    description,
+    windowDoorBrand,
+    windowDoorAge,
+    imageFileName,
+    imageBase64,
+    submittedAt,
+    submissionId,
+  } = submission;
+
+  const adminLink = adminPortalUrl("/admin/parts-id");
+  const when = formatSubmittedAt(submittedAt);
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -121,6 +171,10 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
       </h2>
       <p style="background: #f0f4ff; border-left: 4px solid #1e3a5f; padding: 10px 14px; margin: 0 0 16px; font-weight: bold;">
         Ticket ID: ${escapeHtml(ticketId)}
+      </p>
+      <p style="background: #f5f7fa; padding: 8px 14px; margin: 0 0 16px; font-size: 13px;">
+        <strong>Submitted:</strong> ${escapeHtml(when)}
+        ${submissionId != null ? `<br/><strong>Record ID:</strong> #${submissionId}` : ""}
       </p>
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr>
@@ -157,10 +211,15 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
       </table>
       ${imageFileName ? `
       <div style="margin: 16px 0; padding: 10px 14px; background: #f0f4ff; border-left: 4px solid #1e3a5f;">
-        <p style="margin: 0; font-weight: bold; color: #1e3a5f;">📎 Photo attached: ${escapeHtml(imageFileName)}</p>
+        <p style="margin: 0; font-weight: bold; color: #1e3a5f;">Photo attached: ${escapeHtml(imageFileName)}</p>
         <p style="margin: 4px 0 0; font-size: 12px; color: #555;">See the attached image file in this email.</p>
       </div>
       ` : ""}
+      <p style="margin: 16px 0;">
+        <a href="${escapeHtml(adminLink)}" style="display: inline-block; background: #1e3a5f; color: #fff; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+          View in Admin Portal
+        </a>
+      </p>
       <hr style="border: none; border-top: 1px solid #e8eaed; margin: 24px 0;" />
       <p style="color: #666; font-size: 12px; margin: 0;">
         Submitted via allwindowdoorparts.com parts identification form.<br/>
@@ -169,9 +228,6 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission): Promis
     </div>
   `;
 
-  const transporter = createTransporter();
-
-  // Build attachment from base64 image if provided
   const attachments: Array<{ filename: string; content: string; encoding: string; contentType: string }> = [];
   if (imageBase64) {
     const match = imageBase64.match(/^data:([^;]+);base64,(.+)$/s);

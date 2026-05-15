@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 
 // ── CSV parser ────────────────────────────────────────────────────────────────
 function parseCsv(text: string): Record<string, string>[] {
@@ -59,8 +60,11 @@ interface ProductsResponse {
 interface Category { id: number; name: string; productCount?: number; }
 
 const PAGE_SIZE = 50;
-/** Rows per POST to `/api/admin/products/import` (server also enforces MAX_PRODUCT_IMPORT_ROWS per request). */
-const PRODUCT_IMPORT_CHUNK = 400;
+/**
+ * Rows per POST to `/api/admin/products/import`.
+ * Keep modest: Vercel rejects request bodies over ~4.5MB and each row can include long descriptions.
+ */
+const PRODUCT_IMPORT_CHUNK = 40;
 
 function useDebounced<T>(value: T, delay: number): T {
   const [deb, setDeb] = useState(value);
@@ -202,12 +206,21 @@ export default function AdminProductsList() {
         const res = await fetch("/api/admin/products/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ rows: slice }),
           signal: AbortSignal.timeout(longWait),
         });
-        const result = await res.json().catch(() => ({}));
+        const parsed = await parseApiResponseBody(res);
         if (!res.ok) {
-          throw new Error(result.error ?? `Import failed (batch ${c + 1}/${totalChunks})`);
+          throw new Error(
+            readApiErrorMessage(res, parsed, `Import failed (batch ${c + 1}/${totalChunks})`),
+          );
+        }
+        const result = parsed.json ?? {};
+        if (!parsed.json && parsed.text.trim()) {
+          throw new Error(
+            readApiErrorMessage(res, parsed, `Import returned a non-JSON response (batch ${c + 1}/${totalChunks})`),
+          );
         }
         acc.inserted += result.inserted ?? 0;
         acc.updated += result.updated ?? 0;
@@ -264,10 +277,12 @@ export default function AdminProductsList() {
       const res = await fetch("/api/admin/products/bulk-rename", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ rows }),
       });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error ?? "Rename failed");
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Rename failed"));
+      const result = parsed.json ?? {};
 
       qc.invalidateQueries({ queryKey: ["admin-products"] });
 
@@ -336,7 +351,7 @@ export default function AdminProductsList() {
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
             onClick={() => fileInputRef.current?.click()} disabled={importing}
-            title={`Imports in chunks of ${PRODUCT_IMPORT_CHUNK} rows. Columns match Export plus optional cost/dealer columns for markup pricing.`}>
+            title={`Imports in chunks of ${PRODUCT_IMPORT_CHUNK} rows. Columns match Export (category, sku, price, stock, etc.). Blank category is inferred from AWDP SKU + name; existing categories are kept on update.`}>
             {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             Import CSV
           </Button>

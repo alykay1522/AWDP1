@@ -53,19 +53,34 @@ router.post("/parts-identification", async (req, res) => {
 
     const ticketId = `AWDP-${Date.now().toString(36).toUpperCase()}`;
 
-    await db.insert(partsIdRequestsTable).values({
+    const [row] = await db
+      .insert(partsIdRequestsTable)
+      .values({
+        ticketId,
+        name,
+        email,
+        phone: phone || null,
+        description,
+        windowDoorBrand: windowDoorBrand || null,
+        windowDoorAge: windowDoorAge || null,
+        imageFileName: imageFileName || null,
+        status: "pending",
+      })
+      .returning();
+
+    forwardPartsIdEmail({
       ticketId,
       name,
       email,
-      phone: phone || null,
+      phone,
       description,
-      windowDoorBrand: windowDoorBrand || null,
-      windowDoorAge: windowDoorAge || null,
-      imageFileName: imageFileName || null,
-      status: "pending",
-    });
-
-    forwardPartsIdEmail({ ticketId, name, email, phone, description, windowDoorBrand, windowDoorAge, imageFileName, imageBase64: imageBase64 || null })
+      windowDoorBrand,
+      windowDoorAge,
+      imageFileName,
+      imageBase64: imageBase64 || null,
+      submissionId: row?.id,
+      submittedAt: row?.createdAt,
+    })
       .then(() => req.log.info("Parts ID email forwarded successfully"))
       .catch((err) => req.log.error({ err }, "Failed to forward parts ID email"));
 
@@ -94,15 +109,26 @@ router.post("/contact", async (req, res) => {
       return;
     }
 
-    await db.insert(contactSubmissionsTable).values({
+    const [row] = await db
+      .insert(contactSubmissionsTable)
+      .values({
+        name,
+        email,
+        phone: phone || null,
+        subject: subject || null,
+        message,
+      })
+      .returning();
+
+    forwardContactEmail({
       name,
       email,
-      phone: phone || null,
-      subject: subject || null,
+      phone,
+      subject,
       message,
-    });
-
-    forwardContactEmail({ name, email, phone, subject, message })
+      submissionId: row?.id,
+      submittedAt: row?.createdAt,
+    })
       .then(() => req.log.info("Contact email forwarded successfully"))
       .catch((err) => req.log.error({ err }, "Failed to forward contact email"));
 

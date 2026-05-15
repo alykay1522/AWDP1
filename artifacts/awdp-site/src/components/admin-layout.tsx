@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
       { href: "/admin/products", label: "All Products" },
       { href: "/admin/products/new", label: "Add New" },
       { href: "/admin/products/bulk-editor", label: "Bulk Editor" },
+      { href: "/admin/csv-import", label: "Description CSV" },
     ],
   },
   { href: "/admin/orders", label: "Orders", icon: <ShoppingBag className="w-4 h-4" /> },

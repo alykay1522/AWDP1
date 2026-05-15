@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Upload, FileText, CheckCircle2, AlertCircle, XCircle, ArrowRight, RotateCcw, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 
 interface MatchResult {
   rowIndex: number;
@@ -59,15 +60,23 @@ export default function AdminCsvImport() {
       const res = await fetch(`/api/admin/csv-import?mode=${mode}`, {
         method: "POST",
         body: fd,
+        credentials: "include",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) {
+        throw new Error(readApiErrorMessage(res, parsed, `Upload failed (${mode})`));
+      }
+      if (!parsed.json) {
+        throw new Error(
+          readApiErrorMessage(res, parsed, `Server returned a non-JSON response (${mode})`),
+        );
+      }
 
       if (mode === "preview") {
-        setPreview(data as PreviewResponse);
+        setPreview(parsed.json as unknown as PreviewResponse);
         setPhase("preview-done");
       } else {
-        setApplyResult(data as ApplyResponse);
+        setApplyResult(parsed.json as unknown as ApplyResponse);
         setPhase("applied");
       }
     } catch (e: any) {
@@ -114,7 +123,7 @@ export default function AdminCsvImport() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">CSV Product Import</h1>
           <p className="text-slate-500 text-sm">
-            Upload the scraped CSV to update product descriptions and ordering rules. All changes are previewed before applying.
+            Upload a scraped CSV to update product descriptions and ordering rules (catalog SKU/price import is under Products → Import CSV). All changes are previewed before applying.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -134,7 +143,7 @@ export default function AdminCsvImport() {
         <div className="mb-6 bg-slate-50 border rounded-xl p-5">
           <p className="text-sm font-bold text-slate-700 mb-3">Expected CSV Columns</p>
           <div className="flex flex-wrap gap-2">
-            {["product_title","source_site","product_url","description_clean","min_order_qty","sold_in_pairs","sold_in_packs","min_lineal_feet","unit_type","notes_raw_rules"].map((col) => (
+            {["product_title","sku","source_site","product_url","description_clean","min_order_qty","sold_in_pairs","sold_in_packs","min_lineal_feet","unit_type","notes_raw_rules"].map((col) => (
               <code key={col} className="text-xs bg-white border border-slate-200 rounded px-2 py-1 text-slate-600 font-mono">{col}</code>
             ))}
           </div>

@@ -9,6 +9,7 @@ import AdmZip from "adm-zip";
 import * as fs from "fs";
 import * as path from "path";
 import { objectStorageClient } from "../lib/objectStorage";
+import { resolveProductCategory } from "../lib/resolveProductCategory";
 
 // Multer: write uploads to OS temp dir, accept up to 2 GB
 const upload = multer({
@@ -475,32 +476,59 @@ router.post("/admin/products/import", async (req, res) => {
     let inserted = 0, updated = 0, errored = 0, skipped = 0, needsPricing = 0;
     const errors: string[] = [];
 
+    type PreparedImportRow = {
+      rawRow: Record<string, string>;
+      row: ReturnType<typeof normalizeRow>;
+      rawSku: string;
+      sku: string;
+    };
+    const prepared: PreparedImportRow[] = [];
+
     for (const rawRow of rows) {
       const row = normalizeRow(rawRow);
       const rawSku = row.sku;
+      if (!rawSku) {
+        skipped++;
+        continue;
+      }
 
       try {
-        if (!rawSku) {
-          skipped++;
-          continue; // silently skip completely blank rows
-        }
-
-        // Resolve the AWDP SKU:
-        // • If it already starts with AWDP- → use it as-is
-        // • Otherwise run it through the cipher to generate one
         let sku: string;
         if (rawSku.toUpperCase().startsWith("AWDP-")) {
           sku = rawSku.toUpperCase();
         } else {
           sku = await generateUniqueSku(rawSku);
         }
+        prepared.push({ rawRow, row, rawSku, sku });
+      } catch (e: any) {
+        errored++;
+        if (errors.length < 50) errors.push(`${rawSku}: ${e.message}`);
+      }
+    }
 
-        // For existing products a missing price just means "don't change price"
-        const [existing] = await db
-          .select({ sku: productsTable.sku, price: productsTable.price })
-          .from(productsTable)
-          .where(eq(productsTable.sku, sku))
-          .limit(1);
+    const existingBySku = new Map<
+      string,
+      { sku: string; price: string; category: string; name: string }
+    >();
+    if (prepared.length > 0) {
+      const skuList = [...new Set(prepared.map((p) => p.sku))];
+      const existingRows = await db
+        .select({
+          sku: productsTable.sku,
+          price: productsTable.price,
+          category: productsTable.category,
+          name: productsTable.name,
+        })
+        .from(productsTable)
+        .where(inArray(productsTable.sku, skuList));
+      for (const ex of existingRows) {
+        existingBySku.set(ex.sku, ex);
+      }
+    }
+
+    for (const { row, rawSku, sku } of prepared) {
+      try {
+        const existing = existingBySku.get(sku);
 
         // Price resolution order:
         // 1. Direct sell-price column (price, sellingprice, ourprice, etc.)
@@ -542,10 +570,18 @@ router.post("/admin/products/import", async (req, res) => {
           try { specifications = JSON.parse(row.specifications); } catch {}
         }
 
+        const productName = row.name || existing?.name || rawSku;
+        const category = resolveProductCategory({
+          rawCategory: row.category,
+          sku,
+          name: productName,
+          existingCategory: existing?.category,
+        });
+
         const values: Record<string, unknown> = {
           name:           row.name || (existing ? undefined : rawSku),
           description:    row.description || "",
-          category:       row.category || "",
+          category,
           supplier:       row.supplier || "All Window Door Parts",
           inStock,
           // Only set imageUrl if the CSV actually provides one;
@@ -575,10 +611,22 @@ router.post("/admin/products/import", async (req, res) => {
         if (existing) {
           await db.update(productsTable).set(values).where(eq(productsTable.sku, sku));
           updated++;
+          existingBySku.set(sku, {
+            sku,
+            price: (values.price as string | undefined) ?? existing.price,
+            category: (values.category as string | undefined) ?? existing.category,
+            name: (values.name as string | undefined) ?? existing.name,
+          });
         } else {
           await db.insert(productsTable).values({ sku, ...(values as any) });
           inserted++;
           if (needsPricingFlag) needsPricing++;
+          existingBySku.set(sku, {
+            sku,
+            price: (values.price as string | undefined) ?? "0.00",
+            category: category,
+            name: (values.name as string | undefined) ?? rawSku,
+          });
         }
       } catch (e: any) {
         errored++;

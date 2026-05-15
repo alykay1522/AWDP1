@@ -78,6 +78,9 @@ function scoreMatch(csvTitle: string, productName: string): number {
 
 interface CsvRow {
   product_title?: string;
+  sku?: string;
+  awdp_sku?: string;
+  part_number?: string;
   source_site?: string;
   product_url?: string;
   description_clean?: string;
@@ -88,6 +91,26 @@ interface CsvRow {
   unit_type?: string;
   notes_raw_rules?: string;
   [key: string]: string | undefined;
+}
+
+function pickCsvSku(row: CsvRow): string {
+  const direct =
+    row.sku
+    ?? row.awdp_sku
+    ?? row["AWDP SKU"]
+    ?? row["Part Number"]
+    ?? row.part_number
+    ?? "";
+  if (direct.trim()) return direct.trim().toUpperCase();
+
+  for (const [key, val] of Object.entries(row)) {
+    if (!val?.trim()) continue;
+    const compact = key.toLowerCase().replace(/[\s\-_.]+/g, "");
+    if (["sku", "awdpsku", "partnumber", "partno", "catalognumber", "itemnumber"].includes(compact)) {
+      return val.trim().toUpperCase();
+    }
+  }
+  return "";
 }
 
 interface MatchResult {
@@ -124,30 +147,42 @@ function isGenericDescription(desc: string | null | undefined): boolean {
 
 async function buildMatchResults(rows: CsvRow[], allProducts: Array<{ sku: string; name: string; description: string | null }>): Promise<MatchResult[]> {
   const results: MatchResult[] = [];
+  const bySku = new Map(allProducts.map((p) => [p.sku.toUpperCase(), p]));
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const csvTitle = (row.product_title ?? "").trim();
-    if (!csvTitle) continue;
+    const csvSku = pickCsvSku(row);
+    if (!csvTitle && !csvSku) continue;
 
-    // Find best matching product
     let bestSku: string | null = null;
     let bestName: string | null = null;
     let bestScore = 0;
     let bestDesc: string | null = null;
 
-    for (const p of allProducts) {
-      const score = scoreMatch(csvTitle, p.name);
-      if (score > bestScore) {
-        bestScore = score;
-        bestSku = p.sku;
-        bestName = p.name;
-        bestDesc = p.description;
+    if (csvSku) {
+      const exact = bySku.get(csvSku);
+      if (exact) {
+        bestSku = exact.sku;
+        bestName = exact.name;
+        bestDesc = exact.description;
+        bestScore = 1;
       }
     }
 
-    // Only accept matches with score >= 0.35
-    const matched = bestScore >= 0.35;
+    if (!bestSku && csvTitle) {
+      for (const p of allProducts) {
+        const score = scoreMatch(csvTitle, p.name);
+        if (score > bestScore) {
+          bestScore = score;
+          bestSku = p.sku;
+          bestName = p.name;
+          bestDesc = p.description;
+        }
+      }
+    }
+
+    const matched = bestScore >= (csvSku && bestScore === 1 ? 0 : 0.35);
 
     const csvDesc = (row.description_clean ?? "").trim();
     const orderingNotes = buildOrderingNotes(row);

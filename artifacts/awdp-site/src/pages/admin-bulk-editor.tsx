@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -88,9 +89,11 @@ async function fetchProducts(params: {
   if (params.inStock)  q.set("inStock", params.inStock);
   // zeroPrice filter: pass a sentinel search that hits the price field
   if (params.zeroPrice) q.set("zeroPrice", "true");
-  const res = await fetch(`/api/admin/products?${q}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const res = await fetch(`/api/admin/products?${q}`, { credentials: "include" });
+  const parsed = await parseApiResponseBody(res);
+  if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Failed to load products"));
+  if (!parsed.json) throw new Error(readApiErrorMessage(res, parsed, "Invalid product list response"));
+  return parsed.json as unknown as ProductsResponse;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -178,11 +181,12 @@ export default function AdminBulkEditor() {
       const res = await fetch("/api/admin/products/bulk-update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Update failed");
-      return json;
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Update failed"));
+      return parsed.json ?? {};
     },
     onSuccess: (data) => {
       toast({ title: "Done", description: data.message });
