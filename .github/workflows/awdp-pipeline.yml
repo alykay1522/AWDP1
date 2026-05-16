@@ -1,0 +1,49 @@
+name: AWDP Full Pipeline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * *"   # 3 AM CST (08:00 UTC)
+
+jobs:
+  build-awdp:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Run AWDP scraper
+        run: python3 scripts/scraper.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node dependencies
+        run: npm install json2csv
+
+      - name: Run WooCommerce transformer
+        run: node scripts/transformer.js
+
+      - name: Commit updated catalog + CSV
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add data/catalog.json
+          git add data/awdp_woocommerce.csv
+          git commit -m "AWDP auto-update: $(date -u +"%Y-%m-%d %H:%M:%S")" || echo "No changes to commit"
+
+      - name: Push changes
+        run: git push
