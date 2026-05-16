@@ -1,31 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
-  "installCommand": "node vercel-install.cjs",
-  "buildCommand": "pnpm build",
-  "outputDirectory": "artifacts/awdp-site/dist/public",
-  "functions": {
-    "api/**/*.mjs": {
-      "maxDuration": 60,
-      "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
-    },
-    "api/admin/**/*.mjs": {
-      "maxDuration": 300,
-      "includeFiles": "artifacts/{api-server/dist/**,awdp-site/vercel-serverless-bridge.js}"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/admin",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/admin/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/((?!api(?:/|$)).*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "artifacts/awdp-site/dist"
 }
