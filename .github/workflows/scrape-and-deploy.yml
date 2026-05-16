@@ -1,0 +1,47 @@
+name: Scrape Catalog and Deploy
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"   # 2 AM CST daily
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run scraper
+        run: pnpm run scrape:awdp
+
+      - name: Commit updated catalog.json
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/catalog.json
+          git commit -m "Auto-update catalog.json" || echo "No changes"
+
+      - name: Push changes
+        run: git push
+
+      - name: Trigger Vercel Deploy
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_fM2waPlvqKIbqYWVyYM5xhHOg1uf/Jv98lzbBKK"
