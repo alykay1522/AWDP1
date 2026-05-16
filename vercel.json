@@ -1,4 +1,8 @@
 {
   "buildCommand": "pnpm run build",
-  "outputDirectory": "artifacts/awdp-site/dist"
+  "outputDirectory": "artifacts/awdp-site/dist",
+  "rewrites": [
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" }
+  ]
 }
