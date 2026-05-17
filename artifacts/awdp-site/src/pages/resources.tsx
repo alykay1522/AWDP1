@@ -240,7 +240,7 @@ export default function Resources() {
       <PageSeo
         title="PDF Resources — Measurement Guides & Part Catalogs | All Window Door Parts"
         description="Free PDF measurement guides, product catalogs, and how-to references for BiltBest casement, double hung, and patio door replacement parts."
-        canonical="/resources"
+        path="/resources"
         structuredData={[pageSchema, breadcrumbSchema]}
       />
 

@@ -214,7 +214,7 @@ export default function GuideHub() {
       <PageSeo
         title="How to Identify Your Window or Door Part | Part Identification Center"
         description="Step-by-step identification guides for window balances, patio door rollers, weatherstripping, operators, door locks, and glazing bead. Find the exact replacement in minutes."
-        canonical="/guides"
+        path="/guides"
         structuredData={[webPageSchema, faqSchema, breadcrumbSchema]}
       />
 
