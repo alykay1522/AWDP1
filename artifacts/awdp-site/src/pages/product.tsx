@@ -499,15 +499,28 @@ export default function ProductDetail() {
                     </button>
                   </div>
                   
-                  <Button 
-                    size="lg" 
-                    className="h-14 flex-1 text-lg font-bold shadow-sm" 
-                    disabled={!product.inStock || isCallForPricing}
-                    onClick={() => addToCart(product, quantity)}
-                  >
-                    <ShoppingCart className="mr-2 w-5 h-5" /> 
-                    {!product.inStock ? "Out of Stock" : "Add to Cart"}
-                  </Button>
+                  {isCallForPricing ? (
+                    <Button 
+                      size="lg" 
+                      className="h-14 flex-1 text-lg font-bold shadow-sm bg-amber-600 hover:bg-amber-700" 
+                      asChild
+                    >
+                      <a href={`tel:+17855330244`}>
+                        <Phone className="mr-2 w-5 h-5" /> 
+                        Call for Pricing: 785-533-0244
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="lg" 
+                      className="h-14 flex-1 text-lg font-bold shadow-sm" 
+                      disabled={!product.inStock}
+                      onClick={() => addToCart(product, quantity)}
+                    >
+                      <ShoppingCart className="mr-2 w-5 h-5" /> 
+                      {!product.inStock ? "Out of Stock" : "Add to Cart"}
+                    </Button>
+                  )}
                 </div>
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
