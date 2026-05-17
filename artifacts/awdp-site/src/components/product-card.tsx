@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
         {isCallForPricing && (
           <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-            Call for Price
+            Contact for Price
           </span>
         )}
         {!product.inStock && (
@@ -99,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>
             {isCallForPricing ? (
-              <span className="text-sm font-bold text-amber-700 block mb-1">Call for Pricing</span>
+              <span className="text-sm font-bold text-amber-700 block mb-1">Contact for Pricing</span>
             ) : (
               isSale ? (
                 <div className="flex flex-col">

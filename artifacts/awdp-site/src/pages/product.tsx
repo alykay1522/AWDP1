@@ -505,10 +505,10 @@ export default function ProductDetail() {
                       className="h-14 flex-1 text-lg font-bold shadow-sm bg-amber-600 hover:bg-amber-700" 
                       asChild
                     >
-                      <a href={`tel:+17855330244`}>
-                        <Phone className="mr-2 w-5 h-5" /> 
-                        Call for Pricing: 785-533-0244
-                      </a>
+                      <Link href="/parts-identification">
+                        <PackageSearch className="mr-2 w-5 h-5" /> 
+                        Get Pricing — Free Parts ID
+                      </Link>
                     </Button>
                   ) : (
                     <Button 
