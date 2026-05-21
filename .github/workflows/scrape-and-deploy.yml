@@ -1,45 +1,69 @@
-name: Scrape Catalog and Deploy
+name: AWDP Scrape & Deploy
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *"   # 2 AM CST daily
+    - cron: "0 */6 * * *"   # every 6 hours
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
-  scrape:
+  build-awdp:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Setup Node
+      - name: Install Python dependencies
+        run: |
+          pip install -r scrapers/requirements.txt
+
+      - name: Run AWDP scraper
+        run: |
+          python scrapers/awdp_automation.py
+
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "22"
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Run scraper
-        run: pnpm run scrape:awdp
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Commit updated catalog.json
+      - name: Run AWDP transformer
+        run: node scripts/transformer.js
+
+      - name: Commit changes
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add data/catalog.json
-          git commit -m "Auto-update catalog.json" || echo "No changes"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "AWDP automated update $(date -u +"%Y-%m-%d %H:%M:%S")"
 
       - name: Push changes
-        run: git push
-
-      - name: Trigger Vercel Deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_fM2waPlvqKIbqYWVyYM5xhHOg1uf/Jv98lzbBKK"
+          git push origin main
