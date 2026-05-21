@@ -152,7 +152,7 @@ importers:
         version: 8.0.7
       openai:
         specifier: ^6.33.0
-        version: 6.36.0(ws@8.20.0)(zod@3.25.76)
+        version: 6.36.0(ws@8.20.1)(zod@3.25.76)
       pino:
         specifier: ^9
         version: 9.14.0
@@ -2743,16 +2743,8 @@ packages:
   '@tanstack/query-core@5.100.11':
     resolution: {integrity: sha512-lmE0994apShXPj8CUxgx4ch5yUJhE9k/+tVwihBvPOyerACWdBocfFg24t8+0RhtlTd7tEgchDkhlCxNssvDxw==}
 
-  '@tanstack/query-core@5.100.9':
-    resolution: {integrity: sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==}
-
   '@tanstack/react-query@5.100.11':
     resolution: {integrity: sha512-J0f9s5x3LE1450nNNfYx+e/n0DMa0uOBdFJUy5r0RvmsXd4nB/n0rbHtHI1vYXhikNFan+wf51p6Tmp4c8ucrg==}
-    peerDependencies:
-      react: ^18 || ^19
-
-  '@tanstack/react-query@5.100.9':
-    resolution: {integrity: sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -5117,8 +5109,8 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.20.0:
-    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
+  ws@8.20.1:
+    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -7645,16 +7637,9 @@ snapshots:
 
   '@tanstack/query-core@5.100.11': {}
 
-  '@tanstack/query-core@5.100.9': {}
-
   '@tanstack/react-query@5.100.11(react@18.3.1)':
     dependencies:
       '@tanstack/query-core': 5.100.11
-      react: 18.3.1
-
-  '@tanstack/react-query@5.100.9(react@18.3.1)':
-    dependencies:
-      '@tanstack/query-core': 5.100.9
       react: 18.3.1
 
   '@tootallnate/once@2.0.1': {}
@@ -9215,9 +9200,9 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openai@6.36.0(ws@8.20.0)(zod@3.25.76):
+  openai@6.36.0(ws@8.20.1)(zod@3.25.76):
     optionalDependencies:
-      ws: 8.20.0
+      ws: 8.20.1
       zod: 3.25.76
 
   orval@8.9.1(typescript@5.9.3):
@@ -9913,7 +9898,7 @@ snapshots:
       pg: 8.20.0
       pg-node-migrations: 0.0.8
       stripe: 22.1.1(@types/node@25.6.0)
-      ws: 8.20.0
+      ws: 8.20.1
       yesql: 7.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -10203,7 +10188,7 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.20.0: {}
+  ws@8.20.1: {}
 
   xtend@4.0.2: {}
 
