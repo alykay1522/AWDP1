@@ -1,0 +1,509 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-05-21T00:52:00",
+  "products": [
+    {
+      "sku": "AWDP-VGB-FT-15",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-FT-15",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "4-line vinyl glazing bead for aluminum frame windows. Available in champagne and white. Shipped in 6 ft lengths.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/VGB-FT-15-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/VGB-FT-15-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Champagne", "White"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-VGB-FI-77",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-FI-77",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in vinyl glazing bead for casement, awning, single and double hung windows. Available in black, bronze, champagne and white.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/VGB-FI-77.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black", "Bronze", "Champagne", "White"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-RF-01",
+      "type": "simple",
+      "name": "Casement Window Slide Hinge",
+      "brand": "AWDP",
+      "category": "window_hardware",
+      "sub_category": "Hinges & Tracks",
+      "price": 54.75,
+      "description": "Casement window slide hinge arm (pair). Used on newer models with 10-inch tracks.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/24-EP.jpg"
+      ],
+      "attributes": {
+        "Track_Length_in": 10
+      }
+    },
+    {
+      "sku": "AWDP-TB-1",
+      "type": "simple",
+      "name": "Vinyl Glazing Spline | AWDP-TB-1",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Vinyl Bead",
+      "price": 112.07,
+      "description": "Vinyl glazing channel for single pane glass. Available in gray in 100 ft rolls.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/TB-1.jpg"
+      ],
+      "attributes": {
+        "Color": ["Gray"],
+        "Length_ft": [100]
+      }
+    }
+  ]
+    {
+      "sku": "AWDP-OT-240",
+      "type": "variable",
+      "name": "Truth Rear Mount Dyad Casement Operator | 5 9/16\"",
+      "brand": "Truth EntryGard",
+      "category": "window_hardware",
+      "sub_category": "Operators",
+      "description": "Truth Rear Mount Dyad Casement Operator with diecast body and hardened steel arms. Rear threaded mounting holes.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/OT-240-3.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black", "Clay", "White"],
+        "Handing": ["Opposite", "Shown"]
+      }
+    },
+    {
+      "sku": "AWDP-OT-377",
+      "type": "variable",
+      "name": "Truth Ellipse Style Single Arm Casement Operator | 9 1/2\"",
+      "brand": "Truth EntryGard",
+      "category": "window_hardware",
+      "sub_category": "Operators",
+      "description": "Truth Ellipse Style 9.5 inch single arm sill-mounted casement operator. Replaces Truth 15 Series Traditional Style.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/OT-377-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/OT-377-2.jpg"
+      ],
+      "attributes": {
+        "Handing": ["Opposite", "Shown"]
+      }
+    },
+    {
+      "sku": "AWDP-OT-371",
+      "type": "variable",
+      "name": "Truth Maxim Series Dyad Operator | 9\"",
+      "brand": "Truth EntryGard",
+      "category": "window_hardware",
+      "sub_category": "Operators",
+      "description": "Maxim Series Dyad Operator for narrow windows. Operates frame widths 16–32 inches and sash heights up to 72 inches.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/OT-371-1.jpg"
+      ],
+      "attributes": {
+        "Color": ["Beige", "Bright White", "Bronze", "Cocoa Brown", "White"]
+      }
+    },
+    {
+      "sku": "AWDP-PL-1053",
+      "type": "simple",
+      "name": "Vinyl Door Bottom Sweep Seal | 1 3/4\"",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Door Sweeps",
+      "price": 60.22,
+      "description": "Vinyl door bottom sweep for 1.75 inch thick wood, clad, and fiberglass entry doors. Sold in packs of three.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/PL-1053-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/PL-1053-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Gray"],
+        "Length_in": 37
+      }
+    },
+    {
+      "sku": "AWDP-PL-447",
+      "type": "variable",
+      "name": "Vinyl Door Sweep",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Door Sweeps",
+      "description": "Vinyl door bottom sweep seal for wood, fiberglass, steel, inswing and outswing doors. For 2.25 inch thick doors.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/19-FF7-48.jpg"
+      ],
+      "attributes": {
+        "Length_in": [36, 48],
+        "Color": ["Brown"]
+      }
+    }
+    {
+      "sku": "AWDP-TO-634",
+      "type": "variable",
+      "name": "E-Lon Foam-Tite Door Seal",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Weather-Stripping",
+      "description": "High-performance E-Lon Foam-Tite door seal with air-lock design. For inswing and outswing doors.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/TO-634-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/TO-634-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Brown", "Tan", "White"],
+        "Length_in": [38, 82, 97]
+      }
+    },
+    {
+      "sku": "AWDP-CP-191",
+      "type": "variable",
+      "name": "Guardian Sliding Glass Patio Door Handle Set",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Handle Sets",
+      "description": "Sliding glass patio door handle with optional cylinder lock. Fits Guardian, Herculite, PPG, Cardinal and similar doors.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/CP-191-2.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/CP-191-1.jpg"
+      ],
+      "attributes": {
+        "Color": ["Aluminum Mill", "Black", "White"]
+      }
+    },
+    {
+      "sku": "AWDP-PO-291K",
+      "type": "simple",
+      "name": "Sliding Glass Patio Door Handle Set | White",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Handle Sets",
+      "price": 163.72,
+      "description": "Sliding patio door handle set with centered keylock and flip latch. 3 15/16 inch hole alignment.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PO-291K-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PO-291K-3.jpg"
+      ],
+      "attributes": {
+        "Color": ["White"]
+      }
+    },
+    {
+      "sku": "AWDP-PO-291BZ",
+      "type": "simple",
+      "name": "Sliding Patio Door Handle | Bronze",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Handle Sets",
+      "price": 130.71,
+      "description": "C-shape sliding patio door handle with centered flip latch. Non-handed.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PO-291BZ-2.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PO-291BZ-1.jpg"
+      ],
+      "attributes": {
+        "Color": ["Bronze"]
+      }
+    },
+    {
+      "sku": "AWDP-PT-443",
+      "type": "simple",
+      "name": "Mortise Lock and Plate",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Mortise Locks",
+      "price": 53.76,
+      "description": "Mortise lock assembly for sliding glass patio doors with anti-lift protection.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PT-443-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PT-443-2.jpg"
+      ],
+      "attributes": {
+        "Backset_in": 1.254
+      }
+    },
+    {
+      "sku": "AWDP-PT-OTO-45SS",
+      "type": "variable",
+      "name": "Sliding Glass Patio Door Mortise Lock",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Mortise Locks",
+      "description": "Mortise lock for sliding glass patio doors. Available in brass and stainless steel with multiple degree slot options.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PT-OTO-45SS-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/06/PT-OTO-45SS-2.jpg"
+      ],
+      "attributes": {
+        "Finish": ["Brass", "Stainless Steel"],
+        "Degree": ["45°", "90°"]
+      }
+    }
+    {
+      "sku": "AWDP-FRR-CS62",
+      "type": "variable",
+      "name": "Patio Glass Door Handle",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Handle Sets",
+      "description": "Fits Crestline, Caradco and Lincoln wood doors. Deluxe wood handle set with 3 15/16 inch hole spacing.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/FRR-CS62-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/FRR-CS62-2.jpg"
+      ],
+      "attributes": {
+        "Latch_Options": ["Centered", "Offset"],
+        "Color": ["Bronze"]
+      }
+    },
+    {
+      "sku": "AWDP-CPP-27",
+      "type": "variable",
+      "name": "Patio Door Mortise Style Handle",
+      "brand": "AWDP",
+      "category": "door_hardware",
+      "sub_category": "Handle Sets",
+      "description": "Sliding patio door handle with hardwood pull and black diecast body. Fits 3 15/16 inch hole spacing.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/CPP-27-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/CPP-27-2.jpg"
+      ],
+      "attributes": {
+        "Latch_Options": ["Centered", "Offset"],
+        "Color": ["Brushed Chrome", "Black", "White"]
+      }
+    },
+    {
+      "sku": "AWDP-TO-164",
+      "type": "variable",
+      "name": "Kerf Bulb Window Weather-Strip Seal 0.250 Diameter",
+      "brand": "AWDP",
+      "category": "weather_strip",
+      "sub_category": "Kerf Bulb",
+      "description": "Kerf bulb weather-strip seals for double hung, single hung, awning and casement windows. Designed to seal air and moisture leaks.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/BBRF-0250-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/BBRF-0250-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Beige", "Black", "White"],
+        "Quantity": [6, 12, 24, 48]
+      }
+    },
+    {
+      "sku": "AWDP-PIAE-8999",
+      "type": "variable",
+      "name": "Casement Window Flex-Leg Weatherstrip V195",
+      "brand": "AWDP",
+      "category": "weather_strip",
+      "sub_category": "Flex-Leg",
+      "description": "Flexible leg sash seal for wood, clad and aluminum casement windows. Updated design replacing older V191 style.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/PIAE-8999.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/PIAE-8999-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black"],
+        "Quantity": [6, 12, 24, 48]
+      }
+    },
+    {
+      "sku": "AWDP-JLK",
+      "type": "variable",
+      "name": "Replacement Jamb-Liner Pair Sash Carrier Track",
+      "brand": "BiltBest",
+      "category": "window_hardware",
+      "sub_category": "Jamb Liners",
+      "description": "OEM BiltBest style jamb liners with balances, terminal ends, shoes and clips. Exact match for original BiltBest double hung windows.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/JLK-1.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/JLK-3.jpg",
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/JLK-2.jpg"
+      ],
+      "attributes": {
+        "Color": ["Beige", "White"],
+        "Dimension_C_in": [
+          34.4375, 38.4375, 46.4375, 50.4375,
+          54.4375, 62.4375, 66.4375, 70.4375,
+          74.4375, 78.4375
+        ]
+      }
+    }
+    {
+      "sku": "AWDP-VGB-FT-31",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-FT-31",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in vinyl glazing bead for casement, awning, single and double hung windows. Available in bronze.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/04/VGB-FT-31.jpg"
+      ],
+      "attributes": {
+        "Color": ["Bronze"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-VGB-OB-36",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-OB-36",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Obsolete/out-of-production glazing bead for casement, awning, single and double hung windows. Available in bronze, gray and white.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/08/VGB-OB-36.jpg"
+      ],
+      "attributes": {
+        "Color": ["Bronze", "Gray", "White"],
+        "Length_ft": [120, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-LEE-16067",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-LEE-16067",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Glazing bead for aluminum, vinyl and wood windows. Available in adobe grey, black and white.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/LEE-16067.jpg"
+      ],
+      "attributes": {
+        "Color": ["Adobe Grey", "Black", "White"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-LEE-11865",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-LEE-11865",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Glazing bead for aluminum, vinyl and wood windows. Available in black or white.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/LEE-11865.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black", "White"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-TI-61",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-TI-61",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in glazing bead for windows and doors including V3 and V1 doors, casement and awning windows and patio doors.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/TI-61.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black", "White"],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    }
+    {
+      "sku": "AWDP-TI-384",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-TI-384",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Glazing bead replacement for casement, awning, single and double hung windows. Available in black, bronze and white.",
+      "images": [
+        "https://www.allwindowdoorparts.com/wp-content/uploads/2022/05/TI-384-1.jpg"
+      ],
+      "attributes": {
+        "Color": ["Black", "Bronze", "White"],
+        "Length_ft": [144, 192, 240, 384]
+      }
+    },
+    {
+      "sku": "AWDP-VGB-PE-198",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-PE-198",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in glazing bead for aluminum, vinyl and wood windows. Available in multiple lengths.",
+      "images": [],
+      "attributes": {
+        "Color": [],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-TI-30",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-TI-30",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in glazing bead for multiple window systems. Available in multiple lengths.",
+      "images": [],
+      "attributes": {
+        "Color": [],
+        "Length_ft": [120, 144, 192, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-VGB-PT-51",
+      "type": "variable",
+      "name": "Snap-In Vinyl Glazing Bead | AWDP-VGB-PT-51",
+      "brand": "AWDP",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "description": "Snap-in glazing bead for aluminum and vinyl windows. Available in multiple lengths.",
+      "images": [],
+      "attributes": {
+        "Color": [],
+        "Length_ft": [120, 240, 360]
+      }
+    },
+    {
+      "sku": "AWDP-LL-5",
+      "type": "variable",
+      "name": "Sliding Screen Door KD Kits",
+      "brand": "AWDP",
+      "category": "screen_hardware",
+      "sub_category": "KD Kits",
+      "description": "Sliding screen door knock-down kits available in multiple widths.",
+      "images": [],
+      "attributes": {
+        "Width_in": [30, 36, 48],
+        "Color": []
+      }
+    },
+    {
+      "sku": "AWDP-TO-150",
+      "type": "variable",
+      "name": "Kerf Bulb Window Weather-Strip Seal 0.300 Diameter",
+      "brand": "AWDP",
+      "category": "weather_strip",
+      "sub_category": "Kerf Bulb",
+      "description": "Kerf bulb weather-strip seal with 0.300 inch bulb diameter.",
+      "images": [],
+      "attributes": {
+        "Color": [],
+        "Bulb_Diameter_in": [0.300]
+      }
+    }
