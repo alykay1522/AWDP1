@@ -1,0 +1,89 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-05-21T00:51:00",
+  "brands": [
+    "AWDP",
+    "Truth EntryGard",
+    "WeFixItUSA",
+    "BiltBest",
+    "Marvin",
+    "Kolbe",
+    "Pella",
+    "Guardian",
+    "Crestline",
+    "Caradco",
+    "Lincoln"
+  ],
+  "categories": [
+    {
+      "key": "glazing_bead",
+      "label": "Glazing Bead",
+      "children": [
+        "Plastic Snap-In Bead",
+        "Vinyl Bead",
+        "Aluminum Bead",
+        "Wood Bead"
+      ]
+    },
+    {
+      "key": "weather_strip",
+      "label": "Weather Strip",
+      "children": [
+        "Window Weather Strip",
+        "Door Weather Strip",
+        "Kerf Bulb",
+        "Foam Bulb",
+        "Flex-Leg"
+      ]
+    },
+    {
+      "key": "window_hardware",
+      "label": "Window Hardware",
+      "children": [
+        "Casement Window Parts",
+        "Awning Window Parts",
+        "Operators",
+        "Crank Handles & Covers",
+        "Hinges & Tracks",
+        "Jamb Liners",
+        "Sash Locks"
+      ]
+    },
+    {
+      "key": "door_hardware",
+      "label": "Door Hardware",
+      "children": [
+        "Sliding Glass Door Patio",
+        "Mortise Locks",
+        "Handle Sets",
+        "Security Hardware",
+        "Door Sweeps",
+        "Weather-Stripping"
+      ]
+    },
+    {
+      "key": "screen_hardware",
+      "label": "Screen Door Hardware",
+      "children": [
+        "Rollers",
+        "Latch Assemblies",
+        "Handle Assemblies",
+        "KD Kits"
+      ]
+    }
+  ],
+  "attributes": [
+    "Color",
+    "Length_ft",
+    "Quantity",
+    "Dimension_E_in",
+    "Dimension_C_in",
+    "Size_in",
+    "Glass",
+    "Mounting",
+    "Handing",
+    "Finish",
+    "Latch_Options",
+    "Degree"
+  ]
+}
