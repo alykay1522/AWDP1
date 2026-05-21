@@ -1,0 +1,1046 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-05-21T01:11:00",
+  "variations": [
+    {
+      "parent_sku": "AWDP-VGB-FI-77",
+      "sku": "AWDP-VGB-FI-77-120",
+      "price": 217.60,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FI-77",
+      "sku": "AWDP-VGB-FI-77-144",
+      "price": 240.46,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FI-77",
+      "sku": "AWDP-VGB-FI-77-192",
+      "price": 295.56,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 192
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FI-77",
+      "sku": "AWDP-VGB-FI-77-240",
+      "price": 338.15,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FI-77",
+      "sku": "AWDP-VGB-FI-77-360",
+      "price": 495.95,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 360
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FT-31",
+      "sku": "AWDP-VGB-FT-31-120",
+      "price": 251.77,
+      "attributes": {
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FT-31",
+      "sku": "AWDP-VGB-FT-31-144",
+      "price": 298.08,
+      "attributes": {
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FT-31",
+      "sku": "AWDP-VGB-FT-31-192",
+      "price": 391.68,
+      "attributes": {
+        "Length_ft": 192
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FT-31",
+      "sku": "AWDP-VGB-FT-31-240",
+      "price": 482.19,
+      "attributes": {
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-FT-31",
+      "sku": "AWDP-VGB-FT-31-360",
+      "price": 712.80,
+      "attributes": {
+        "Length_ft": 360
+      }
+    }
+    {
+      "parent_sku": "AWDP-LEE-16067",
+      "sku": "AWDP-LEE-16067-120",
+      "price": null,
+      "attributes": {
+        "Color": "Adobe Grey",
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-LEE-16067",
+      "sku": "AWDP-LEE-16067-144",
+      "price": null,
+      "attributes": {
+        "Color": "Adobe Grey",
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-LEE-11865",
+      "sku": "AWDP-LEE-11865-120",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-LEE-11865",
+      "sku": "AWDP-LEE-11865-144",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-OB-36",
+      "sku": "AWDP-VGB-OB-36-120",
+      "price": 258.88,
+      "attributes": {
+        "Color": "Bronze",
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-OB-36",
+      "sku": "AWDP-VGB-OB-36-240",
+      "price": 488.88,
+      "attributes": {
+        "Color": "Bronze",
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-OB-36",
+      "sku": "AWDP-VGB-OB-36-360",
+      "price": 599.99,
+      "attributes": {
+        "Color": "Bronze",
+        "Length_ft": 360
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-30",
+      "sku": "AWDP-TI-30-120",
+      "price": 181.50,
+      "attributes": {
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-30",
+      "sku": "AWDP-TI-30-144",
+      "price": 215.79,
+      "attributes": {
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-30",
+      "sku": "AWDP-TI-30-192",
+      "price": 285.14,
+      "attributes": {
+        "Length_ft": 192
+      }
+    }
+    {
+      "parent_sku": "AWDP-TI-30",
+      "sku": "AWDP-TI-30-240",
+      "price": 338.88,
+      "attributes": {
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-30",
+      "sku": "AWDP-TI-30-360",
+      "price": 515.98,
+      "attributes": {
+        "Length_ft": 360
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PE-198",
+      "sku": "AWDP-VGB-PE-198-120",
+      "price": 258.88,
+      "attributes": {
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PE-198",
+      "sku": "AWDP-VGB-PE-198-144",
+      "price": 298.88,
+      "attributes": {
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PE-198",
+      "sku": "AWDP-VGB-PE-198-192",
+      "price": 388.88,
+      "attributes": {
+        "Length_ft": 192
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PE-198",
+      "sku": "AWDP-VGB-PE-198-240",
+      "price": 488.88,
+      "attributes": {
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PE-198",
+      "sku": "AWDP-VGB-PE-198-360",
+      "price": 599.99,
+      "attributes": {
+        "Length_ft": 360
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PT-51",
+      "sku": "AWDP-VGB-PT-51-120",
+      "price": 258.88,
+      "attributes": {
+        "Length_ft": 120
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PT-51",
+      "sku": "AWDP-VGB-PT-51-240",
+      "price": 488.88,
+      "attributes": {
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-VGB-PT-51",
+      "sku": "AWDP-VGB-PT-51-360",
+      "price": 599.99,
+      "attributes": {
+        "Length_ft": 360
+      }
+    }
+    {
+      "parent_sku": "AWDP-LL-5",
+      "sku": "AWDP-LL-5-30",
+      "price": 195.54,
+      "attributes": {
+        "Width_in": 30
+      }
+    },
+    {
+      "parent_sku": "AWDP-LL-5",
+      "sku": "AWDP-LL-5-36",
+      "price": 205.54,
+      "attributes": {
+        "Width_in": 36
+      }
+    },
+    {
+      "parent_sku": "AWDP-LL-5",
+      "sku": "AWDP-LL-5-48",
+      "price": 215.54,
+      "attributes": {
+        "Width_in": 48
+      }
+    },
+    {
+      "parent_sku": "AWDP-PT-OTO-45SS",
+      "sku": "AWDP-PT-OTO-45SS-BRASS-45",
+      "price": 52.69,
+      "attributes": {
+        "Finish": "Brass",
+        "Degree": "45°"
+      }
+    },
+    {
+      "parent_sku": "AWDP-PT-OTO-45SS",
+      "sku": "AWDP-PT-OTO-45SS-BRASS-90",
+      "price": 52.69,
+      "attributes": {
+        "Finish": "Brass",
+        "Degree": "90°"
+      }
+    },
+    {
+      "parent_sku": "AWDP-PT-OTO-45SS",
+      "sku": "AWDP-PT-OTO-45SS-SS-45",
+      "price": 64.76,
+      "attributes": {
+        "Finish": "Stainless Steel",
+        "Degree": "45°"
+      }
+    },
+    {
+      "parent_sku": "AWDP-PT-OTO-45SS",
+      "sku": "AWDP-PT-OTO-45SS-SS-90",
+      "price": 64.76,
+      "attributes": {
+        "Finish": "Stainless Steel",
+        "Degree": "90°"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-240",
+      "sku": "AWDP-OT-240-BLACK-SHOWN",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Handing": "Shown"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-240",
+      "sku": "AWDP-OT-240-WHITE-OPPOSITE",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Handing": "Opposite"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-240",
+      "sku": "AWDP-OT-240-CLAY-SHOWN",
+      "price": null,
+      "attributes": {
+        "Color": "Clay",
+        "Handing": "Shown"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-240",
+      "sku": "AWDP-OT-240-CLAY-OPPOSITE",
+      "price": null,
+      "attributes": {
+        "Color": "Clay",
+        "Handing": "Opposite"
+      }
+    }
+    {
+      "parent_sku": "AWDP-TI-384",
+      "sku": "AWDP-TI-384-144",
+      "price": 298.88,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 144
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-384",
+      "sku": "AWDP-TI-384-192",
+      "price": 358.88,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 192
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-384",
+      "sku": "AWDP-TI-384-240",
+      "price": 428.88,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 240
+      }
+    },
+    {
+      "parent_sku": "AWDP-TI-384",
+      "sku": "AWDP-TI-384-384",
+      "price": 599.99,
+      "attributes": {
+        "Color": "Black",
+        "Length_ft": 384
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-447",
+      "sku": "AWDP-PL-447-36",
+      "price": null,
+      "attributes": {
+        "Length_in": 36
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-447",
+      "sku": "AWDP-PL-447-48",
+      "price": null,
+      "attributes": {
+        "Length_in": 48
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-BROWN-38",
+      "price": null,
+      "attributes": {
+        "Color": "Brown",
+        "Length_in": 38
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-BROWN-82",
+      "price": null,
+      "attributes": {
+        "Color": "Brown",
+        "Length_in": 82
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-TAN-82",
+      "price": null,
+      "attributes": {
+        "Color": "Tan",
+        "Length_in": 82
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-TAN-97",
+      "price": null,
+      "attributes": {
+        "Color": "Tan",
+        "Length_in": 97
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-WHITE-38",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 38
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-634",
+      "sku": "AWDP-TO-634-WHITE-97",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 97
+      }
+    }
+    {
+      "parent_sku": "AWDP-OT-371",
+      "sku": "AWDP-OT-371-BEIGE",
+      "price": null,
+      "attributes": {
+        "Color": "Beige"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-371",
+      "sku": "AWDP-OT-371-WHITE",
+      "price": null,
+      "attributes": {
+        "Color": "White"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-371",
+      "sku": "AWDP-OT-371-BRONZE",
+      "price": null,
+      "attributes": {
+        "Color": "Bronze"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-371",
+      "sku": "AWDP-OT-371-COCOA",
+      "price": null,
+      "attributes": {
+        "Color": "Cocoa Brown"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-371",
+      "sku": "AWDP-OT-371-BRIGHTWHITE",
+      "price": null,
+      "attributes": {
+        "Color": "Bright White"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-CENTERED",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Centered"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-OFFSET",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Offset"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-BRUSHEDCHROME",
+      "price": null,
+      "attributes": {
+        "Color": "Brushed Chrome"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-BLACK",
+      "price": null,
+      "attributes": {
+        "Color": "Black"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-WHITE",
+      "price": null,
+      "attributes": {
+        "Color": "White"
+      }
+    }
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-CENTERED-BRUSHEDCHROME",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Centered",
+        "Color": "Brushed Chrome"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-CENTERED-BLACK",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Centered",
+        "Color": "Black"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-CENTERED-WHITE",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Centered",
+        "Color": "White"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-OFFSET-BRUSHEDCHROME",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Offset",
+        "Color": "Brushed Chrome"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-OFFSET-BLACK",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Offset",
+        "Color": "Black"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CPP-27",
+      "sku": "AWDP-CPP-27-OFFSET-WHITE",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Offset",
+        "Color": "White"
+      }
+    },
+    {
+      "parent_sku": "AWDP-FRR-CS62",
+      "sku": "AWDP-FRR-CS62-CENTERED-BRONZE",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Centered",
+        "Color": "Bronze"
+      }
+    },
+    {
+      "parent_sku": "AWDP-FRR-CS62",
+      "sku": "AWDP-FRR-CS62-OFFSET-BRONZE",
+      "price": null,
+      "attributes": {
+        "Latch_Options": "Offset",
+        "Color": "Bronze"
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BEIGE-6",
+      "price": null,
+      "attributes": {
+        "Color": "Beige",
+        "Quantity": 6
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BEIGE-12",
+      "price": null,
+      "attributes": {
+        "Color": "Beige",
+        "Quantity": 12
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BEIGE-24",
+      "price": null,
+      "attributes": {
+        "Color": "Beige",
+        "Quantity": 24
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BEIGE-48",
+      "price": null,
+      "attributes": {
+        "Color": "Beige",
+        "Quantity": 48
+      }
+    }
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BLACK-6",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 6
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BLACK-12",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 12
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BLACK-24",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 24
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-BLACK-48",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 48
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-WHITE-6",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Quantity": 6
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-WHITE-12",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Quantity": 12
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-WHITE-24",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Quantity": 24
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-164",
+      "sku": "AWDP-TO-164-WHITE-48",
+      "price": null,
+      "attributes": {
+        "Color": "White",
+        "Quantity": 48
+      }
+    },
+    {
+      "parent_sku": "AWDP-PIAE-8999",
+      "sku": "AWDP-PIAE-8999-BLACK-6",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 6
+      }
+    },
+    {
+      "parent_sku": "AWDP-PIAE-8999",
+      "sku": "AWDP-PIAE-8999-BLACK-12",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 12
+      }
+    },
+    {
+      "parent_sku": "AWDP-PIAE-8999",
+      "sku": "AWDP-PIAE-8999-BLACK-24",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 24
+      }
+    },
+    {
+      "parent_sku": "AWDP-PIAE-8999",
+      "sku": "AWDP-PIAE-8999-BLACK-48",
+      "price": null,
+      "attributes": {
+        "Color": "Black",
+        "Quantity": 48
+      }
+    }
+    {
+      "parent_sku": "AWDP-CP-191",
+      "sku": "AWDP-CP-191-MILL",
+      "price": null,
+      "attributes": {
+        "Color": "Aluminum Mill"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CP-191",
+      "sku": "AWDP-CP-191-BLACK",
+      "price": null,
+      "attributes": {
+        "Color": "Black"
+      }
+    },
+    {
+      "parent_sku": "AWDP-CP-191",
+      "sku": "AWDP-CP-191-WHITE",
+      "price": null,
+      "attributes": {
+        "Color": "White"
+      }
+    },
+    {
+      "parent_sku": "AWDP-TO-150",
+      "sku": "AWDP-TO-150-0300",
+      "price": null,
+      "attributes": {
+        "Bulb_Diameter_in": 0.300
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-34.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 34.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-38.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 38.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-46.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 46.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-50.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 50.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-54.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 54.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-62.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 62.4375
+      }
+    }
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-66.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 66.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-70.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 70.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-74.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 74.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-JLK",
+      "sku": "AWDP-JLK-78.4375",
+      "price": null,
+      "attributes": {
+        "Dimension_C_in": 78.4375
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-377",
+      "sku": "AWDP-OT-377-SHOWN",
+      "price": null,
+      "attributes": {
+        "Handing": "Shown"
+      }
+    },
+    {
+      "parent_sku": "AWDP-OT-377",
+      "sku": "AWDP-OT-377-OPPOSITE",
+      "price": null,
+      "attributes": {
+        "Handing": "Opposite"
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-37",
+      "price": 60.22,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 37
+      }
+    }
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-47",
+      "price": 68.44,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 47
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-57",
+      "price": 76.66,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 57
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-67",
+      "price": 84.88,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 67
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-77",
+      "price": 93.10,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 77
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-GRAY-97",
+      "price": 109.54,
+      "attributes": {
+        "Color": "Gray",
+        "Length_in": 97
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-37",
+      "price": 60.22,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 37
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-47",
+      "price": 68.44,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 47
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-57",
+      "price": 76.66,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 57
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-67",
+      "price": 84.88,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 67
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-77",
+      "price": 93.10,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 77
+      }
+    }
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-WHITE-97",
+      "price": 109.54,
+      "attributes": {
+        "Color": "White",
+        "Length_in": 97
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-37",
+      "price": 60.22,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 37
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-47",
+      "price": 68.44,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 47
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-57",
+      "price": 76.66,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 57
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-67",
+      "price": 84.88,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 67
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-77",
+      "price": 93.10,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 77
+      }
+    },
+    {
+      "parent_sku": "AWDP-PL-1053",
+      "sku": "AWDP-PL-1053-BLACK-97",
+      "price": 109.54,
+      "attributes": {
+        "Color": "Black",
+        "Length_in": 97
+      }
+    }
+  ]
+}
