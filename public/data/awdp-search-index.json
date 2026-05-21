@@ -1,0 +1,114 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-05-21T01:41:00",
+  "index": [
+    {
+      "sku": "AWDP-VGB-FI-77",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "snap-in", "vinyl", "FI-77", "window bead"],
+      "variations": ["AWDP-VGB-FI-77-120", "AWDP-VGB-FI-77-144", "AWDP-VGB-FI-77-192", "AWDP-VGB-FI-77-240", "AWDP-VGB-FI-77-360"]
+    },
+    {
+      "sku": "AWDP-VGB-FT-31",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "snap-in", "vinyl", "FT-31"],
+      "variations": ["AWDP-VGB-FT-31-120", "AWDP-VGB-FT-31-144", "AWDP-VGB-FT-31-192", "AWDP-VGB-FT-31-240", "AWDP-VGB-FT-31-360"]
+    },
+    {
+      "sku": "AWDP-VGB-OB-36",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "snap-in", "vinyl", "OB-36", "obsolete"],
+      "variations": ["AWDP-VGB-OB-36-120", "AWDP-VGB-OB-36-240", "AWDP-VGB-OB-36-360"]
+    },
+    {
+      "sku": "AWDP-LEE-16067",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "LEE-16067"],
+      "variations": ["AWDP-LEE-16067-120", "AWDP-LEE-16067-144"]
+    },
+    {
+      "sku": "AWDP-LEE-11865",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "LEE-11865"],
+      "variations": ["AWDP-LEE-11865-120", "AWDP-LEE-11865-144"]
+    },
+    {
+      "sku": "AWDP-TI-61",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "TI-61"],
+      "variations": []
+    },
+    {
+      "sku": "AWDP-TI-384",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "TI-384"],
+      "variations": ["AWDP-TI-384-144", "AWDP-TI-384-192", "AWDP-TI-384-240", "AWDP-TI-384-384"]
+    },
+    {
+      "sku": "AWDP-VGB-PE-198",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "PE-198"],
+      "variations": ["AWDP-VGB-PE-198-120", "AWDP-VGB-PE-198-144", "AWDP-VGB-PE-198-192", "AWDP-VGB-PE-198-240", "AWDP-VGB-PE-198-360"]
+    },
+    {
+      "sku": "AWDP-TI-30",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "TI-30"],
+      "variations": ["AWDP-TI-30-120", "AWDP-TI-30-144", "AWDP-TI-30-192", "AWDP-TI-30-240", "AWDP-TI-30-360"]
+    },
+    {
+      "sku": "AWDP-VGB-PT-51",
+      "name": "Snap-In Vinyl Glazing Bead",
+      "category": "glazing_bead",
+      "sub_category": "Plastic Snap-In Bead",
+      "brand": "AWDP",
+      "keywords": ["glazing", "bead", "PT-51"],
+      "variations": ["AWDP-VGB-PT-51-120", "AWDP-VGB-PT-51-240", "AWDP-VGB-PT-51-360"]
+    },
+    {
+      "sku": "AWDP-LL-5",
+      "name": "Sliding Screen Door KD Kits",
+      "category": "screen_hardware",
+      "sub_category": "KD Kits",
+      "brand": "AWDP",
+      "keywords": ["screen door", "sliding", "KD kit"],
+      "variations": ["AWDP-LL-5-30", "AWDP-LL-5-36", "AWDP-LL-5-48"]
+    },
+    {
+      "sku": "AWDP-TO-150",
+      "name": "Kerf Bulb Weather-Strip Seal",
+      "category": "weather_strip",
+      "sub_category": "Kerf Bulb",
+      "brand": "AWDP",
+      "keywords": ["weatherstrip", "kerf bulb", "0.300"],
+      "variations": ["AWDP-TO-150-0300"]
+    }
+  ]
+}
