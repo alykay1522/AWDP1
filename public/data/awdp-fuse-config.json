@@ -1,0 +1,16 @@
+{
+  "includeScore": true,
+  "shouldSort": true,
+  "threshold": 0.34,
+  "distance": 100,
+  "minMatchCharLength": 2,
+  "ignoreLocation": true,
+  "keys": [
+    { "name": "sku", "weight": 0.40 },
+    { "name": "name", "weight": 0.30 },
+    { "name": "keywords", "weight": 0.15 },
+    { "name": "category", "weight": 0.07 },
+    { "name": "sub_category", "weight": 0.05 },
+    { "name": "brand", "weight": 0.03 }
+  ]
+}
