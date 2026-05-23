@@ -12,8 +12,8 @@ export default function CategorySidebar() {
       <h3>Categories</h3>
       <ul>
         {categories.map((c) => (
-          <li key={c.slug}>
-            <Link href={`/category/${c.slug}`}>{c.name}</Link>
+          <li key={c.key}>
+            <Link href={`/category/${c.key}`}>{c.label}</Link>
           </li>
         ))}
       </ul>

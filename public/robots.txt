@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.allwindowdoorparts.com/sitemap.xml
+
+# Block admin and API paths from indexing
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Allow public API endpoints for crawlers
+Allow: /api/products
+Allow: /api/resources
+Allow: /api/healthz
