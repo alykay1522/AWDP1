@@ -1,0 +1,40 @@
+# All Window Door Parts — AI Crawling Policy
+# https://www.allwindowdoorparts.com/ai.txt
+
+User-agent: GPTBot
+Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /categories
+Allow: /guides/
+Allow: /about
+Allow: /contact
+Allow: /parts-identification
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /api/admin/
+
+User-agent: Google-Extended
+Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /categories
+Allow: /guides/
+Disallow: /admin/
+Disallow: /checkout/
+
+User-agent: CCBot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /api/admin/

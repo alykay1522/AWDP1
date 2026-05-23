@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /api/admin/
+
+# Allow public API endpoints for search and product data
+Allow: /api/products
+Allow: /api/healthz
+Allow: /api/sitemap.xml
+
+# AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.allwindowdoorparts.com/sitemap.xml
+Sitemap: https://www.allwindowdoorparts.com/api/sitemap.xml
