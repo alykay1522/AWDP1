@@ -27,8 +27,35 @@ router.get("/healthz", async (_req, res) => {
     return;
   }
 
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+  // Check that critical tables exist
+  try {
+    const tableCheck = await pool.query(`
+      SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name IN ('products', 'categories', 'orders')
+      ORDER BY table_name
+    `);
+    const tables = tableCheck.rows.map((r: { table_name: string }) => r.table_name);
+    const missing = ["products", "categories", "orders"].filter((t) => !tables.includes(t));
+    if (missing.length > 0) {
+      res.status(500).json({
+        status: "error",
+        error: `Missing tables: ${missing.join(", ")}. Run: DATABASE_URL="..." pnpm --filter @workspace/db run push`,
+        existingTables: tables,
+      });
+      return;
+    }
+
+    const countResult = await pool.query("SELECT COUNT(*)::int AS count FROM products");
+    const productCount = (countResult.rows[0] as { count: number }).count;
+
+    res.json({ ...HealthCheckResponse.parse({ status: "ok" }), tables, productCount });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({
+      status: "error",
+      error: `Table check failed: ${message}`,
+    });
+  }
 });
 
 export default router;
