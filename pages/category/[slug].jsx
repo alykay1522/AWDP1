@@ -9,7 +9,7 @@ export default function CategoryPage() {
   const router = useRouter();
   const { slug } = router.query;
 
-  const { ready } = useCatalog();
+  const { ready, error } = useCatalog();
 
   const [filters, setFilters] = useState({
     brand: null,
@@ -19,6 +19,10 @@ export default function CategoryPage() {
   });
 
   const data = useCategory(slug, filters);
+
+  if (error) {
+    return <div className="error">Failed to load catalog. Please try again later.</div>;
+  }
 
   if (!ready) {
     return <div className="loading">Loading catalog…</div>;
@@ -34,24 +38,32 @@ export default function CategoryPage() {
 
       <div className="category-main">
         <h1 className="category-title">
-          {slug.replace(/-/g, " ").toUpperCase()}
+          {slug.replace(/[-_]/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
         </h1>
+
+        {data.total > 0 && (
+          <p className="result-count">{data.total} product{data.total !== 1 ? "s" : ""}</p>
+        )}
 
         <ProductGrid items={data.items} />
 
-        <div className="pagination">
-          {Array.from({ length: data.totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={data.page === i + 1 ? "active" : ""}
-              onClick={() =>
-                setFilters((f) => ({ ...f, page: i + 1 }))
-              }
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {data.totalPages > 1 && (
+          <div className="pagination">
+            {Array.from({ length: data.totalPages }).map((_, i) => (
+              <button
+                key={i}
+                className={data.page === i + 1 ? "active" : ""}
+                onClick={() =>
+                  setFilters((f) => ({ ...f, page: i + 1 }))
+                }
+                aria-label={`Go to page ${i + 1}`}
+                aria-current={data.page === i + 1 ? "page" : undefined}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

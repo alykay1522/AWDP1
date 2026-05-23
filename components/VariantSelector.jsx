@@ -6,11 +6,16 @@ export default function VariantSelector({ variations, selectedSku, onChange }) {
 
   return (
     <div className="variant-selector">
-      <label>Choose Variation</label>
-      <select value={selectedSku} onChange={(e) => onChange(e.target.value)}>
+      <label htmlFor="variant-select">Choose Variation</label>
+      <select
+        id="variant-select"
+        value={selectedSku}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label="Select product variation"
+      >
         {variations.map((v) => (
           <option key={v.sku} value={v.sku}>
-            {v.sku}
+            {v.sku}{v.price != null ? ` — $${Number(v.price).toFixed(2)}` : ""}
           </option>
         ))}
       </select>

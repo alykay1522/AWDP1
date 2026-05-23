@@ -9,7 +9,7 @@ export default function SearchPage() {
   const router = useRouter();
   const { q } = router.query;
 
-  const { ready } = useCatalog();
+  const { ready, error } = useCatalog();
   const { results } = useSearch(q || "");
 
   const [query, setQuery] = useState(q || "");
@@ -17,6 +17,10 @@ export default function SearchPage() {
   useEffect(() => {
     setQuery(q || "");
   }, [q]);
+
+  if (error) {
+    return <div className="error">Failed to load catalog. Please try again later.</div>;
+  }
 
   if (!ready) {
     return <div className="loading">Loading catalog…</div>;
@@ -30,10 +34,14 @@ export default function SearchPage() {
         Search results for: <span className="query">{query}</span>
       </h1>
 
-      {results.length === 0 && (
+      {results.length === 0 && query && (
         <div className="no-results">
-          No products found. Try another search.
+          No products found for &ldquo;{query}&rdquo;. Try another search term.
         </div>
+      )}
+
+      {results.length > 0 && (
+        <p className="result-count">{results.length} product{results.length !== 1 ? "s" : ""} found</p>
       )}
 
       <ProductGrid items={results} />

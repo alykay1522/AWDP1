@@ -1,6 +1,6 @@
 // /components/ProductGrid.jsx
 import React from "react";
-import ProductCard from "./ProductCard.jsx";
+import ProductCard from "./productcard.jsx";
 
 export default function ProductGrid({ items = [] }) {
   return (
