@@ -17,7 +17,8 @@ function buildSslConfig(): pg.ClientConfig["ssl"] {
         "Remove 'sslmode=disable' from DATABASE_URL to enforce TLS.",
     );
   }
-  return { rejectUnauthorized: true };
+  const strict = process.env.PG_SSL_REJECT_UNAUTHORIZED !== "false";
+  return { rejectUnauthorized: strict };
 }
 
 function createPoolInstance(): Pool {
