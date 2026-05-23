@@ -31,7 +31,7 @@ try {
 } catch (e) {
   if (useFrozen) {
     console.warn("pnpm install --frozen-lockfile failed; retrying without frozen lockfile");
-    run("pnpm install");
+    run("pnpm install --no-frozen-lockfile");
   } else {
     throw e;
   }
