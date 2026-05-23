@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { HealthCheckResponse } from "@workspace/api-zod";
+import { pool } from "@workspace/db";
 
 const router: IRouter = Router();
 
-router.get("/healthz", (_req, res) => {
+router.get("/healthz", async (_req, res) => {
   const databaseUrl = process.env.DATABASE_URL ?? "";
   const isProductionLike = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
@@ -11,6 +12,17 @@ router.get("/healthz", (_req, res) => {
     res.status(500).json({
       status: "error",
       error: "DATABASE_URL points to localhost in production; set it to the hosted Postgres connection string.",
+    });
+    return;
+  }
+
+  try {
+    await pool.query("SELECT 1");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({
+      status: "error",
+      error: `Database connection failed: ${message}`,
     });
     return;
   }
