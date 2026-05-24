@@ -60,9 +60,9 @@ export default function Contact() {
   return (
     <div className="bg-slate-50 min-h-screen py-12 md:py-20">
       <PageSeo
-        title="Contact Us — Window & Door Parts Help"
+        title="Contact Us | Window & Door Parts Expert Help"
         path="/contact"
-        description={`Contact All Window Door Parts at 785-533-0244 or ${SITE_CUSTOMER_EMAIL}. Veteran-owned window and door replacement parts supplier, 40+ years experience. We help you find the right part.`}
+        description={`Call 785-533-0244 or email ${SITE_CUSTOMER_EMAIL} for expert help finding window and door parts. Veteran-owned, 40+ years experience. We identify hard-to-find parts. Free consultation.`}
         keywords="contact all window door parts, window parts phone number, door hardware customer service, 785-533-0244"
         structuredData={{
           "@context": "https://schema.org",

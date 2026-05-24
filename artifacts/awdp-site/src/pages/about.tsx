@@ -43,9 +43,9 @@ export default function About() {
   return (
     <div className="flex flex-col">
       <PageSeo
-        title="About Us — 40+ Years of Window & Door Expertise"
+        title="About Us | Veteran Owned Window & Door Parts Supplier"
         path="/about"
-        description="All Window Door Parts is a veteran-owned business with over 40 years of experience supplying window and door replacement parts to homeowners, contractors, and businesses across the USA."
+        description="Learn about All Window Door Parts — veteran-owned supplier with 40+ years expertise. 4,000+ in-stock parts, serving homeowners & contractors nationwide. Hard-to-find specialists."
         structuredData={{
           "@context": "https://schema.org",
           "@type": "LocalBusiness",

@@ -136,9 +136,9 @@ const categories = (Array.isArray(categoriesRaw) ? categoriesRaw : []).filter((c
   return (
     <div className="bg-slate-50 min-h-screen">
       <PageSeo
-        title="Window & Door Parts Categories — Browse by Type"
+        title="Window & Door Parts Categories | Browse by Hardware Type"
         path="/categories"
-        description="Browse 4,000+ in-stock window and door replacement parts by category: casement operators, sash balances, patio door rollers, sash locks, weatherstripping, glazing seals, and screen hardware. Veteran-owned, 40+ years experience."
+        description="Browse window and door parts by category: operators, balances, locks, rollers, weatherstripping, screen hardware. 4,000+ in-stock parts. Veteran-owned, 40+ years experience."
         keywords="window parts categories, door hardware categories, window balances, casement operators, sash hardware, door rollers, weatherstripping, screen hardware"
         structuredData={[
           {

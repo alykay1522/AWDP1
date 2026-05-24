@@ -1,9 +1,9 @@
 import { Link } from "wouter";
 import { Shield, ChevronRight, PackageSearch, Star, CheckCircle2, Award, Quote, Wrench, Lock, Wind, Droplets, ArrowUp, Move, LayoutGrid, Key, Truck, Layers, SlidersHorizontal, Mail, Box, RotateCcw, PanelLeft, ArrowDownToLine, ChevronDown, Phone } from "lucide-react";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { analytics } from "@/lib/analytics";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
@@ -183,7 +183,6 @@ const FAQ_ITEMS = [
 ];
 
 function FaqSection() {
-  const [open, setOpen] = useState<number | null>(null);
   return (
     <section className="py-16 md:py-24 bg-white border-t border-slate-200" aria-labelledby="faq-heading">
       <div className="container mx-auto px-4">
@@ -194,30 +193,18 @@ function FaqSection() {
             </h2>
             <p className="text-slate-500 text-lg">Quick answers about parts, ordering, and our Free Parts ID service.</p>
           </div>
-          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <Accordion type="multiple" className="w-full divide-y divide-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             {FAQ_ITEMS.map((item, i) => (
-              <div key={i} className="bg-white">
-                <button
-                  type="button"
-                  aria-expanded={open === i}
-                  aria-controls={`faq-answer-${i}`}
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left text-slate-900 font-semibold hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={() => setOpen(open === i ? null : i)}
-                >
-                  <span className="text-base leading-snug">{item.q}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-primary shrink-0 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
-                    aria-hidden="true"
-                  />
-                </button>
-                {open === i && (
-                  <div id={`faq-answer-${i}`} className="px-6 pb-5 text-slate-600 leading-relaxed text-sm">
-                    {item.a}
-                  </div>
-                )}
-              </div>
+              <AccordionItem key={i} value={`item-${i}`} className="bg-white">
+                <AccordionTrigger className="px-6 py-5 text-base font-semibold text-slate-900 hover:bg-slate-50 hover:no-underline">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-5 text-slate-600 leading-relaxed text-sm">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
           <div className="mt-8 text-center">
             <p className="text-slate-500 text-sm mb-4">Still have questions? We're happy to help.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -265,10 +252,10 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <PageSeo
-        title="Window & Door Replacement Parts — Veteran Owned, 40+ Years Experience"
+        title="Window & Door Replacement Parts | Free Parts ID, Veteran Owned"
         path="/"
-        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 4,000+ in-stock replacement window &amp; door hardware parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
-        keywords="window replacement parts, door hardware parts, casement window operator, window sash balance, patio door roller, window lock, weatherstripping, sash keeper, tilt latch, window hardware, door hardware, veteran owned"
+        description="Find hard-to-find window and door replacement parts. 4,000+ in-stock hardware: casement operators, balances, rollers, locks, weatherstripping. Veteran-owned, 40+ years experience. Free parts identification."
+        keywords="window parts, door hardware, replacement parts, casement operators, window balances, patio door rollers, weatherstripping, veteran owned, free parts ID"
         structuredData={[websiteSchema, organizationSchema, faqSchema] as unknown as object}
       />
 
@@ -296,6 +283,10 @@ export default function Home() {
               <Shield className="w-4 h-4" aria-hidden="true" /> {c("heroBadge")}
             </div>
 
+            <p className="text-2xl md:text-3xl font-bold text-amber-400 mb-4 tracking-wide">
+              America's #1 Source for Hard-to-Find Window & Door Parts
+            </p>
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight mb-4 text-white shadow-sm">
               {c("heroHeadline")}
             </h1>
@@ -307,16 +298,6 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
-                asChild
-                onClick={() => analytics.track("CTA Clicked", { label: c("heroCtaShop"), location: "hero" })}
-              >
-                <Link href="/shop">
-                  {c("heroCtaShop")} <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
                 className="h-14 px-8 text-lg font-bold bg-red-600 hover:bg-red-700 border-0 text-white shadow-md hover:shadow-lg transition-shadow"
                 asChild
                 onClick={() => analytics.track("CTA Clicked", { label: c("heroCtaPartsId"), location: "hero" })}
@@ -325,6 +306,36 @@ export default function Home() {
                   <PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> {c("heroCtaPartsId")}
                 </Link>
               </Button>
+              <Button
+                size="lg"
+                className="h-14 px-8 text-lg font-bold bg-accent hover:bg-accent/90 border-0 text-white shadow-md hover:shadow-lg transition-shadow"
+                asChild
+                onClick={() => analytics.track("CTA Clicked", { label: c("heroCtaShop"), location: "hero" })}
+              >
+                <Link href="/shop">
+                  {c("heroCtaShop")} <ChevronRight className="ml-2 w-5 h-5" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mt-6 flex flex-wrap gap-4 justify-center">
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <Lock className="w-3.5 h-3.5 text-green-400 shrink-0" aria-hidden="true" />
+                <span>Secure Checkout</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <Shield className="w-3.5 h-3.5 text-blue-400 shrink-0" aria-hidden="true" />
+                <span>SSL Secured</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <Award className="w-3.5 h-3.5 text-amber-400 shrink-0" aria-hidden="true" />
+                <span>Veteran Owned</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <Star className="w-3.5 h-3.5 text-yellow-400 shrink-0" aria-hidden="true" />
+                <span>40+ Years Experience</span>
+              </div>
             </div>
 
             {/* Hero email nudge */}
@@ -508,8 +519,8 @@ export default function Home() {
                   <Skeleton className="h-6 w-1/3" />
                 </div>
               ))
-            ) : {Array.isArray(featuredProducts) && featuredProducts.length > 0 ? (
-  featuredProducts.map((product) => (
+            ) : (Array.isArray(featuredProducts) && featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))
             ) : (

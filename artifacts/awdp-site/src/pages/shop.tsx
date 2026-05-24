@@ -102,19 +102,19 @@ function buildPageMeta(search: string, category: string) {
   }
   if (category) {
     return {
-      title: `${category} – Replacement Parts`,
-      description: `Shop ${category} replacement parts at All Window Door Parts. Hard-to-find and OEM-specific hardware for every major brand. Veteran-owned, 40+ years experience. Shipping calculated at checkout.`,
+      title: `${category} Parts | Window & Door Hardware`,
+      description: `Shop ${category} replacement parts. Hard-to-find & OEM-specific hardware for all major brands. Veteran-owned, 40+ years experience. Expert support available.`,
     };
   }
   if (search) {
     return {
-      title: `"${search}" – Window & Door Parts`,
-      description: `Shop replacement parts matching "${search}" at All Window Door Parts. 4,000+ in-stock parts including hard-to-find and discontinued hardware. Veteran-owned, 40+ years experience.`,
+      title: `"${search}" – Window & Door Parts Search Results`,
+      description: `Search results for "${search}" at All Window Door Parts. Find exact replacement window and door parts. 4,000+ in-stock hardware including hard-to-find items. Veteran-owned, 40+ years expertise.`,
     };
   }
   return {
-    title: "Shop Window & Door Parts",
-    description: "Browse 4,000+ in-stock window and door replacement parts. Shop casement operators, window balances, door locks, rollers, glazing seals, screen frames, and more. Veteran-owned. Shipping calculated at checkout.",
+    title: "Shop Window & Door Parts | 4,000+ In-Stock Hardware",
+    description: "Shop 4,000+ window and door replacement parts: casement operators, balances, locks, rollers, weatherstripping. Hard-to-find & obsolete parts. Veteran-owned, 40+ years. Fast shipping.",
   };
 }
 
@@ -330,7 +330,7 @@ setSuggestionsOpen(data.length > 0);
                   >
                     {cat}
                   </Link>
-                ))}
+                ))
               </nav>
             </div>
 
@@ -480,7 +480,7 @@ setSuggestionsOpen(data.length > 0);
                         <Search className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
                         {s}
                       </button>
-                    ))}
+                    ))
                   </div>
                 )}
               </div>
@@ -607,10 +607,10 @@ setSuggestionsOpen(data.length > 0);
               <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
-          ) :{Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
-  productsData.products.map((product) => (
+          ) : (Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
+            productsData.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
-                ))}
+                ))
               </div>
 
               {/* Pagination */}

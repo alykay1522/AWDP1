@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck, X, Shield, Award, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,15 +35,115 @@ const SHOP_BY_PROBLEM = [
   ["Window sash falls out",     "pivot bar"],
 ] as const;
 
+// Mega-menu data structure for new navigation
+const MEGA_MENU_DATA = {
+  windowBalances: {
+    title: "Window Balances",
+    searchCategory: "Window+Balances",
+    problems: [
+      ["Window won't stay open", "balance"],
+      ["Window sash falls out", "pivot bar"],
+    ],
+    subcategories: [
+      ["Coiled Window Balances", "balance coil"],
+      ["Block and Tackle Balances", "block tackle"],
+      ["Spiral Balances", "spiral balance"],
+      ["Channel Balances", "channel balance"],
+      ["Constant Force Balances", "constant force"],
+    ],
+  },
+  windowHardware: {
+    title: "Window Hardware",
+    searchCategory: "Window+Hardware",
+    problems: [
+      ["Window hard to crank", "operator"],
+      ["Window won't lock", "lock"],
+      ["Broken tilt latch", "tilt latch"],
+    ],
+    subcategories: [
+      ["Window Operators & Cranks", "operator"],
+      ["Window Locks & Latches", "window lock"],
+      ["Window Handles", "window handle"],
+      ["Tilt Latches", "tilt latch"],
+      ["Keepers & Strikes", "keeper"],
+    ],
+  },
+  doorHardware: {
+    title: "Door Hardware",
+    searchCategory: "Door+Hardware",
+    problems: [
+      ["Sliding door hard to open", "roller"],
+    ],
+    subcategories: [
+      ["Door Rollers", "roller"],
+      ["Door Locks & Handles", "door lock"],
+      ["Door Hinges", "door hinge"],
+      ["Multipoint Locks", "multipoint lock"],
+      ["Patio Door Hardware", "patio door"],
+    ],
+  },
+  weatherstripping: {
+    title: "Weatherstripping & Glazing",
+    searchCategory: "Window+Glazing+and+Weatherstrip",
+    problems: [
+      ["Drafty window or door", "weatherstripping"],
+    ],
+    subcategories: [
+      ["Window Weatherstripping", "weatherstrip"],
+      ["Door Weatherstripping", "door weatherstrip"],
+      ["Glazing Bead", "glazing bead"],
+      ["Rubber Seals", "rubber seal"],
+      ["Pile Weatherstrip", "pile weatherstrip"],
+    ],
+  },
+  screenHardware: {
+    title: "Screen Hardware",
+    searchCategory: "Screen+Hardware+and+Accessories",
+    problems: [
+      ["Screen frame damaged", "screen frame"],
+    ],
+    subcategories: [
+      ["Screen Frames", "screen frame"],
+      ["Screen Corners", "screen corner"],
+      ["Screen Clips & Latches", "screen latch"],
+      ["Screen Splines", "screen spline"],
+      ["Screen Wheels", "screen wheel"],
+    ],
+  },
+  sashHardware: {
+    title: "Sash Hardware",
+    searchCategory: "Sash+Hardware",
+    problems: [],
+    subcategories: [
+      ["Sash Chains", "sash chain"],
+      ["Sash Cords", "sash cord"],
+      ["Sash Pulleys", "sash pulley"],
+      ["Sash Weights", "sash weight"],
+    ],
+  },
+  otherHardware: {
+    title: "Other Hardware",
+    searchCategory: "Other+Hardware",
+    problems: [],
+    subcategories: [
+      ["General Hardware", "hardware"],
+      ["Specialty Parts", "specialty"],
+    ],
+  },
+} as const;
+
+
 export function Layout({ children }: { children: ReactNode }) {
   const { totalItems, isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutPayPalOnly, setCheckoutPayPalOnly] = useState(false);
-  const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
-  const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showCtaBar, setShowCtaBar] = useState(false);
+  const [showTopBanner, setShowTopBanner] = useState(false);
 
   useEffect(() => {
     fetch("/api/checkout/options")
@@ -51,6 +151,46 @@ export function Layout({ children }: { children: ReactNode }) {
       .then((d: { checkoutPayPalOnly?: boolean }) => setCheckoutPayPalOnly(Boolean(d.checkoutPayPalOnly)))
       .catch(() => setCheckoutPayPalOnly(false));
   }, []);
+
+  // Sticky CTA Bar - show on main site pages only, remember dismissal
+  useEffect(() => {
+    // Check if user has dismissed the bar
+    const dismissed = localStorage.getItem('ctaBarDismissed');
+    if (dismissed === 'true') {
+      setShowCtaBar(false);
+      return;
+    }
+
+    // Only show on main site pages (not admin, checkout success, parts-id page, etc.)
+    const excludedPaths = ['/admin', '/checkout/success', '/checkout/cancel', '/parts-identification'];
+    const isExcluded = excludedPaths.some(path => location.startsWith(path));
+    setShowCtaBar(!isExcluded);
+  }, [location]);
+
+  const handleCtaBarClose = () => {
+    setShowCtaBar(false);
+    localStorage.setItem('ctaBarDismissed', 'true');
+  };
+
+  // Top Banner - show on main site pages only, remember dismissal
+  useEffect(() => {
+    // Check if user has dismissed the banner
+    const dismissed = localStorage.getItem('topBannerDismissed');
+    if (dismissed === 'true') {
+      setShowTopBanner(false);
+      return;
+    }
+
+    // Only show on main site pages (not admin, checkout success, parts-id page, etc.)
+    const excludedPaths = ['/admin', '/checkout/success', '/checkout/cancel', '/parts-identification'];
+    const isExcluded = excludedPaths.some(path => location.startsWith(path));
+    setShowTopBanner(!isExcluded);
+  }, [location]);
+
+  const handleTopBannerClose = () => {
+    setShowTopBanner(false);
+    localStorage.setItem('topBannerDismissed', 'true');
+  };
 
   // Nav search autocomplete
   const [navSuggestions, setNavSuggestions]       = useState<string[]>([]);
@@ -153,6 +293,28 @@ setNavSuggestionsOpen(data.length > 0);
         Skip to main content
       </a>
 
+      {/* Top Banner - Start Free Parts ID */}
+      {showTopBanner && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-red-600 text-white shadow-lg">
+          <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-3">
+            <Link href="/parts-identification" className="flex items-center gap-2 text-white font-bold hover:text-red-100 transition-colors text-sm">
+              <PackageSearch className="w-4 h-4" aria-hidden="true" />
+              <span>Start Free Parts ID</span>
+            </Link>
+            <button
+              onClick={handleTopBannerClose}
+              className="text-white/80 hover:text-white transition-colors p-1 hover:bg-red-700 rounded"
+              aria-label="Close banner"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Spacer for top banner */}
+      {showTopBanner && <div className="h-10" />}
+
       {/* Full-Width Logo Banner */}
       <Link href="/" className="block w-full">
         <img
@@ -179,116 +341,296 @@ setNavSuggestionsOpen(data.length > 0);
             {/* Desktop Nav & Search */}
             <div className="hidden md:flex flex-1 items-center gap-6">
               <nav className="flex items-center gap-5 font-semibold text-primary-foreground">
-                <Link href="/" className="hover:text-accent transition-colors">Home</Link>
-
-                {/* Shop Parts with mega-menu dropdown */}
+                {/* Window Balances */}
                 <div
                   className="relative"
                   onMouseEnter={() => {
-                    if (shopDropdownTimer.current) clearTimeout(shopDropdownTimer.current);
-                    setShopDropdownOpen(true);
+                    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                    setActiveDropdown("windowBalances");
                   }}
                   onMouseLeave={() => {
-                    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 150);
+                    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150);
                   }}
                 >
                   <Link
-                    href="/shop"
+                    href={`/shop?category=Window+Balances`}
                     className="hover:text-accent transition-colors flex items-center gap-1"
                     aria-haspopup="true"
-                    aria-expanded={shopDropdownOpen}
+                    aria-expanded={activeDropdown === "windowBalances"}
                   >
-                    Shop Parts
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${shopDropdownOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                    Window Balances
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "windowBalances" ? "rotate-180" : ""}`} aria-hidden="true" />
                   </Link>
-
-                  {shopDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-[680px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
-                      <div className="grid grid-cols-3 gap-0 divide-x divide-slate-100">
-
-                        {/* Column 1: By Category */}
+                  {activeDropdown === "windowBalances" && (
+                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
                         <div className="p-5">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">By Category</p>
-                          <Link
-                            href="/shop"
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-800 hover:bg-primary/5 hover:text-primary font-bold rounded-lg mb-1 transition-colors"
-                            onClick={() => setShopDropdownOpen(false)}
-                          >
-                            All 4,000+ In-Stock Parts
-                          </Link>
-                          {SHOP_CATEGORIES.map(([label, cat]) => (
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Subcategories</p>
+                          {MEGA_MENU_DATA.windowBalances.subcategories.map(([label, search]) => (
                             <Link
-                              key={cat}
-                              href={`/shop?category=${cat}`}
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
                               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
-                              onClick={() => setShopDropdownOpen(false)}
+                              onClick={() => setActiveDropdown(null)}
                             >
                               <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
                               {label}
                             </Link>
                           ))}
                         </div>
-
-                        {/* Column 2: Shop by Problem */}
                         <div className="p-5">
                           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
-                          {SHOP_BY_PROBLEM.map(([problem, search]) => (
+                          {MEGA_MENU_DATA.windowBalances.problems.map(([problem, search]) => (
                             <Link
                               key={search}
                               href={`/shop?search=${encodeURIComponent(search)}`}
                               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
-                              onClick={() => setShopDropdownOpen(false)}
+                              onClick={() => setActiveDropdown(null)}
                             >
                               <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
                               {problem}
                             </Link>
                           ))}
                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-                        {/* Column 3: Shop by Brand + Quick links */}
+                {/* Window Hardware */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                    setActiveDropdown("windowHardware");
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150);
+                  }}
+                >
+                  <Link
+                    href={`/shop?category=Window+Hardware`}
+                    className="hover:text-accent transition-colors flex items-center gap-1"
+                    aria-haspopup="true"
+                    aria-expanded={activeDropdown === "windowHardware"}
+                  >
+                    Window Hardware
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "windowHardware" ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+                  {activeDropdown === "windowHardware" && (
+                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
                         <div className="p-5">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Brand</p>
-                          {[
-                            ["Truth/EntryGard",  "Truth"],
-                            ["Andersen",         "Andersen"],
-                            ["Pella",            "Pella"],
-                            ["Milgard",          "Milgard"],
-                            ["Marvin",           "Marvin"],
-                            ["Amesbury",         "Amesbury"],
-                            ["Caldwell",         "Caldwell"],
-                          ].map(([label, brand]) => (
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Subcategories</p>
+                          {MEGA_MENU_DATA.windowHardware.subcategories.map(([label, search]) => (
                             <Link
-                              key={brand}
-                              href={`/shop?search=${encodeURIComponent(brand)}`}
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
                               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
-                              onClick={() => setShopDropdownOpen(false)}
+                              onClick={() => setActiveDropdown(null)}
                             >
                               <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
                               {label}
                             </Link>
                           ))}
-                          <div className="mt-4 pt-4 border-t border-slate-100">
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
+                          {MEGA_MENU_DATA.windowHardware.problems.map(([problem, search]) => (
                             <Link
-                              href="/parts-identification"
-                              className="flex items-center gap-2 px-3 py-2.5 text-sm bg-red-50 text-red-700 hover:bg-red-100 font-bold rounded-lg transition-colors"
-                              onClick={() => setShopDropdownOpen(false)}
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
                             >
-                              <PackageSearch className="w-4 h-4 shrink-0" aria-hidden="true" />
-                              Free Parts ID — We Help Find It
+                              <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {problem}
                             </Link>
-                          </div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <Link href="/resources" className="hover:text-accent transition-colors">Resources</Link>
+                {/* Door Hardware */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                    setActiveDropdown("doorHardware");
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150);
+                  }}
+                >
+                  <Link
+                    href={`/shop?category=Door+Hardware`}
+                    className="hover:text-accent transition-colors flex items-center gap-1"
+                    aria-haspopup="true"
+                    aria-expanded={activeDropdown === "doorHardware"}
+                  >
+                    Door Hardware
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "doorHardware" ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+                  {activeDropdown === "doorHardware" && (
+                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Subcategories</p>
+                          {MEGA_MENU_DATA.doorHardware.subcategories.map(([label, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
+                          {MEGA_MENU_DATA.doorHardware.problems.map(([problem, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {problem}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Weatherstripping & Glazing */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                    setActiveDropdown("weatherstripping");
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150);
+                  }}
+                >
+                  <Link
+                    href={`/shop?category=Window+Glazing+and+Weatherstrip`}
+                    className="hover:text-accent transition-colors flex items-center gap-1"
+                    aria-haspopup="true"
+                    aria-expanded={activeDropdown === "weatherstripping"}
+                  >
+                    Weatherstripping
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "weatherstripping" ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+                  {activeDropdown === "weatherstripping" && (
+                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Subcategories</p>
+                          {MEGA_MENU_DATA.weatherstripping.subcategories.map(([label, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
+                          {MEGA_MENU_DATA.weatherstripping.problems.map(([problem, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {problem}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Screen Hardware */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
+                    setActiveDropdown("screenHardware");
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150);
+                  }}
+                >
+                  <Link
+                    href={`/shop?category=Screen+Hardware+and+Accessories`}
+                    className="hover:text-accent transition-colors flex items-center gap-1"
+                    aria-haspopup="true"
+                    aria-expanded={activeDropdown === "screenHardware"}
+                  >
+                    Screen Hardware
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "screenHardware" ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+                  {activeDropdown === "screenHardware" && (
+                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                      <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Subcategories</p>
+                          {MEGA_MENU_DATA.screenHardware.subcategories.map(([label, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Shop by Problem</p>
+                          {MEGA_MENU_DATA.screenHardware.problems.map(([problem, search]) => (
+                            <Link
+                              key={search}
+                              href={`/shop?search=${encodeURIComponent(search)}`}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <Wrench className="w-3 h-3 text-slate-300 shrink-0" aria-hidden="true" />
+                              {problem}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Free Parts ID - CTA Button */}
                 <Link href="/parts-identification" className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 font-bold uppercase tracking-wide text-sm transition-colors">
                   <PackageSearch className="w-4 h-4" aria-hidden="true" /> Free Parts ID
                 </Link>
+
+                {/* Resources */}
+                <Link href="/resources" className="hover:text-accent transition-colors">Resources</Link>
+                
+                {/* About */}
                 <Link href="/about" className="hover:text-accent transition-colors">About</Link>
-                <Link href="/contact" className="hover:text-accent transition-colors">Contact</Link>
               </nav>
 
               {/* Desktop search with autocomplete */}
@@ -435,20 +777,20 @@ setNavSuggestionsOpen(data.length > 0);
                       {/* Trust strip */}
                       <div className="grid grid-cols-2 gap-x-3 gap-y-2 border border-slate-100 rounded-lg p-3 bg-slate-50">
                         <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <Lock className="w-3.5 h-3.5 text-green-600 shrink-0" aria-hidden="true" />
+                          <span>Secure Checkout</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0" aria-hidden="true" />
+                          <span>SSL Secured</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
                           <span>Veteran Owned</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <PackageSearch className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
-                          <span>Free Parts ID</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <Phone className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
-                          <span>Expert Phone Support</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
-                          <span>Secure Checkout</span>
+                          <Star className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+                          <span>40+ Years Experience</span>
                         </div>
                       </div>
 
@@ -506,14 +848,16 @@ setNavSuggestionsOpen(data.length > 0);
                   </Link>
                   <nav className="flex flex-col gap-4 text-lg font-medium">
                     <Link href="/" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-                    <Link href="/shop" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Shop Parts</Link>
-                    <Link href="/categories" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Categories</Link>
-                    <Link href="/resources" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>PDF Resources</Link>
+                    <Link href="/shop?category=Window+Balances" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Window Balances</Link>
+                    <Link href="/shop?category=Window+Hardware" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Window Hardware</Link>
+                    <Link href="/shop?category=Door+Hardware" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Door Hardware</Link>
+                    <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Weatherstripping & Glazing</Link>
+                    <Link href="/shop?category=Screen+Hardware+and+Accessories" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Screen Hardware</Link>
                     <Link href="/parts-identification" className="py-2 border-b text-red-600 font-bold flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                       <PackageSearch className="w-5 h-5" /> Free Parts ID
                     </Link>
-                    <Link href="/about" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
-                    <Link href="/contact" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+                    <Link href="/resources" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Resources</Link>
+                    <Link href="/about" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
                   </nav>
                 </SheetContent>
               </Sheet>
@@ -670,6 +1014,25 @@ setNavSuggestionsOpen(data.length > 0);
           </div>
         </div>
       </footer>
+
+      {/* Sticky CTA Bar */}
+      {showCtaBar && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-red-600 text-white shadow-lg">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-4">
+            <Link href="/parts-identification" className="flex items-center gap-2 text-white font-bold hover:text-red-100 transition-colors">
+              <span>Upload Photos – Free Parts ID</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+            <button
+              onClick={handleCtaBarClose}
+              className="ml-4 text-white/80 hover:text-white transition-colors p-1 hover:bg-red-700 rounded"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
