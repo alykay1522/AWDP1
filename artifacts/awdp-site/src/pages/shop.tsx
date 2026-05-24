@@ -330,7 +330,7 @@ setSuggestionsOpen(data.length > 0);
                   >
                     {cat}
                   </Link>
-                ))
+                ))}
               </nav>
             </div>
 
@@ -480,7 +480,7 @@ setSuggestionsOpen(data.length > 0);
                         <Search className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden="true" />
                         {s}
                       </button>
-                    ))
+                    ))}
                   </div>
                 )}
               </div>
@@ -607,10 +607,12 @@ setSuggestionsOpen(data.length > 0);
               <p className="text-xs text-red-500 mb-6 font-mono">{String(error)}</p>
               <Button onClick={() => window.location.reload()}>Refresh Page</Button>
             </div>
-          ) : (Array.isArray(productsData?.products) && productsData.products.length > 0 ? (
-            productsData.products.map((product) => (
+          ) : productsData?.products.length ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
+                {productsData.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
-                ))
+                ))}
               </div>
 
               {/* Pagination */}
