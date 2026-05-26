@@ -289,7 +289,7 @@ export default function Home() {
             aria-hidden="true"
             width="1920"
             height="1080"
-            fetchPriority="high"
+            fetchpriority="high"
             loading="eager"
             decoding="async"
             className="w-full h-full object-cover opacity-30"

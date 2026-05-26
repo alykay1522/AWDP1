@@ -160,7 +160,7 @@ setNavSuggestionsOpen(data.length > 0);
           alt="All Window Door Parts — Veteran Owned Replacement Window and Door Parts"
           width="1200"
           height="200"
-          fetchPriority="high"
+          fetchpriority="high"
           loading="eager"
           decoding="async"
           style={{ width: "100%", height: "auto", display: "block" }}
