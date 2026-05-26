@@ -14,7 +14,7 @@
     "vercel:set-api": "node scripts/vercel-set-api-origin.mjs"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
