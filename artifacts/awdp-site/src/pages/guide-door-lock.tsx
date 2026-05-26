@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { PageSeo } from "@/components/page-seo";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ChevronRight, PackageSearch, AlertTriangle, CheckCircle2, Ruler, ChevronDown, Wrench } from "lucide-react";
 
 const BASE_URL = "https://www.allwindowdoorparts.com";
@@ -349,13 +350,15 @@ export default function GuideDoorLock() {
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-8">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {FAQS.map(({ q, a }) => (
-              <details key={q} className="group border border-slate-200 rounded-xl overflow-hidden">
-                <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-semibold text-slate-800 hover:bg-slate-50 transition-colors list-none">
+              <AccordionItem key={q} value={`item-${q}`} className="border border-slate-200 rounded-xl overflow-hidden">
+                <AccordionTrigger className="flex items-center justify-between px-5 py-4 cursor-pointer font-semibold text-slate-800 hover:bg-slate-50 transition-colors list-none">
                   <span>{q}</span>
                   <ChevronDown className="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform shrink-0 ml-3" aria-hidden="true" />
-                </summary>
-                <div className="px-5 pb-5 pt-2 text-slate-600 leading-relaxed text-sm border-t border-slate-100">{a}</div>
-              </details>
+                </AccordionTrigger>
+                <AccordionContent className="px-5 pb-5 pt-2 text-slate-600 leading-relaxed text-sm border-t border-slate-100">
+                  {a}
+                </AccordionContent>
+              </AccordionItem>
             ))}
           </div>
         </section>
