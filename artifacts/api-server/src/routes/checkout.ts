@@ -6,6 +6,7 @@ import { getUncachableStripeClient } from "../stripeClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
 import { isPayPalCheckoutOnly } from "../lib/checkoutMode.js";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -209,7 +210,7 @@ router.post("/checkout/session", async (req, res) => {
 
     res.json({ url: session.url, orderId, sessionId: session.id });
   } catch (err: any) {
-    console.error("Checkout error:", err.message);
+    logger.error({ err }, "Checkout error");
     res.status(500).json({ error: err.message || "Failed to create checkout session" });
   }
 });
@@ -304,12 +305,13 @@ router.post("/checkout/fulfill", async (req, res) => {
           subtotal: order.subtotal,
           total: order.total,
           paymentMethod: "stripe",
-        }).catch((err) => console.error("[email] sendOrderNotification error:", err));
+        }).catch((err) => logger.error({ err }, "[email] sendOrderNotification error"));
       }
     }
 
     res.json({ success: true });
   } catch (err: any) {
+    logger.error({ err }, "Checkout fulfill error");
     res.status(500).json({ error: err.message });
   }
 });

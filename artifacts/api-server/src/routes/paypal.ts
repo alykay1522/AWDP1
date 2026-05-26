@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -124,7 +125,7 @@ router.post("/paypal/create-order", async (req, res) => {
 
     res.json({ paypalOrderId: paypalOrder.id, orderId });
   } catch (err: any) {
-    console.error("PayPal create-order error:", err.message);
+    logger.error({ err }, "PayPal create-order error");
     res.status(500).json({ error: err.message || "Failed to create PayPal order" });
   }
 });
@@ -160,8 +161,9 @@ router.post("/paypal/capture-order", async (req, res) => {
       // local order as paid by substituting the expensive orderId in this request.
       const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
       if (!capturedReferenceId || capturedReferenceId !== orderId) {
-        console.error(
-          `[PayPal] reference_id mismatch: PayPal has "${capturedReferenceId}", request claims "${orderId}"`,
+        logger.error(
+          { capturedReferenceId, requestedOrderId: orderId },
+          "[PayPal] reference_id mismatch"
         );
         return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
       }
@@ -171,8 +173,9 @@ router.post("/paypal/capture-order", async (req, res) => {
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total as string);
       if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
-        console.error(
-          `[PayPal] Amount mismatch: PayPal captured $${capturedAmountStr}, local order total $${localOrder.total}`,
+        logger.error(
+          { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
+          "[PayPal] Amount mismatch"
         );
         return res.status(400).json({ error: "Captured payment amount does not match order total." });
       }
@@ -232,7 +235,7 @@ router.post("/paypal/capture-order", async (req, res) => {
           subtotal: order.subtotal,
           total: order.total,
           paymentMethod: "paypal",
-        }).catch((err) => console.error("[email] sendOrderNotification error:", err));
+        }).catch((err) => logger.error({ err }, "[email] sendOrderNotification error"));
       }
 
       res.json({ success: true, orderId, captureId });
@@ -240,7 +243,7 @@ router.post("/paypal/capture-order", async (req, res) => {
       res.status(400).json({ error: "Payment not completed", status: capture.status });
     }
   } catch (err: any) {
-    console.error("PayPal capture error:", err.message);
+    logger.error({ err }, "PayPal capture error");
     res.status(500).json({ error: err.message || "Failed to capture PayPal payment" });
   }
 });

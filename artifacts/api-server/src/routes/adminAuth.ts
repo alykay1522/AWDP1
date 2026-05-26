@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { requireAdmin } from "../middleware/requireAdmin";
+import crypto from "crypto";
 
 const router = Router();
 
@@ -32,7 +33,16 @@ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res:
     return res.status(503).json({ error: "Admin password not configured. Set ADMIN_PASSWORD environment variable." });
   }
 
-  if (!password || password !== adminPassword) {
+  if (!password) {
+    return res.status(401).json({ error: "Invalid password" });
+  }
+
+  // Use timing-safe comparison to prevent timing attacks
+  const passwordBuffer = Buffer.from(password, 'utf8');
+  const adminPasswordBuffer = Buffer.from(adminPassword, 'utf8');
+  
+  if (passwordBuffer.length !== adminPasswordBuffer.length || 
+      !crypto.timingSafeEqual(passwordBuffer, adminPasswordBuffer)) {
     return res.status(401).json({ error: "Invalid password" });
   }
 

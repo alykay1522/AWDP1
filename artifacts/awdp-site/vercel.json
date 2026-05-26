@@ -5,16 +5,5 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "methods": ["GET", "POST", "PATCH", "DELETE", "PUT"],
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
   ]
 }

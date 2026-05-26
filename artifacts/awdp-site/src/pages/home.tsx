@@ -262,9 +262,6 @@ export default function Home() {
     }
   });
 
-  // DEBUG: log the raw API response so you can verify its shape in DevTools
-  console.log('[AWDP DEBUG] useGetFeaturedProducts raw data:', rawFeaturedProducts);
-
   // Normalize — API may return Product[] directly OR { products: Product[] }
   const featuredProducts = Array.isArray(rawFeaturedProducts)
     ? rawFeaturedProducts
