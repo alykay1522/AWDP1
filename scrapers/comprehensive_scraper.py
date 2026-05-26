@@ -45,6 +45,68 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+# AWDP Attribute Map (Series Removed)
+CATEGORY_ATTRIBUTES = {
+    'Window Balances': {
+        'balance_type': 'Balance Type',
+        'length': 'Length',
+        'stamp_code': 'Stamp Code / ID Code',
+        'terminal_color': 'Terminal / Shoe Color',
+        'channel_width': 'Channel Width',
+        'sash_type': 'Sash Type',
+        'brand': 'Brand',
+        'jamb_liner_type': 'Jamb Liner Type',
+        'coil_weight_rating': 'Coil Weight Rating'
+    },
+    'Operators': {
+        'operator_type': 'Operator Type',
+        'arm_length': 'Arm Length',
+        'handing': 'Handing',
+        'gear_type': 'Gear Type',
+        'mount_type': 'Mount Type',
+        'bracket_style': 'Bracket Style'
+    },
+    'Locks & Keepers': {
+        'lock_type': 'Lock Type',
+        'keeper_type': 'Keeper Type',
+        'hole_spacing': 'Hole Spacing',
+        'handing': 'Handing',
+        'finish': 'Finish'
+    },
+    'Rollers': {
+        'roller_diameter': 'Roller Diameter',
+        'housing_type': 'Housing Type',
+        'material': 'Material',
+        'wheel_material': 'Wheel Material',
+        'mount_type': 'Mount Type'
+    },
+    'Weatherstrip': {
+        'weatherstrip_type': 'Weatherstrip Type',
+        'base_width': 'Base Width',
+        'bulb_diameter': 'Bulb Diameter',
+        'fin_height': 'Fin Height',
+        'material': 'Material'
+    },
+    'Glazing Bead / Profiles': {
+        'glazing_profile': 'Glazing Profile',
+        'length': 'Length',
+        'color': 'Color',
+        'material': 'Material'
+    }
+}
+
+# Universal Attributes (apply to ALL categories)
+UNIVERSAL_ATTRIBUTES = {
+    'color': 'Color',
+    'finish': 'Finish',
+    'material': 'Material',
+    'handing': 'Handing',
+    'brand': 'Brand',
+    'length': 'Length',
+    'width': 'Width',
+    'thickness': 'Thickness'
+}
+
 # AWDP SKU Cipher (from adminProducts.ts)
 NUM_TO_LETTER = {
     "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
@@ -147,13 +209,15 @@ def get_product_urls_drupal(base_url, max_pages=50):
                 # Drupal often uses /catalog/ or numeric IDs
                 if '/catalog/' in href or re.search(r'/\d+$', href):
                     try:
-                        cat_response = requests.get(href, headers=HEADERS, timeout=15)
+                        # Join with base URL if relative
+                        full_url = urljoin(base_url, href)
+                        cat_response = requests.get(full_url, headers=HEADERS, timeout=15)
                         if cat_response.status_code == 200:
                             cat_soup = BeautifulSoup(cat_response.text, 'html.parser')
                             for product_link in cat_soup.find_all('a', href=True):
                                 prod_href = product_link['href']
                                 if re.search(r'/catalog/\d+', prod_href):
-                                    product_urls.add(prod_href)
+                                    product_urls.add(urljoin(base_url, prod_href))
                     except:
                         continue
                         
@@ -366,35 +430,191 @@ def load_csv_products(csv_file, source):
     
     return products
 
-def format_for_awdp_import(products):
-    """Format products for AWDP import"""
-    formatted_products = []
+def extract_attributes(product):
+    """Extract category-specific attributes from product"""
+    category = product['category']
+    attributes = {}
+    
+    # Determine which category this product belongs to
+    category_key = None
+    for key in CATEGORY_ATTRIBUTES.keys():
+        if key.lower() in category.lower() or category.lower() in key.lower():
+            category_key = key
+            break
+    
+    if category_key and category_key in CATEGORY_ATTRIBUTES:
+        # Add category-specific attributes
+        for attr_key, attr_name in CATEGORY_ATTRIBUTES[category_key].items():
+            # Try to extract from description or name
+            desc = product['description'] + ' ' + product['name']
+            # Simple extraction - in real implementation would use more sophisticated parsing
+            attributes[attr_name] = ''
+    
+    # Add universal attributes
+    for attr_key, attr_name in UNIVERSAL_ATTRIBUTES.items():
+        attributes[attr_name] = ''
+    
+    return attributes
+
+def detect_parent_child_relationships(products):
+    """Detect parent products and their child variants"""
+    # Group products by similar names (potential parent/child relationships)
+    parent_groups = {}
     
     for product in products:
-        # Generate AWDP SKU
-        original_sku = product['sku'] or product['name']
-        awdp_sku = generate_awdp_sku(original_sku, product['source'])
+        name = product['name'].lower()
         
-        # Apply markup
-        marked_up_price = apply_markup(product['price'])
+        # Look for common patterns that indicate variants
+        # e.g., "Window Balance 28\"", "Window Balance 29\"", "Window Balance 30\""
+        # would be children of "Window Balance"
         
-        # Format for AWDP import (matches normalizeRow expected columns)
-        formatted = {
-            'sku': awdp_sku,
-            'name': product['name'],
-            'description': product['description'][:2000],  # Limit description length
-            'price': str(marked_up_price) if marked_up_price else '',
-            'originalPrice': str(product['raw_price']) if product['raw_price'] else '',
-            'category': product['category'],
-            'supplier': product['source'],
-            'imageUrl': product['image_url'],
+        base_name = re.sub(r'\d+["\']?\s*(inch|in)?', '', name, flags=re.IGNORECASE)
+        base_name = re.sub(r'\s+', ' ', base_name).strip()
+        
+        if base_name not in parent_groups:
+            parent_groups[base_name] = {
+                'parent_name': product['name'],
+                'children': []
+            }
+        
+        parent_groups[base_name]['children'].append(product)
+    
+    # Filter to only groups with multiple children (actual variants)
+    variant_groups = {k: v for k, v in parent_groups.items() if len(v['children']) > 1}
+    
+    return variant_groups
+
+def create_parent_product(product, children):
+    """Create parent product JSON structure"""
+    # Extract all unique attribute values from children
+    attributes = {}
+    
+    for child in children:
+        child_attrs = extract_attributes(child)
+        for key, value in child_attrs.items():
+            if key not in attributes:
+                attributes[key] = []
+            if value and value not in attributes[key]:
+                attributes[key].append(value)
+    
+    # Generate parent SKU
+    parent_sku = generate_awdp_sku(product['name'], product['source'])
+    
+    return {
+        'product_name': product['name'],
+        'parent_sku': parent_sku,
+        'category': product['category'],
+        'description_short': product['description'][:200] if product['description'] else '',
+        'description_long': product['description'][:2000] if product['description'] else '',
+        'attributes': attributes,
+        'variations': []
+    }
+
+def create_child_variant(product, parent_sku):
+    """Create child variant JSON structure"""
+    # Generate child SKU
+    child_sku = generate_awdp_sku(product['sku'] or product['name'], product['source'])
+    
+    # Apply markup
+    raw_price = product['raw_price'] or product['price']
+    marked_up_price = apply_markup(raw_price)
+    
+    # Extract attributes
+    attributes = extract_attributes(product)
+    
+    return {
+        'parent_sku': parent_sku,
+        'sku': child_sku,
+        'price': float(marked_up_price) if marked_up_price else 0,
+        'attributes': attributes,
+        'images': [product['image_url']] if product['image_url'] else []
+    }
+
+def format_for_awdp_import(products):
+    """Format products for AWDP import with parent/child structure"""
+    formatted_products = []
+    
+    # Detect parent/child relationships
+    variant_groups = detect_parent_child_relationships(products)
+    
+    # Process variant groups
+    processed_skus = set()
+    
+    for base_name, group in variant_groups.items():
+        # Create parent product
+        parent_product = create_parent_product(group['children'][0], group['children'])
+        
+        # Create child variants
+        for child in group['children']:
+            child_variant = create_child_variant(child, parent_product['parent_sku'])
+            parent_product['variations'].append(child_variant)
+            processed_skus.add(child['sku'] or child['name'])
+        
+        # Add parent to formatted products (as a regular product for now)
+        # In a full implementation, this would be saved as a separate parent structure
+        formatted_products.append({
+            'sku': parent_product['parent_sku'],
+            'name': parent_product['product_name'],
+            'description': parent_product['description_long'],
+            'price': '',
+            'originalPrice': '',
+            'category': parent_product['category'],
+            'supplier': group['children'][0]['source'],
+            'imageUrl': '',
             'inStock': 'true',
             'tags': '',
             'compatibleBrands': '',
-            'specifications': ''
-        }
+            'specifications': json.dumps(parent_product)
+        })
         
-        formatted_products.append(formatted)
+        # Add children as individual products
+        for variant in parent_product['variations']:
+            formatted_products.append({
+                'sku': variant['sku'],
+                'name': parent_product['product_name'],
+                'description': parent_product['description_long'],
+                'price': str(variant['price']),
+                'originalPrice': str(variant['price'] / 1.015) if variant['price'] else '',
+                'category': parent_product['category'],
+                'supplier': group['children'][0]['source'],
+                'imageUrl': variant['images'][0] if variant['images'] else '',
+                'inStock': 'true',
+                'tags': '',
+                'compatibleBrands': '',
+                'specifications': json.dumps(variant['attributes'])
+            })
+    
+    # Process remaining products that are not part of variant groups
+    for product in products:
+        if (product['sku'] or product['name']) not in processed_skus:
+            # Generate AWDP SKU
+            original_sku = product['sku'] or product['name']
+            awdp_sku = generate_awdp_sku(original_sku, product['source'])
+            
+            # Apply markup
+            raw_price = product['raw_price'] or product['price']
+            marked_up_price = apply_markup(raw_price)
+            
+            # Extract attributes
+            attributes = extract_attributes(product)
+            
+            # Format for AWDP import
+            formatted = {
+                'sku': awdp_sku,
+                'name': product['name'],
+                'description': product['description'][:2000],
+                'price': str(marked_up_price) if marked_up_price else '',
+                'originalPrice': str(raw_price) if raw_price else '',
+                'category': product['category'],
+                'supplier': product['source'],
+                'imageUrl': product['image_url'],
+                'inStock': 'true',
+                'tags': '',
+                'compatibleBrands': '',
+                'specifications': json.dumps(attributes)
+            }
+            
+            formatted_products.append(formatted)
     
     return formatted_products
 

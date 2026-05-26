@@ -2,6 +2,11 @@
  * Cross-platform dev entry: sets NODE_ENV without shell-specific `export`.
  */
 import { spawnSync } from "node:child_process";
+import { config } from "dotenv";
+import { resolve } from "node:path";
+
+// Load environment variables from .env.local
+config({ path: resolve(process.cwd(), "../../.env.local") });
 
 process.env.NODE_ENV = "development";
 
