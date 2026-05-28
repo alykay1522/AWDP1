@@ -1,0 +1,53 @@
+{
+  "products": [
+    {
+      "id": "bal-channel-bt",
+      "product_name": "Channel Block & Tackle Window Balance",
+      "parent_sku": "AWDP-B8T6",
+      "category": "window-balances",
+      "url_slug": "channel-block-tackle-window-balance",
+      "seo_title": "Channel Block & Tackle Window Balance Replacement - Lengths, Colors & Ratings",
+      "seo_description": "OEM replacement channel block and tackle window balances for double hung and single hung windows. Multiple lengths, stamp codes, terminal colors and weight ratings. Fast shipping from All Window Door Parts.",
+      "description_short": "Heavy-duty channel balance for tilt and non-tilt sash windows.",
+      "description_long": "Premium replacement block & tackle balances compatible with major brands like Caldwell, AmesburyTruth, and others. Choose your exact length, stamp code, shoe color, and channel width.",
+      "attributes": {
+        "length": ["10\"", "11\"", "12\"", "13\"", "14\"", "15\"", "16\"", "17\"", "18\"", "19\"", "20\""],
+        "stamp_code": ["2830", "2930", "3030", "Others"],
+        "terminal_color": ["White", "Blue", "Red", "Black"],
+        "channel_width": ["1/2\"", "5/8\""],
+        "sash_type": ["Tilt", "Non-Tilt"],
+        "weight_rating": ["7-10 lb", "10-15 lb", "15-20 lb", "20-30 lb", "30+ lb"],
+        "brand": ["Caldwell", "AmesburyTruth", "Generic OEM"]
+      },
+      "variations": [
+        {
+          "sku": "AWDP-B8T6-2830-W12-T",
+          "price": 18.95,
+          "attributes": {
+            "length": "28\"",
+            "stamp_code": "2830",
+            "terminal_color": "White",
+            "channel_width": "1/2\"",
+            "sash_type": "Tilt",
+            "weight_rating": "10-15 lb",
+            "brand": "Caldwell"
+          }
+        }
+        // ... (hundreds of real combinations auto-generated from your CSV)
+      ],
+      "images": ["balance-channel-main.jpg", "shoe-white.jpg", "stamp-example.jpg"]
+    },
+    {
+      "id": "bal-spiral-tilt",
+      "product_name": "Spiral Tilt Window Balance",
+      "parent_sku": "AWDP-SP6T",
+      "category": "window-balances",
+      "url_slug": "spiral-tilt-window-balance",
+      "seo_title": "Spiral Tilt Window Balance Replacement - Color Coded 24\" to 52\"",
+      "seo_description": "Color-coded spiral balances for tilt windows. Perfect fit for many brands. Choose length and clutch color.",
+      "attributes": { ... },
+      "variations": [ ... ]
+    }
+    // More families: Constant Force, Jamb Liners, Operators, Rollers, Locks, Weatherseal, etc.
+  ]
+}
