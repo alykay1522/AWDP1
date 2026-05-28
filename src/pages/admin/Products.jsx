@@ -35,6 +35,9 @@ export default function Products() {
       if (response.ok) {
         setEditingProduct(null);
         loadProducts();
+      } else {
+        const err = await response.json().catch(() => ({}));
+        alert(err.error || 'Failed to save product');
       }
     } catch (error) {
       alert('Failed to save product');
