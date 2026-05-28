@@ -82,7 +82,7 @@ export default function Products() {
           </thead>
           <tbody>
             {products.map((product, index) => (
-              <tr key={index} className="border-t hover:bg-gray-50">
+              <tr key={product.id} className="border-t hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     {product.image && (
