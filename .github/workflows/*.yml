@@ -1,3 +1,10 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: read
   id-token: write     # fixes your previous "no permissions" alert too
