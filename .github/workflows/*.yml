@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     steps:
       - name: Login to Azure
         uses: azure/login@v2
