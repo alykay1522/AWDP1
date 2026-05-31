@@ -76,8 +76,8 @@ importers:
   .:
     dependencies:
       nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.8
+        specifier: ^8.0.10
+        version: 8.0.10
       pg:
         specifier: ^8.13.0
         version: 8.21.0
@@ -155,8 +155,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.8
+        specifier: ^8.0.10
+        version: 8.0.10
       openai:
         specifier: ^6.33.0
         version: 6.39.0(ws@8.21.0)(zod@3.25.76)
@@ -225,8 +225,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(react@18.3.1)
       nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.8
+        specifier: ^8.0.10
+        version: 8.0.10
       pg:
         specifier: ^8.13.0
         version: 8.21.0
@@ -3557,8 +3557,8 @@ packages:
     resolution: {integrity: sha512-GYVXHE2KnrzAfsAjl4uP++evGFCrAU1jta4ubEjIG7YWt/64Gqv66a30yKwWczVjA6j3bM4nBwH7Pk1JmDHaxQ==}
     engines: {node: '>=18'}
 
-  nodemailer@8.0.8:
-    resolution: {integrity: sha512-p+XsnzXGdtIHXUu2ugxdfG+eX2nehsGhMjW9h0CWj1BhE30hrFz0kh0yIM0/VjUgVsRrDj+80ZO+I1nSkGE4tA==}
+  nodemailer@8.0.10:
+    resolution: {integrity: sha512-BLFuSth7QtHOkBzyqTehWWyub0NTRDuK2Q2SQfnGLsrJnzyU+Yeh4WpV1eZGuARFj1xQJHIdnTuJZLP+b9R1GQ==}
     engines: {node: '>=6.0.0'}
 
   npm-run-path@6.0.0:
@@ -8004,7 +8004,7 @@ snapshots:
 
   node-releases@2.0.46: {}
 
-  nodemailer@8.0.8: {}
+  nodemailer@8.0.10: {}
 
   npm-run-path@6.0.0:
     dependencies:
