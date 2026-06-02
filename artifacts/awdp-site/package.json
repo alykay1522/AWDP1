@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "pnpm --filter @workspace/api-server run build && vite build",
+    "build": "vite build",
     "serve": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
