@@ -18,23 +18,27 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing required fields (name, email, description)" });
     }
 
-    const result = await sendFormEmail({
-      type: "parts-id",
-      data,
-    });
+    const result = await sendFormEmail({ type: "parts-id", data });
 
-    return res.status(200).json({ 
-      success: true, 
-      message: "Parts ID request sent successfully",
-      messageId: result.messageId 
-    });
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: "Parts ID request sent successfully",
+        emailStatus: result.status,
+        messageId: result.messageId,
+        attempts: result.attempts,
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to send email notification",
+        emailStatus: result.status,
+        attempts: result.attempts,
+      });
+    }
 
   } catch (error) {
-    console.error("[parts-id] Email sending failed:", error);
-    
-    return res.status(500).json({ 
-      error: "Failed to send request. Please try again or call 785-533-0244.",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error("[parts-id] Unexpected error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
