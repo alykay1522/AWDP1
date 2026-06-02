@@ -1,0 +1,31 @@
+name: Post-Deploy Smoke Test
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: artifacts/awdp-site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: artifacts/awdp-site
+        run: npm ci
+
+      - name: Run Post-Deploy Smoke Test
+        working-directory: artifacts/awdp-site
+        env:
+          SITE_URL: https://allwindowdoorparts.com
+        run: npm run smoke-test
