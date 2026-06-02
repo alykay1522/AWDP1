@@ -19,7 +19,7 @@ catalogs:
       specifier: ^5.100.14
       version: 5.100.14
     '@types/node':
-      specifier: ^25.3.3
+      specifier: ^25.9.1
       version: 25.9.1
     '@types/react':
       specifier: ^19.2.0
@@ -6669,7 +6669,7 @@ snapshots:
 
   '@types/adm-zip@0.5.8':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -6695,14 +6695,14 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/caseless@0.12.5': {}
 
   '@types/compression@1.8.1':
     dependencies:
       '@types/express': 5.0.6
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/connect-pg-simple@7.0.3':
     dependencies:
@@ -6712,7 +6712,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/cookie-parser@1.4.10(@types/express@5.0.6)':
     dependencies:
@@ -6720,7 +6720,7 @@ snapshots:
 
   '@types/cors@2.8.19':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/d3-array@3.2.2': {}
 
@@ -6750,7 +6750,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -6785,11 +6785,11 @@ snapshots:
 
   '@types/nodemailer@8.0.0':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
       pg-protocol: 1.14.0
       pg-types: 2.2.0
 
@@ -6819,18 +6819,18 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.5
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 25.9.1
+      '@types/node': 20.19.41
 
   '@types/sharp@0.32.0':
     dependencies:
