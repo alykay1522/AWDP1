@@ -20,6 +20,7 @@ import Categories from "@/pages/categories";
 import PartsIdentification from "@/pages/parts-id";
 import Contact from "@/pages/contact";
 import About from "@/pages/about";
+import Checkout from "@/pages/checkout";
 import CheckoutSuccess from "@/pages/checkout-success";
 import Policies from "@/pages/policies";
 import GuideHub from "@/pages/guide-hub";
@@ -122,6 +123,7 @@ function AppContent() {
         <Route path="/parts-identification" component={PartsIdentification} />
         <Route path="/contact" component={Contact} />
         <Route path="/about" component={About} />
+        <Route path="/checkout" component={Checkout} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
         <Route path="/privacy-policy">
