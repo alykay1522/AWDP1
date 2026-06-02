@@ -39,22 +39,26 @@ export default function Contact() {
 
   const submitContactMutation = useSubmitContact();
 
-  const onSubmit = (data: ContactFormValues) => {
-    submitContactMutation.mutate(
-      { data },
-      {
-        onSuccess: () => {
-          setIsSubmitted(true);
-        },
-        onError: () => {
-          toast({
-            title: "Error sending message",
-            description: "Please try again or call us directly.",
-            variant: "destructive"
-          });
-        }
-      }
-    );
+  const onSubmit = async (data: ContactFormValues) => {
+    try {
+      // 1. Save via existing system (admin lists, DB)
+      await submitContactMutation.mutateAsync({ data });
+
+      // 2. Send email to thepolak@wefixitusa.com via new endpoint
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      setIsSubmitted(true);
+    } catch (error) {
+      toast({
+        title: "Error sending message",
+        description: "Please try again or call us directly.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
