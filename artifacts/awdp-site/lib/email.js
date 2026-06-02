@@ -21,16 +21,10 @@ function getTransporter() {
   return transporter;
 }
 
-/**
- * Sleep helper for retry backoff
- */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Check if error is transient (worth retrying)
- */
 function isTransientError(error) {
   const message = error.message?.toLowerCase() || '';
   const code = error.code || '';
@@ -46,11 +40,13 @@ function isTransientError(error) {
 }
 
 /**
- * Send form submission email with retry logic + admin notification on failure.
+ * Send form submission email with structured delivery status tracking.
+ * Returns { success, status, messageId, attempts, error? }
  */
 export async function sendFormEmail({ type, data }) {
   const maxRetries = 3;
-  let lastError;
+  let lastError = null;
+  let messageId = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -59,8 +55,7 @@ export async function sendFormEmail({ type, data }) {
       const to = 'thepolak@wefixitusa.com';
       const from = process.env.SMTP_FROM || 'info@allwindowdoorparts.com';
 
-      let subject;
-      let text;
+      let subject, text;
 
       if (type === 'contact') {
         subject = `New Contact Form: ${data.subject || data.name}`;
@@ -94,46 +89,56 @@ Image: ${data.imageFileName || 'None attached'}`;
         replyTo: data.email,
       });
 
-      console.log(`[email] Successfully sent ${type} form to thepolak@wefixitusa.com (attempt ${attempt}, MessageId: ${info.messageId})`);
-      return { success: true, messageId: info.messageId };
+      messageId = info.messageId;
+
+      console.log(`[EMAIL_DELIVERY] type=${type} status=success messageId=${messageId} attempts=${attempt} to=thepolak@wefixitusa.com`);
+
+      return {
+        success: true,
+        status: 'sent',
+        messageId,
+        attempts: attempt,
+      };
 
     } catch (error) {
       lastError = error;
-      console.warn(`[email] Attempt ${attempt}/${maxRetries} failed for ${type}:`, error.message);
+      console.warn(`[EMAIL_DELIVERY] type=${type} status=retry attempt=${attempt} error=${error.message}`);
 
       if (attempt < maxRetries && isTransientError(error)) {
-        const backoff = Math.pow(2, attempt) * 1000; // exponential backoff
-        console.log(`[email] Retrying in ${backoff}ms...`);
+        const backoff = Math.pow(2, attempt) * 1000;
         await sleep(backoff);
         continue;
       }
 
-      // Non-transient error or max retries reached
       break;
     }
   }
 
-  // All retries failed - notify admin (best effort)
-  console.error(`[email] CRITICAL: Failed to send ${type} email after ${maxRetries} attempts`, lastError);
+  // Final failure
+  console.error(`[EMAIL_DELIVERY] type=${type} status=failed attempts=${maxRetries} error=${lastError?.message}`);
 
-  // Best-effort admin alert (don't throw if this also fails)
+  // Best-effort admin alert
   try {
     const alertTransporter = getTransporter();
     await alertTransporter.sendMail({
       from: process.env.SMTP_FROM || 'info@allwindowdoorparts.com',
       to: 'thepolak@wefixitusa.com',
-      subject: `⚠️ EMAIL FAILURE: ${type} form submission failed`,
-      text: `Failed to deliver ${type} form after ${maxRetries} attempts.
+      subject: `⚠️ EMAIL DELIVERY FAILED: ${type}`,
+      text: `Type: ${type}
+Attempts: ${maxRetries}
+Error: ${lastError?.message}
 
-Error: ${lastError?.message || 'Unknown error'}
-
-Form data:
+Form Data:
 ${JSON.stringify(data, null, 2)}`,
     });
-    console.log(`[email] Admin alert sent for failed ${type} submission`);
-  } catch (alertError) {
-    console.error(`[email] Failed to send admin alert:`, alertError.message);
+  } catch (alertErr) {
+    console.error(`[EMAIL_DELIVERY] Admin alert failed:`, alertErr.message);
   }
 
-  throw new Error(`Email delivery failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+  return {
+    success: false,
+    status: 'failed',
+    error: lastError?.message || 'Unknown SMTP error',
+    attempts: maxRetries,
+  };
 }
