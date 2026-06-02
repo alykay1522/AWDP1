@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function Checkout() {
-  const { items, total, clearCart, removeItem, updateQuantity } = useCart();
+  const { items, total, clearCart, removeItem } = useCart();
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (items.length === 0) {
     return (
@@ -27,6 +28,12 @@ export default function Checkout() {
     <PayPalScriptProvider options={{ "client-id": paypalClientId, currency: "USD" }}>
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-4xl font-bold tracking-tight mb-8">Checkout</h1>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Order Summary */}
@@ -71,8 +78,8 @@ export default function Checkout() {
                   style={{ layout: "vertical" }}
                   createOrder={async () => {
                     setLoading(true);
+                    setError(null);
                     try {
-                      // Call backend to create PayPal order
                       const res = await fetch("/api/checkout/create-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -81,11 +88,16 @@ export default function Checkout() {
                           total 
                         }),
                       });
-                      if (!res.ok) throw new Error("Failed to create order");
+                      if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error || "Failed to create order");
+                      }
                       const order = await res.json();
                       return order.id;
-                    } catch (err) {
-                      toast.error("Could not start payment. Please try again.");
+                    } catch (err: any) {
+                      const msg = err.message || "Could not start payment. Please try again.";
+                      setError(msg);
+                      toast.error(msg);
                       setLoading(false);
                       throw err;
                     }
@@ -101,14 +113,18 @@ export default function Checkout() {
                       
                       clearCart();
                       navigate("/checkout/success");
-                    } catch (err) {
-                      toast.error("Payment failed. Contact support if charged.");
+                    } catch (err: any) {
+                      const msg = err.message || "Payment failed. Contact support if charged.";
+                      setError(msg);
+                      toast.error(msg);
                     } finally {
                       setLoading(false);
                     }
                   }}
                   onError={() => {
-                    toast.error("Payment error. Try again or use another method.");
+                    const msg = "Payment error. Try again or use another method.";
+                    setError(msg);
+                    toast.error(msg);
                     setLoading(false);
                   }}
                 />
