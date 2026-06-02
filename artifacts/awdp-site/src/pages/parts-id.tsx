@@ -107,19 +107,24 @@ export default function PartsIdentification() {
       data.imageBase64 = imagePreview;
     }
     analytics.track("Parts ID Wizard Submitted", { partType, hasImage: !!selectedImage });
-    submitMutation.mutate(
-      { data },
-      {
-        onSuccess: () => {
-          analytics.track("Parts ID Submission Success");
-          setIsSubmitted(true);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-        onError: () => {
-          toast({ title: "Submission failed", description: "Please try again or email info@allwindowdoorparts.com.", variant: "destructive" });
-        },
-      }
-    );
+
+    try {
+      // 1. Save via existing system
+      await submitMutation.mutateAsync({ data });
+
+      // 2. Send email via /api/parts-id
+      await fetch("/api/parts-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      analytics.track("Parts ID Submission Success");
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      toast({ title: "Submission failed", description: "Please try again or email info@allwindowdoorparts.com.", variant: "destructive" });
+    }
   };
 
   // ── success screen ────────────────────────────────────────────────────
@@ -295,8 +300,7 @@ export default function PartsIdentification() {
                 <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div>
                     <label className="block text-sm font-semibold text-slate-800 mb-2">
-                      Describe the part or what's broken <span className="text-red-500">*</span>
-                    </label>
+                      Describe the part or what's broken <span className="text-red-500">*</span></label>
                     <Textarea
                       {...form.register("description")}
                       rows={5}
@@ -362,12 +366,6 @@ export default function PartsIdentification() {
                     className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
                       ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
                     onClick={() => document.getElementById("photo-upload")?.click()}
-                  >
-                    <Camera className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-700 font-semibold mb-1">Drop a photo here or click to browse</p>
-                    <p className="text-sm text-slate-400">JPEG, PNG, HEIC — max 5 MB</p>
-                    <input id="photo-upload" type="file" accept="image/*" className="hidden"
-                      onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
                   </div>
                 )}
 
@@ -380,11 +378,10 @@ export default function PartsIdentification() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                        <Lightbulb className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-semibold text-blue-900">Photo Tips & Examples</p>
-                        <p className="text-xs text-blue-600">See what makes a good photo</p>
+                        <div className="text-left">
+                          <p className="font-semibold text-blue-900">Photo Tips & Examples</p>
+                          <p className="text-xs text-blue-600">See what makes a good photo</p>
+                        </div>
                       </div>
                     </div>
                     {showPhotoExamples ? (
@@ -564,10 +561,10 @@ export default function PartsIdentification() {
                 <div className="bg-slate-50 rounded-xl border p-4 mb-6 text-sm text-slate-600 space-y-1">
                   <p className="font-semibold text-slate-800 mb-2">Your request summary:</p>
                   <p>🪟 <strong>Type:</strong> {PART_TYPES.find(t => t.id === partType)?.label}</p>
-                  {form.watch("windowDoorBrand") && <p>🏷️ <strong>Brand:</strong> {form.watch("windowDoorBrand")}</p>}
-                  {form.watch("windowDoorAge") && <p>📅 <strong>Age:</strong> {form.watch("windowDoorAge")}</p>}
+                  {form.watch("windowDoorBrand") && <p>🏷️ <strong>Brand:</strong> {form.watch("windowDoorBrand")}</p>
+                  {form.watch("windowDoorAge") && <p>📅 <strong>Age:</strong> {form.watch("windowDoorAge")}</p>
                   <p>📝 <strong>Description:</strong> {form.watch("description")?.slice(0, 80)}{(form.watch("description")?.length ?? 0) > 80 ? "…" : ""}</p>
-                  {selectedImage && <p>📷 <strong>Photo:</strong> {selectedImage.name}</p>}
+                  {selectedImage && <p>📷 <strong>Photo:</strong> {selectedImage.name}</p>
                 </div>
 
                 <Button
@@ -581,7 +578,7 @@ export default function PartsIdentification() {
                   ) : (
                     <><UploadCloud className="w-5 h-5 mr-2" /> Submit Free Parts ID Request</>
                   )}
-                </Button>
+                  </Button>
                 <p className="text-center text-xs text-slate-400 mt-3">
                   Free service. No obligation. We respond within 1 business day.
                 </p>
