@@ -12,6 +12,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
   if (items.length === 0) {
     return (
@@ -80,6 +81,7 @@ export default function Checkout() {
                   createOrder={async () => {
                     setLoading(true);
                     setError(null);
+                    setPendingOrderId(null);
                     try {
                       const res = await fetch("/api/checkout/create-order", {
                         method: "POST",
@@ -94,8 +96,9 @@ export default function Checkout() {
                         throw new Error(err.error || "Failed to create order");
                       }
 
-                      const { paypalOrderId } = await res.json();
-                      return paypalOrderId;
+                      const data = await res.json();
+                      setPendingOrderId(data.orderId);
+                      return data.paypalOrderId;
                     } catch (err: any) {
                       const msg = err.message || "Could not start payment. Please try again.";
                       setError(msg);
@@ -105,12 +108,22 @@ export default function Checkout() {
                     }
                   }}
                   onApprove={async (data: any) => {
+                    if (!pendingOrderId) {
+                      setError("Order information missing. Please try again.");
+                      setProcessingPayment(false);
+                      setLoading(false);
+                      return;
+                    }
+
                     setProcessingPayment(true);
                     try {
                       const res = await fetch("/api/checkout/capture-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ paypalOrderId: data.orderID }),
+                        body: JSON.stringify({
+                          paypalOrderId: data.orderID,
+                          orderId: pendingOrderId,
+                        }),
                       });
 
                       if (!res.ok) {
