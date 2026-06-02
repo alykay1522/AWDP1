@@ -8,13 +8,13 @@ function getTransporter() {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: false, // true for port 465, false for 587
+    secure: false,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
     tls: {
-      rejectUnauthorized: false, // allow self-signed certs common on cPanel
+      rejectUnauthorized: false,
     },
   });
 
@@ -23,12 +23,14 @@ function getTransporter() {
 
 /**
  * Send form submission email.
- * Currently only sends to thepolak@wefixitusa.com
+ * Sends to thepolak@wefixitusa.com
+ * Professional from: info@allwindowdoorparts.com
  */
 export async function sendFormEmail({ type, data }) {
   const transporter = getTransporter();
 
   const to = 'thepolak@wefixitusa.com';
+  const from = process.env.SMTP_FROM || 'info@allwindowdoorparts.com';
 
   let subject;
   let text;
@@ -58,10 +60,11 @@ Image: ${data.imageFileName || 'None attached'}`;
   }
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    from,
     to,
     subject,
     text,
+    replyTo: data.email,
   });
 
   console.log(`[email] Sent ${type} form to thepolak@wefixitusa.com`);
