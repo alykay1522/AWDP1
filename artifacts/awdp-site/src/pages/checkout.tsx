@@ -11,6 +11,7 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -83,17 +84,18 @@ export default function Checkout() {
                       const res = await fetch("/api/checkout/create-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                          items: items.map(i => ({ sku: i.sku, quantity: i.quantity, price: i.price })),
-                          total 
+                        body: JSON.stringify({
+                          items: items.map(i => ({ sku: i.sku, quantity: i.quantity }))
                         }),
                       });
+
                       if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error || "Failed to create order");
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || "Failed to create order");
                       }
-                      const order = await res.json();
-                      return order.id;
+
+                      const { paypalOrderId } = await res.json();
+                      return paypalOrderId;
                     } catch (err: any) {
                       const msg = err.message || "Could not start payment. Please try again.";
                       setError(msg);
@@ -103,31 +105,46 @@ export default function Checkout() {
                     }
                   }}
                   onApprove={async (data: any) => {
+                    setProcessingPayment(true);
                     try {
                       const res = await fetch("/api/checkout/capture-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderID: data.orderID }),
+                        body: JSON.stringify({ paypalOrderId: data.orderID }),
                       });
-                      if (!res.ok) throw new Error("Payment capture failed");
-                      
+
+                      if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || "Payment capture failed");
+                      }
+
                       clearCart();
                       navigate("/checkout/success");
                     } catch (err: any) {
-                      const msg = err.message || "Payment failed. Contact support if charged.";
+                      const msg = err.message || "Payment failed. Please contact support.";
                       setError(msg);
                       toast.error(msg);
                     } finally {
+                      setProcessingPayment(false);
                       setLoading(false);
                     }
                   }}
                   onError={() => {
-                    const msg = "Payment error. Try again or use another method.";
+                    const msg = "There was an error with your PayPal payment. Please try again.";
                     setError(msg);
                     toast.error(msg);
                     setLoading(false);
                   }}
                 />
+
+                {(loading || processingPayment) && (
+                  <div className="mt-4 text-center text-sm text-slate-600">
+                    {processingPayment 
+                      ? "Processing your payment... Please do not close this window." 
+                      : "Preparing your order..."}
+                  </div>
+                )}
+
                 <p className="text-xs text-center text-slate-500 mt-4">
                   Secure checkout powered by PayPal. We never store your card details.
                 </p>
