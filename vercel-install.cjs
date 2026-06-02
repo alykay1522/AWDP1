@@ -42,17 +42,21 @@ const siteNm = path.join(siteDir, "node_modules");
 const libNm = path.join(repoRoot, "lib", "api-client-react", "node_modules");
 
 if (fs.existsSync(siteNm)) {
+  // Symlink only if target dir exists and is not already a symlink
   try {
-    fs.rmSync(libNm, { recursive: true, force: true });
-  } catch (err) {
-    /* ignore */
-  }
-  try {
+    if (fs.existsSync(libNm)) {
+      const stat = fs.lstatSync(libNm);
+      if (stat.isSymbolicLink()) {
+        fs.unlinkSync(libNm);
+      } else {
+        fs.rmSync(libNm, { recursive: true, force: true });
+      }
+    }
     fs.mkdirSync(path.dirname(libNm), { recursive: true });
     fs.symlinkSync(siteNm, libNm, "dir");
     console.log("Symlinked artifacts/awdp-site/node_modules -> lib/api-client-react/node_modules");
   } catch (err) {
-    console.warn("Symlink lib/api-client-react/node_modules skipped:", err && err.message ? err.message : err);
+    console.warn("Symlink skipped (invalid path or permission):", err && err.message ? err.message : err);
   }
 }
 
