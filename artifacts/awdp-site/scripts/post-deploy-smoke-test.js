@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 const BASE_URL = process.env.SITE_URL || 'https://allwindowdoorparts.com';
 
 const results = [];
