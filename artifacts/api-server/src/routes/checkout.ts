@@ -50,7 +50,7 @@ async function serverPriceItems(rawItems) {
 }
 
 // =====================================================
-// PAYPAL ENDPOINTS (for current frontend compatibility)
+// PAYPAL ENDPOINTS
 // =====================================================
 
 router.post("/checkout/create-order", async (req, res) => {
@@ -96,21 +96,38 @@ router.post("/checkout/capture-order", async (req, res) => {
 
     if (capture.status === "COMPLETED") {
       const pu = capture.purchase_units?.[0];
-      const payer = capture.payer;
+      const payer = capture.payer || pu?.payer || {};
+
+      // Strengthened email capture - check multiple possible locations + fallback to local order
+      const customerEmail =
+        payer?.email_address ||
+        capture.payer?.email_address ||
+        pu?.payer?.email_address ||
+        localOrder.customerEmail ||
+        "";
+
+      const customerName =
+        pu?.shipping?.name?.full_name ||
+        payer?.name?.full_name ||
+        `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
+        localOrder.customerName ||
+        "Customer";
+
       const shipping = pu?.shipping;
+      const shippingAddress = shipping?.address ? {
+        line1: shipping.address.address_line_1 || "",
+        city: shipping.address.admin_area_2 || "",
+        state: shipping.address.admin_area_1 || "",
+        postal_code: shipping.address.postal_code || "",
+        country: shipping.address.country_code || "US",
+      } : undefined;
 
       await db.update(ordersTable).set({
         status: "paid",
-        customerEmail: payer?.email_address || "",
-        customerName: shipping?.name?.full_name || "Customer",
-        shippingAddress: shipping?.address ? {
-          line1: shipping.address.address_line_1 || "",
-          city: shipping.address.admin_area_2 || "",
-          state: shipping.address.admin_area_1 || "",
-          postal_code: shipping.address.postal_code || "",
-          country: "US"
-        } : undefined,
-        updatedAt: new Date()
+        customerEmail,
+        customerName,
+        shippingAddress,
+        updatedAt: new Date(),
       }).where(eq(ordersTable.orderId, orderId));
 
       const [order] = await db.select().from(ordersTable).where(eq(ordersTable.orderId, orderId)).limit(1);
@@ -119,12 +136,14 @@ router.post("/checkout/capture-order", async (req, res) => {
           orderId: order.orderId,
           customerName: order.customerName,
           customerEmail: order.customerEmail,
+          shippingAddress: order.shippingAddress,
           items: order.lineItems || [],
           subtotal: order.subtotal,
           total: order.total,
-          paymentMethod: "paypal"
-        }).catch(e => logger.error({ e }));
+          paymentMethod: "paypal",
+        }).catch(e => logger.error({ e }, "sendOrderNotification error"));
       }
+
       return res.json({ success: true, orderId });
     }
 
@@ -133,20 +152,6 @@ router.post("/checkout/capture-order", async (req, res) => {
     logger.error({ err }, "capture-order error");
     res.status(500).json({ error: "Failed to capture payment" });
   }
-});
-
-// =====================================================
-// STRIPE ROUTES (kept for future use)
-// =====================================================
-
-router.post("/checkout/session", async (req, res) => {
-  // existing Stripe code remains here
-  res.status(503).json({ error: "Stripe checkout temporarily disabled" });
-});
-
-router.post("/checkout/fulfill", async (req, res) => {
-  // existing fulfill logic
-  res.json({ success: true });
 });
 
 export default router;
