@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "node ./vercel-install.cjs",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "node vercel-install.cjs && npx vite build",
   "outputDirectory": "dist/public",
   "rewrites": [
