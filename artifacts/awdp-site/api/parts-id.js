@@ -15,17 +15,26 @@ export default async function handler(req, res) {
     const data = req.body;
 
     if (!data.name || !data.email || !data.description) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "Missing required fields (name, email, description)" });
     }
 
-    await sendFormEmail({
+    const result = await sendFormEmail({
       type: "parts-id",
       data,
     });
 
-    return res.status(200).json({ success: true, message: "Parts ID request sent" });
+    return res.status(200).json({ 
+      success: true, 
+      message: "Parts ID request sent successfully",
+      messageId: result.messageId 
+    });
+
   } catch (error) {
-    console.error("Parts ID form error:", error);
-    return res.status(500).json({ error: "Failed to send request" });
+    console.error("[parts-id] Email sending failed:", error);
+    
+    return res.status(500).json({ 
+      error: "Failed to send request. Please try again or call 785-533-0244.",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
