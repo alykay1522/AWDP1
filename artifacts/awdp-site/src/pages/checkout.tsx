@@ -12,7 +12,9 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+
+  // Store both IDs returned from create-order
+  const [orderData, setOrderData] = useState<{ paypalOrderId: string; orderId: string } | null>(null);
 
   if (items.length === 0) {
     return (
@@ -81,7 +83,7 @@ export default function Checkout() {
                   createOrder={async () => {
                     setLoading(true);
                     setError(null);
-                    setPendingOrderId(null);
+                    setOrderData(null);
                     try {
                       const res = await fetch("/api/checkout/create-order", {
                         method: "POST",
@@ -97,7 +99,7 @@ export default function Checkout() {
                       }
 
                       const data = await res.json();
-                      setPendingOrderId(data.orderId);
+                      setOrderData({ paypalOrderId: data.paypalOrderId, orderId: data.orderId });
                       return data.paypalOrderId;
                     } catch (err: any) {
                       const msg = err.message || "Could not start payment. Please try again.";
@@ -108,7 +110,7 @@ export default function Checkout() {
                     }
                   }}
                   onApprove={async (data: any) => {
-                    if (!pendingOrderId) {
+                    if (!orderData?.orderId) {
                       setError("Order information missing. Please try again.");
                       setProcessingPayment(false);
                       setLoading(false);
@@ -122,7 +124,7 @@ export default function Checkout() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                           paypalOrderId: data.orderID,
-                          orderId: pendingOrderId,
+                          orderId: orderData.orderId,
                         }),
                       });
 
