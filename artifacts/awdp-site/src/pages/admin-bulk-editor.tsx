@@ -522,6 +522,7 @@ export default function AdminBulkEditor() {
                 {confirmDelete ? (
                   <p className="text-red-600 font-bold text-sm">
                     Are you sure? This will permanently delete {selectionCount} product{selectionCount !== 1 ? "s" : ""}. Click Delete again to confirm.
+                  </p>
                 ) : (
                   <p className="text-slate-600 text-sm">
                     Permanently delete {selectionCount} selected product{selectionCount !== 1 ? "s" : ""} from the catalog.
