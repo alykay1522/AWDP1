@@ -293,6 +293,7 @@ setNavSuggestionsOpen(data.length > 0);
                         {totalItems}
                       </span>
                     )}
+                  </Button>
                 </SheetTrigger>
                 <SheetContent className="w-full sm:max-w-md flex flex-col">
                   <SheetHeader>
