@@ -13,6 +13,10 @@ export default defineConfig({
       "@": path.resolve(siteDir, "src"),
       "@assets": path.resolve(siteDir, "..", "..", "attached_assets"),
       "@workspace/api-client-react": path.resolve(siteDir, "..", "..", "lib", "api-client-react", "src", "index.ts"),
+      // Force the api-client-react lib (which uses pnpm catalog: specifier) to use
+      // the same @tanstack/react-query installed in the site's node_modules.
+      // Without this alias Rollup cannot resolve "catalog:" at build time and fails.
+      "@tanstack/react-query": path.resolve(siteDir, "node_modules", "@tanstack", "react-query"),
     },
     dedupe: ["react", "react-dom"],
   },
