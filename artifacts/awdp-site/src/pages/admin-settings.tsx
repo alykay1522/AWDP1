@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { SITE_CUSTOMER_EMAIL } from "@/lib/siteContact";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 interface Settings {
   businessName: string;
@@ -62,18 +63,18 @@ export default function AdminSettings() {
   });
   const [saved, setSaved] = useState(false);
 
-  const { data, isLoading } = useQuery<{ settings: Settings }>({
+  const settingsQuery = useQuery<{ settings: Settings }>({
     queryKey: ["admin-settings"],
     queryFn: async () => {
       const res = await fetch("/api/admin/settings");
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load settings");
       return res.json();
     },
   });
 
   useEffect(() => {
-    if (data?.settings) setForm(data.settings);
-  }, [data]);
+    if (settingsQuery.data?.settings) setForm(settingsQuery.data.settings);
+  }, [settingsQuery.data]);
 
   const mutation = useMutation({
     mutationFn: async (updates: Settings) => {
@@ -98,11 +99,21 @@ export default function AdminSettings() {
   const set = (key: keyof Settings) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
-  if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-    </div>
-  );
+  if (settingsQuery.isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (settingsQuery.isError) {
+    return (
+      <div className="p-8">
+        <AdminQueryError error={settingsQuery.error} onRetry={settingsQuery.refetch} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
@@ -140,7 +151,7 @@ export default function AdminSettings() {
           <Field label="Business Address" hint="Optional — used for structured data (Google)">
             <Input value={form.address} onChange={set("address")} placeholder="123 Main St, City, KS 12345" />
           </Field>
-        </Section>
+        </Field>
 
         <Section title="Order Settings" icon={<DollarSign className="w-4 h-4 text-primary" />}>
           <Field label="Minimum Order Amount ($)" hint="Orders below this amount will be blocked from checkout">
@@ -161,7 +172,7 @@ export default function AdminSettings() {
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
             </div>
           </Field>
-        </Section>
+        </Field>
 
         <Section title="Announcement Banner" icon={<Megaphone className="w-4 h-4 text-primary" />}>
           <Field label="Show Announcement Banner">
