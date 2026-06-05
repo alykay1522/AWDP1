@@ -36,11 +36,11 @@ export function calculateShipping(subtotal: number): ShippingRate {
 
   // Tiered rates — highest standard UPS/FedEx ground estimate per order size
   let cost: number;
-  if (subtotal < 75)        cost = 14.95;   // Small order, light parts
-  else if (subtotal < 150)  cost = 19.95;   // Medium order
-  else if (subtotal < 300)  cost = 24.95;   // Larger order, heavier box
-  else if (subtotal < 500)  cost = 34.95;   // Heavy/bulky hardware
-  else                      cost = 49.95;   // Large commercial order
+  if (subtotal < 75)        cost = 29.90;   // Small order, light parts
+  else if (subtotal < 150)  cost = 39.90;   // Medium order
+  else if (subtotal < 300)  cost = 49.90;   // Larger order, heavier box
+  else if (subtotal < 500)  cost = 69.90;   // Heavy/bulky hardware
+  else                      cost = 99.90;   // Large commercial order
 
   return {
     cost,

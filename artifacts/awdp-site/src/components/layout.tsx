@@ -392,11 +392,11 @@ setNavSuggestionsOpen(data.length > 0);
                       </div>
                       {!belowMinimum && (() => {
                         // Mirror server-side shipping tiers so customer sees the charge before PayPal opens
-                        let ship = 14.95;
-                        if (totalPrice >= 500)      ship = 49.95;
-                        else if (totalPrice >= 300) ship = 34.95;
-                        else if (totalPrice >= 150) ship = 24.95;
-                        else if (totalPrice >= 75)  ship = 19.95;
+                        let ship = 29.90;
+                        if (totalPrice >= 500)      ship = 99.90;
+                        else if (totalPrice >= 300) ship = 69.90;
+                        else if (totalPrice >= 150) ship = 49.90;
+                        else if (totalPrice >= 75)  ship = 39.90;
                         return (
                           <>
                             <div className="flex justify-between items-center text-sm text-slate-600">
