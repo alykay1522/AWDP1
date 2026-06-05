@@ -12,8 +12,17 @@ interface AdminQueryWrapperProps<T> {
     refetch?: () => void;
   };
   children: (data: T) => ReactNode;
-  /** Optional loading message */
+
+  /**
+   * Optional custom skeleton to show while loading.
+   * If provided, this will be rendered instead of the default spinner.
+   * Example: a table skeleton, card grid skeleton, etc.
+   */
+  skeleton?: ReactNode;
+
+  /** Optional loading message (only used when no skeleton is provided) */
   loadingMessage?: string;
+
   /** Optional empty state when data is empty array/object */
   emptyState?: ReactNode;
 }
@@ -26,16 +35,25 @@ interface AdminQueryWrapperProps<T> {
  *   <AdminQueryWrapper query={productsQuery}>
  *     {(data) => <YourTable data={data} />}
  *   </AdminQueryWrapper>
+ *
+ * With skeleton:
+ *   <AdminQueryWrapper query={productsQuery} skeleton={<TableSkeleton />}>
+ *     {(data) => <YourTable data={data} />}
+ *   </AdminQueryWrapper>
  */
 export function AdminQueryWrapper<T>({
   query,
   children,
+  skeleton,
   loadingMessage = "Loading…",
   emptyState,
 }: AdminQueryWrapperProps<T>) {
   const { data, isLoading, isError, error, refetch } = query;
 
   if (isLoading) {
+    if (skeleton) {
+      return <>{skeleton}</>;
+    }
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
         <Loader2 className="w-6 h-6 animate-spin mr-3" />
