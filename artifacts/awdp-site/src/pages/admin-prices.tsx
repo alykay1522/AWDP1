@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 interface PriceAlert {
   id: number;
@@ -170,10 +171,11 @@ export default function AdminPrices() {
   const [distFilter, setDistFilter] = useState<string>("all");
   const [showManual, setShowManual] = useState<string | null>(null);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, error: queryError, refetch } = useQuery({
     queryKey: ["price-alerts"],
     queryFn: async () => {
       const res = await fetch("/api/admin/price-alerts");
+      if (!res.ok) throw new Error("Failed to load price alerts");
       return res.json() as Promise<{ summary: Summary; alerts: PriceAlert[] }>;
     },
   });
@@ -190,6 +192,14 @@ export default function AdminPrices() {
     if (search && !a.product_name?.toLowerCase().includes(search.toLowerCase()) && !a.product_sku?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  if (isError) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <AdminQueryError error={queryError} onRetry={refresh} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
