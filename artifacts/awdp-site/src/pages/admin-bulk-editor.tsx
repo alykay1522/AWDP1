@@ -468,7 +468,7 @@ export default function AdminBulkEditor() {
                 <Input
                   value={variantLabelValue}
                   onChange={(e) => setVariantLabelValue(e.target.value)}
-                  placeholder="e.g. Left Hand, White, 36""
+                  placeholder='e.g. Left Hand, White, 36"'
                   className="bg-white"
                 />
                 <p className="text-xs text-slate-400 mt-1">Shown on the product page variant picker. Leave blank to clear.</p>
