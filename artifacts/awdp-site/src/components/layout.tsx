@@ -142,57 +142,37 @@ setNavSuggestionsOpen(data.length > 0);
       setLocation(`/shop?search=${encodeURIComponent(searchQuery)}`);
     }
   };
-
-  return (
-        <div className="min-h-screen flex flex-col font-sans">
-      {/* Skip to main content — accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-primary focus:font-semibold focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:outline-none"
-      >
+        return (
+    <div className="min-h-screen flex flex-col font-sans">
+      {/* Skip link */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-primary focus:font-semibold focus:px-4 focus:py-2 focus:rounded">
         Skip to main content
       </a>
 
-      {/* Classic Flag Banner Header (restored) */}
-      <div className="relative w-full overflow-hidden bg-[#1a1a2e] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] bg-[length:4px_4px]"></div>
-        
-        <div className="relative container mx-auto px-4 py-8 md:py-10 text-center">
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-1 rounded-full text-sm font-bold tracking-wider">
-              🇺🇸 VETERAN OWNED &amp; OPERATED
-            </div>
+      {/* CLASSIC FLAG BANNER - Restored exactly as requested */}
+      <div className="w-full bg-[#0f172a] text-white py-9 border-b border-white/10">
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-block bg-white/10 text-white text-xs font-bold tracking-[4px] px-5 py-1.5 rounded mb-4">
+            VETERAN OWNED &amp; OPERATED
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-2">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-1">
             All Window Door Parts
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-4">
-            info@AllWindowDoorParts.com
-          </p>
+          <p className="text-2xl text-white/80 mb-4">info@AllWindowDoorParts.com</p>
 
-          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-2 text-sm font-semibold">
-            <span className="text-red-400">Veteran Owned and Operated</span>
-            <span className="hidden md:inline text-white/40">•</span>
-            <span className="font-bold">AllWindowDoorPartsGroup</span>
-          </div>
-        </div>
+          <div className="text-red-400 font-semibold tracking-wide mb-1">Veteran Owned and Operated</div>
+          <div className="font-bold text-xl mb-5">AllWindowDoorPartsGroup</div>
 
-        {/* Payment logos */}
-        <div className="border-t border-white/20 py-3">
-          <div className="container mx-auto px-4 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm">
-            <span className="font-bold text-white/80">Secure Payments</span>
-            <div className="flex items-center gap-3">
-              <span className="font-bold">PayPal</span>
-              <span className="font-bold text-blue-400">VISA</span>
-              <span className="font-bold text-red-400">MC</span>
-              <span className="font-bold text-blue-500">AMEX</span>
-              <span className="font-bold text-orange-400">DISCOVER</span>
-            </div>
+          <div className="flex justify-center gap-x-6 gap-y-1 text-sm font-bold flex-wrap">
+            <span>PayPal</span>
+            <span className="text-blue-400">VISA</span>
+            <span className="text-red-400">MC</span>
+            <span className="text-blue-500">AMEX</span>
+            <span className="text-orange-400">DISCOVER</span>
           </div>
         </div>
       </div>
-          
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
         <div className="container mx-auto px-4 py-3">
