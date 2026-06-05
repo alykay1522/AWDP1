@@ -3,18 +3,27 @@ import { useLocation } from "wouter";
 
 async function checkAuth(): Promise<boolean> {
   const res = await fetch("/api/admin/auth-check", { credentials: "include" });
-  return res.ok;
+  if (!res.ok) {
+    throw new Error("Auth check failed");
+  }
+  return true;
 }
 
 export function useAdminAuth() {
-  const { data: isAuthenticated, isLoading } = useQuery({
+  const { data: isAuthenticated, isLoading, error, isError } = useQuery({
     queryKey: ["admin-auth"],
     queryFn: checkAuth,
     retry: false,
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  return { isAuthenticated: isAuthenticated ?? false, isLoading };
+  return {
+    isAuthenticated: isAuthenticated ?? false,
+    isLoading,
+    error,
+    isError,
+  };
 }
 
 export function useAdminLogout() {
