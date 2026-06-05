@@ -2,7 +2,7 @@
   "name": "awdp",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.34.1",
   "dependencies": {
     "nodemailer": "^8.0.10",
     "pg": "^8.13.0"
@@ -14,7 +14,7 @@
     "vercel:set-api": "node scripts/vercel-set-api-origin.mjs"
   },
   "engines": {
-    "node": "24.x"
+    "node": ">=20.x"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
@@ -26,4 +26,3 @@
     }
   }
 }
-

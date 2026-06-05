@@ -21,7 +21,7 @@ console.log("[vercel-install] pnpm monorepo install (cache-optimized)...");
 
 try {
   run("corepack enable");
-  run("corepack prepare pnpm@9.15.9 --activate");
+  run("corepack prepare pnpm@10.34.1 --activate");
 } catch (e) {
   console.warn("corepack prepare:", e && e.message ? e.message : e);
 }
