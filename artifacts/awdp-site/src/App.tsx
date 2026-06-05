@@ -109,7 +109,7 @@ function AppContent() {
             <Route component={NotFound} />
           </Switch>
         </AdminLayout>
-      </AdminGuard>
+      </Guard>
     );
   }
 
