@@ -352,10 +352,12 @@ export default function AdminBulkEditor() {
               {selectionCount.toLocaleString()} product{selectionCount !== 1 ? "s" : ""} selected
             </span>
             {allOnPageSelected && !selectAllMatching && total > products.length && (
-              <Button variant="outline" size="sm" className="text-xs h-7 border-primary text-primary hover:bg-primary hover:text-white"
-                onClick={() => setSelectAllMatching(true)}>
-              <Button variant="outline" size="sm" className="text-xs h-7 border-primary text-primary hover:bg-primary hover:text-white"
-                onClick={() => setSelectAllMatching(true)}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs h-7 border-primary text-primary hover:bg-primary hover:text-white"
+                onClick={() => setSelectAllMatching(true)}
+              >
                 Select all {total.toLocaleString()} matching this filter
               </Button>
             )}
