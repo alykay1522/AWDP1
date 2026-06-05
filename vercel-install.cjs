@@ -1,6 +1,10 @@
 /**
- * Vercel install hook: this repo is a pnpm workspace (workspace:*, catalog:).
- * npm cannot resolve those protocols — install from the monorepo root with pnpm.
+ * Vercel install hook: pnpm workspace (workspace:*, catalog: protocols).
+ * Custom because npm/yarn can't resolve them. Optimized for Vercel build cache:
+ * - corepack prepare for fast activation
+ * - frozen-lockfile preferred (Vercel caches pnpm store + node_modules on lockfile hit)
+ * - prefer-offline via .npmrc for metadata cache hits
+ * - hoisted + shamefully-hoist for monorepo compatibility
  */
 const fs = require("fs");
 const path = require("path");
@@ -13,12 +17,13 @@ function run(cmd) {
   execSync(cmd, { stdio: "inherit", shell: true, cwd: repoRoot, env: process.env });
 }
 
-console.log("Installing monorepo dependencies with pnpm (required for workspace:/catalog: protocols)...");
+console.log("[vercel-install] pnpm monorepo install (cache-optimized)...");
 
 try {
   run("corepack enable");
+  run("corepack prepare pnpm@9.15.9 --activate");
 } catch (e) {
-  console.warn("corepack enable:", e && e.message ? e.message : e);
+  console.warn("corepack prepare:", e && e.message ? e.message : e);
 }
 
 const useFrozen = process.env.VERCEL_INSTALL_NO_FROZEN !== "1";
@@ -30,42 +35,54 @@ try {
   }
 } catch (e) {
   if (useFrozen) {
-    console.warn("pnpm install --frozen-lockfile failed; retrying without frozen lockfile");
+    console.warn("frozen-lockfile failed; falling back (no cache guarantee)");
     run("pnpm install --no-frozen-lockfile");
   } else {
     throw e;
   }
 }
 
+// Symlink for lib/api-client-react (Vite alias resolution without duplicate installs)
 const siteDir = path.join(repoRoot, "artifacts", "awdp-site");
 const siteNm = path.join(siteDir, "node_modules");
 const libNm = path.join(repoRoot, "lib", "api-client-react", "node_modules");
 
 if (fs.existsSync(siteNm)) {
-  // Symlink only if target dir exists and is not already a symlink
   try {
     if (fs.existsSync(libNm)) {
       const stat = fs.lstatSync(libNm);
       if (stat.isSymbolicLink()) {
-        fs.unlinkSync(libNm);
+        // Already correct? Skip heavy ops
+        const target = fs.readlinkSync(libNm);
+        if (target === siteNm || path.resolve(path.dirname(libNm), target) === siteNm) {
+          console.log("Symlink already correct, skipping recreation");
+        } else {
+          fs.unlinkSync(libNm);
+          fs.symlinkSync(siteNm, libNm, "dir");
+        }
       } else {
         fs.rmSync(libNm, { recursive: true, force: true });
+        fs.mkdirSync(path.dirname(libNm), { recursive: true });
+        fs.symlinkSync(siteNm, libNm, "dir");
       }
+    } else {
+      fs.mkdirSync(path.dirname(libNm), { recursive: true });
+      fs.symlinkSync(siteNm, libNm, "dir");
     }
-    fs.mkdirSync(path.dirname(libNm), { recursive: true });
-    fs.symlinkSync(siteNm, libNm, "dir");
-    console.log("Symlinked artifacts/awdp-site/node_modules -> lib/api-client-react/node_modules");
+    console.log("[vercel-install] Symlinked awdp-site/node_modules -> lib/api-client-react/node_modules");
   } catch (err) {
-    console.warn("Symlink skipped (invalid path or permission):", err && err.message ? err.message : err);
+    console.warn("Symlink skipped:", err && err.message ? err.message : err);
   }
 }
 
+// Quick validation (helps debug cache misses)
 if (fs.existsSync(siteNm)) {
   const count = fs.readdirSync(siteNm).length;
-  ["wouter", "react", "vite", "@tanstack/react-query", "@vitejs/plugin-react"].forEach(function (p) {
+  const checks = ["wouter", "react", "vite", "@tanstack/react-query", "@vitejs/plugin-react"];
+  checks.forEach(function (p) {
     console.log(p + ": " + (fs.existsSync(path.join(siteNm, p)) ? "OK" : "MISSING"));
   });
-  console.log("Total top-level entries in awdp-site/node_modules: " + count);
+  console.log("awdp-site/node_modules entries: " + count);
 }
 
-console.log("vercel-install: done");
+console.log("[vercel-install] done - cache should be warm for next deploy if lockfile unchanged");
