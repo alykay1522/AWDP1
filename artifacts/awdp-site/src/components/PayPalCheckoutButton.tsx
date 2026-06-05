@@ -91,8 +91,9 @@ export function PayPalCheckoutButton({ items, totalPrice, onSuccess, onError, di
           throw new Error(err.error || "Failed to create order");
         }
         const data = await res.json();
-        // Store orderId in session storage for capture step
+        // Store orderId and total (includes shipping) for capture step
         sessionStorage.setItem("awdp_paypal_order_id", data.orderId);
+        sessionStorage.setItem("awdp_paypal_total", String(data.total || ""));
         return data.paypalOrderId;
       },
       onApprove: async (data: { orderID: string }) => {

@@ -66,6 +66,7 @@ async function getAccessToken(): Promise<string> {
 export async function createPayPalOrder(params: {
   items: Array<{ name: string; sku: string; price: number; quantity: number }>;
   orderId: string;
+  shippingCost: number;
 }): Promise<{ id: string; status: string }> {
   const token = await getAccessToken();
 
@@ -73,6 +74,7 @@ export async function createPayPalOrder(params: {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  const total = subtotal + params.shippingCost;
 
   const body = {
     intent: "CAPTURE",
@@ -82,9 +84,10 @@ export async function createPayPalOrder(params: {
         custom_id: params.orderId,
         amount: {
           currency_code: "USD",
-          value: subtotal.toFixed(2),
+          value: total.toFixed(2),
           breakdown: {
             item_total: { currency_code: "USD", value: subtotal.toFixed(2) },
+            shipping:   { currency_code: "USD", value: params.shippingCost.toFixed(2) },
           },
         },
         items: params.items.map((item) => ({

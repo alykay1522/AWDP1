@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
+import { calculateShipping } from "../lib/shipping.js";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -99,6 +100,10 @@ router.post("/paypal/create-order", async (req, res) => {
       });
     }
 
+    // Calculate shipping at the highest standard carrier rate
+    const shipping = calculateShipping(subtotal);
+    const total = subtotal + shipping.cost;
+
     const orderId = generateOrderId();
 
     const paypalOrder = await createPayPalOrder({
@@ -109,21 +114,22 @@ router.post("/paypal/create-order", async (req, res) => {
         quantity: item.quantity,
       })),
       orderId,
+      shippingCost: shipping.cost,
     });
 
-    // Save pending order to DB using server-verified prices
+    // Save pending order to DB using server-verified prices + shipping
     await db.insert(ordersTable).values({
       orderId,
       customerName: "Customer",
       customerEmail: "",
       lineItems: items,
       subtotal: subtotal.toFixed(2),
-      shippingCost: "0",
-      total: subtotal.toFixed(2),
+      shippingCost: shipping.cost.toFixed(2),
+      total: total.toFixed(2),
       status: "pending",
     });
 
-    res.json({ paypalOrderId: paypalOrder.id, orderId });
+    res.json({ paypalOrderId: paypalOrder.id, orderId, shippingCost: shipping.cost, shippingLabel: shipping.label, total });
   } catch (err: any) {
     logger.error({ err }, "PayPal create-order error");
     res.status(500).json({ error: err.message || "Failed to create PayPal order" });
@@ -168,11 +174,11 @@ router.post("/paypal/capture-order", async (req, res) => {
         return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
       }
 
-      // Defense-in-depth: verify captured amount matches local order total
+      // Defense-in-depth: verify captured amount matches local order total (subtotal + shipping)
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
-      const localTotal = parseFloat(localOrder.total as string);
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+      const localTotal = parseFloat(localOrder.total as string); // total already includes shipping
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"

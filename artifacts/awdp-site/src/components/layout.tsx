@@ -390,6 +390,26 @@ setNavSuggestionsOpen(data.length > 0);
                         <span>Subtotal</span>
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
+                      {!belowMinimum && (() => {
+                        // Mirror server-side shipping tiers so customer sees the charge before PayPal opens
+                        let ship = 14.95;
+                        if (totalPrice >= 500)      ship = 49.95;
+                        else if (totalPrice >= 300) ship = 34.95;
+                        else if (totalPrice >= 150) ship = 24.95;
+                        else if (totalPrice >= 75)  ship = 19.95;
+                        return (
+                          <>
+                            <div className="flex justify-between items-center text-sm text-slate-600">
+                              <span>Shipping (UPS/FedEx Ground)</span>
+                              <span>${ship.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-bold text-base border-t pt-2">
+                              <span>Est. Total</span>
+                              <span>${(totalPrice + ship).toFixed(2)}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                       {belowMinimum ? (
                         <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 space-y-1.5">
                           <p className="text-xs font-semibold text-amber-800">$50.00 order minimum required</p>

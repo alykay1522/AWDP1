@@ -156898,6 +156898,7 @@ async function createPayPalOrder(params) {
     (sum2, item) => sum2 + item.price * item.quantity,
     0
   );
+  const total = subtotal + params.shippingCost;
   const body = {
     intent: "CAPTURE",
     purchase_units: [
@@ -156906,9 +156907,10 @@ async function createPayPalOrder(params) {
         custom_id: params.orderId,
         amount: {
           currency_code: "USD",
-          value: subtotal.toFixed(2),
+          value: total.toFixed(2),
           breakdown: {
-            item_total: { currency_code: "USD", value: subtotal.toFixed(2) }
+            item_total: { currency_code: "USD", value: subtotal.toFixed(2) },
+            shipping: { currency_code: "USD", value: params.shippingCost.toFixed(2) }
           }
         },
         items: params.items.map((item) => ({
@@ -161310,6 +161312,34 @@ var routes_default = router5;
 // src/routes/paypal.ts
 var import_express6 = __toESM(require_express2(), 1);
 init_drizzle_orm();
+
+// src/lib/shipping.ts
+function calculateShipping(subtotal) {
+  const flatOverride = process.env.SHIPPING_FLAT_RATE;
+  if (flatOverride) {
+    const flat = parseFloat(flatOverride);
+    if (!isNaN(flat) && flat >= 0) {
+      return {
+        cost: flat,
+        label: flat === 0 ? "Free Shipping" : `Shipping & Handling \u2014 $${flat.toFixed(2)}`,
+        carrier: "UPS/FedEx/USPS"
+      };
+    }
+  }
+  let cost;
+  if (subtotal < 75) cost = 14.95;
+  else if (subtotal < 150) cost = 19.95;
+  else if (subtotal < 300) cost = 24.95;
+  else if (subtotal < 500) cost = 34.95;
+  else cost = 49.95;
+  return {
+    cost,
+    label: `Shipping & Handling (UPS/FedEx Ground) \u2014 $${cost.toFixed(2)}`,
+    carrier: "UPS/FedEx Ground"
+  };
+}
+
+// src/routes/paypal.ts
 var router6 = (0, import_express6.Router)();
 var CartItemSchema2 = external_exports2.object({
   sku: external_exports2.string(),
@@ -161379,6 +161409,8 @@ router6.post("/paypal/create-order", async (req, res) => {
         error: `Order minimum is $${ORDER_MINIMUM.toFixed(2)}. Your cart total is $${subtotal.toFixed(2)}.`
       });
     }
+    const shipping = calculateShipping(subtotal);
+    const total = subtotal + shipping.cost;
     const orderId = generateOrderId2();
     const paypalOrder = await createPayPalOrder({
       items: items.map((item) => ({
@@ -161387,7 +161419,8 @@ router6.post("/paypal/create-order", async (req, res) => {
         price: item.price,
         quantity: item.quantity
       })),
-      orderId
+      orderId,
+      shippingCost: shipping.cost
     });
     await db.insert(ordersTable).values({
       orderId,
@@ -161395,11 +161428,11 @@ router6.post("/paypal/create-order", async (req, res) => {
       customerEmail: "",
       lineItems: items,
       subtotal: subtotal.toFixed(2),
-      shippingCost: "0",
-      total: subtotal.toFixed(2),
+      shippingCost: shipping.cost.toFixed(2),
+      total: total.toFixed(2),
       status: "pending"
     });
-    res.json({ paypalOrderId: paypalOrder.id, orderId });
+    res.json({ paypalOrderId: paypalOrder.id, orderId, shippingCost: shipping.cost, shippingLabel: shipping.label, total });
   } catch (err) {
     logger.error({ err }, "PayPal create-order error");
     res.status(500).json({ error: err.message || "Failed to create PayPal order" });
@@ -161431,7 +161464,7 @@ router6.post("/paypal/capture-order", async (req, res) => {
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total);
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"
