@@ -151,6 +151,7 @@ export default function AdminSettings() {
           <Field label="Business Address" hint="Optional — used for structured data (Google)">
             <Input value={form.address} onChange={set("address")} placeholder="123 Main St, City, KS 12345" />
           </Field>
+        </Section>
 
         <Section title="Order Settings" icon={<DollarSign className="w-4 h-4 text-primary" />}>
           <Field label="Minimum Order Amount ($)" hint="Orders below this amount will be blocked from checkout">
