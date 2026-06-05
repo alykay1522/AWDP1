@@ -180,7 +180,7 @@ export default function AdminDashboard() {
   const recentContacts = (contactsData?.submissions ?? []).slice(0, 4);
 
   const quickStats = [
-    { label: "Total Products", value: catalogStats?.totalProducts ?? "—", икон: <Package className="w-5 h-5 text-blue-500" />, href: "/admin/products", color: "text-blue-700" },
+    { label: "Total Products", value: catalogStats?.totalProducts ?? "—", icon: <Package className="w-5 h-5 text-blue-500" />, href: "/admin/products", color: "text-blue-700" },
     { label: "Total Orders", value: totalOrders, icon: <ShoppingBag className="w-5 h-5 text-indigo-500" />, href: "/admin/orders", color: "text-indigo-700" },
     { label: "Pending Orders", value: pendingOrders, icon: <Clock className="w-5 h-5 text-yellow-500" />, href: "/admin/orders", color: "text-yellow-700" },
     { label: "Revenue", value: `$${revenue.toFixed(2)}`, icon: <DollarSign className="w-5 h-5 text-green-500" />, href: "/admin/orders", color: "text-green-700" },
