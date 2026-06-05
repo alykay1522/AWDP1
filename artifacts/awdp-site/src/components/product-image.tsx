@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Wrench } from "lucide-react";
-import logoRainbow from "@assets/logo-banner_1775621995520.png";
+import { logo as logoRainbow } from "@/lib/assetUrls";
 
 interface ProductImageProps {
   src: string | null | undefined;
