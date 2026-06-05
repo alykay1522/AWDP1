@@ -16,7 +16,11 @@ function getResendClient(): Resend | null {
 function formatSubmittedAt(iso?: string | Date | null): string {
   const d = iso ? new Date(iso) : new Date();
   if (Number.isNaN(d.getTime())) {
-    return new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
+    return new Date().toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
   }
   return d.toLocaleString("en-US", {
     timeZone: "America/Chicago",
