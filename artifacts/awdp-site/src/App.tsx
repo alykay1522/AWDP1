@@ -150,7 +150,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <CartProvider>
           <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(//$/, "")}>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <ScrollToTop />
               <AppContent />
             </WouterRouter>
