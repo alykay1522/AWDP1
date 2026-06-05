@@ -85,10 +85,7 @@ setNavSuggestionsOpen(data.length > 0);
       </a>
 
       {/* CLASSIC FLAG BANNER */}
-      <div
-        className="w-full relative border-b border-white/10 overflow-hidden"
-        style={{ minHeight: 200 }}
-      >
+      <div className="w-full relative overflow-hidden" style={{ minHeight: 220 }}>
         {/* Background photo */}
         <img
           src={headerBg}
@@ -98,55 +95,55 @@ setNavSuggestionsOpen(data.length > 0);
           fetchpriority="high"
           loading="eager"
         />
-        {/* Subtle centre overlay so text stays legible over the grey area */}
-        <div className="absolute inset-0 bg-black/10" />
 
-        <div className="relative z-10 container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Content layered over photo — matches original image layout exactly */}
+        <div className="relative z-10 w-full h-full flex flex-col" style={{ minHeight: 220 }}>
 
-          {/* Left — branding */}
-          <div className="text-center md:text-left">
-            {/* Title in blue matching the original image */}
-            <p className="text-4xl md:text-5xl font-serif font-bold tracking-tight leading-tight drop-shadow-md"
-               style={{ color: "#3a7bd5" }}>
+          {/* CENTER: title + email — large, centered in the image */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 pt-6 pb-2">
+            <p
+              className="text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-lg leading-tight"
+              style={{ color: "#3a7bd5", textShadow: "0 2px 8px rgba(0,0,0,0.18)" }}
+            >
               All Window Door Parts
             </p>
-            {/* Email in blue */}
             <a
               href="mailto:info@allwindowdoorparts.com"
-              className="text-lg md:text-xl font-medium drop-shadow-sm hover:underline"
-              style={{ color: "#3a7bd5" }}
+              className="text-xl md:text-2xl font-normal drop-shadow hover:underline mt-1"
+              style={{ color: "#3a7bd5", textShadow: "0 1px 6px rgba(0,0,0,0.15)" }}
             >
               info@AllWindowDoorParts.com
             </a>
-            {/* Veteran line — red to match image */}
-            <p className="mt-1 text-sm font-bold tracking-wide drop-shadow-sm" style={{ color: "#e53e3e" }}>
-              Veteran Owned and Operated
-            </p>
-            {/* Rainbow-text group name matching original */}
-            <p className="mt-0.5 text-base font-extrabold tracking-wide drop-shadow-sm"
-               style={{
-                 background: "linear-gradient(90deg,#e53e3e,#dd6b20,#d69e2e,#38a169,#3182ce,#805ad5)",
-                 WebkitBackgroundClip: "text",
-                 WebkitTextFillColor: "transparent",
-               }}>
-              AllWindowDoorPartsGroup
-            </p>
           </div>
 
-          {/* Right — payment badges matching original */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* PayPal wordmark */}
-            <span className="text-2xl font-extrabold italic drop-shadow"
-                  style={{ color: "#003087" }}>
-              Pay<span style={{ color: "#009cde" }}>Pal</span>
-            </span>
-            {/* Card logos */}
-            <img
-              src={paypalImg}
-              alt="PayPal, Mastercard, American Express, Discover accepted"
-              className="h-10 object-contain drop-shadow"
-              loading="eager"
-            />
+          {/* BOTTOM ROW: veteran text left, payment logos right */}
+          <div className="flex items-end justify-between px-5 pb-4">
+            {/* Bottom-left: veteran + rainbow group name */}
+            <div>
+              <p className="text-sm font-bold tracking-wide drop-shadow" style={{ color: "#e53e3e" }}>
+                Veteran Owned and Operated
+              </p>
+              <p
+                className="text-base font-extrabold tracking-wide drop-shadow"
+                style={{
+                  background: "linear-gradient(90deg,#e53e3e,#dd6b20,#d69e2e,#38a169,#3182ce,#805ad5)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                AllWindowDoorPartsGroup
+              </p>
+            </div>
+
+            {/* Bottom-right: PayPal + card logos */}
+            <div className="flex items-center gap-2">
+              <img
+                src={paypalImg}
+                alt="PayPal, Mastercard, American Express, Discover accepted"
+                className="h-10 object-contain drop-shadow"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </div>
