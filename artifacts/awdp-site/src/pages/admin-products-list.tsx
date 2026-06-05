@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 // ── CSV parser ────────────────────────────────────────────────────────────────
 function parseCsv(text: string): Record<string, string>[] {
@@ -108,7 +109,14 @@ export default function AdminProductsList() {
 
   const queryKey = ["admin-products", page, debouncedSearch, catFilter, stockFilter];
 
-  const { data, isLoading, isFetching, refetch } = useQuery<ProductsResponse>({
+  const { 
+    data, 
+    isLoading, 
+    isFetching, 
+    isError: productsError, 
+    error: productsErrorObj,
+    refetch 
+  } = useQuery<ProductsResponse>({
     queryKey,
     queryFn: async () => {
       const res = await fetch(`/api/admin/products?${params}`);
@@ -119,7 +127,7 @@ export default function AdminProductsList() {
   });
 
   // ── Fetch categories for filter dropdown ──────────────────────────────────
-  const { data: categories } = useQuery<Category[]>({
+  const { data: categories, isError: categoriesError } = useQuery<Category[]>({
     queryKey: ["admin-categories-list"],
     queryFn: async () => {
       const res = await fetch("/api/categories");
@@ -128,6 +136,18 @@ export default function AdminProductsList() {
     },
     staleTime: 60_000,
   });
+
+  // Show error state for main products query
+  if (productsError) {
+    return (
+      <div className="p-8">
+        <AdminQueryError 
+          error={productsErrorObj} 
+          onRetry={refetch} 
+        />
+      </div>
+    );
+  }
 
   // ── Mutations ─────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
