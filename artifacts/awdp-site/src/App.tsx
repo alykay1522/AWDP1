@@ -11,6 +11,7 @@ import { Layout } from "@/components/layout";
 import { AdminLayout } from "@/components/admin-layout";
 import { useAdminAuth } from "@/lib/useAdminAuth";
 import NotFound from "@/pages/not-found";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 // Public pages
 import Home from "@/pages/home";
@@ -60,14 +61,85 @@ function ScrollToTop() {
 
 const queryClient = new QueryClient();
 
+function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?: () => void }) {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
+        <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <span className="text-3xl">⚠️</span>
+        </div>
+        <h2 className="text-2xl font-semibold text-slate-900 mb-2">Admin failed to load</h2>
+        <p className="text-slate-600 mb-6">
+          Something went wrong while loading the admin panel. This could be a temporary connection issue or a component error.
+        </p>
+        
+        <div className="space-y-3">
+          <button
+            onClick={() => {
+              if (resetError) resetError();
+              window.location.reload();
+            }}
+            className="w-full px-4 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          >
+            Try again
+          </button>
+          
+          <button
+            onClick={() => window.location.href = "/admin/login"}
+            className="w-full px-4 py-2.5 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+          >
+            Go to login
+          </button>
+
+          <a 
+            href="mailto:info@allwindowdoorparts.com?subject=Admin%20Panel%20Error"
+            className="block text-sm text-slate-500 hover:text-slate-700 mt-4"
+          >
+            Contact support
+          </a>
+        </div>
+
+        {error && (
+          <details className="mt-6 text-left">
+            <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-600">Technical details</summary>
+            <pre className="mt-2 p-3 bg-slate-900 text-red-400 text-xs rounded overflow-auto max-h-40">
+              {error.message}
+            </pre>
+          </details>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAdminAuth();
-  const [location] = useLocation();
+  const { isAuthenticated, isLoading, isError, error } = useAdminAuth();
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-400 text-sm">Loading…</div>
+        <div className="text-slate-400 text-sm">Loading admin…</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="max-w-md text-center">
+          <div className="text-red-600 mb-3 text-4xl">🔒</div>
+          <h3 className="text-xl font-semibold mb-2">Unable to verify admin access</h3>
+          <p className="text-slate-600 mb-4">
+            We couldn't check your authentication status. Please try logging in again.
+          </p>
+          <button
+            onClick={() => window.location.href = "/admin/login"}
+            className="px-6 py-2 bg-primary text-white rounded-lg font-medium"
+          >
+            Go to Admin Login
+          </button>
+          {error && <p className="text-xs text-red-500 mt-3">{error.message}</p>}
+        </div>
       </div>
     );
   }
@@ -82,7 +154,6 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const [location] = useLocation();
 
-  // Normalize location to handle trailing slashes and base variations
   const normalized = (location || "/").replace(/\/$/, "") || "/";
 
   if (normalized === "/admin/login") {
@@ -91,28 +162,30 @@ function AppContent() {
 
   if (normalized.startsWith("/admin")) {
     return (
-      <AdminGuard>
-        <AdminLayout>
-          <Switch>
-            <Route path="/admin" component={AdminDashboard} />
-            <Route path="/admin/products/new" component={AdminNewProduct} />
-            <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
-            <Route path="/admin/products" component={AdminProductsList} />
-            <Route path="/admin/orders" component={AdminOrders} />
-            <Route path="/admin/categories" component={AdminCategories} />
-            <Route path="/admin/parts-id" component={AdminPartsIdList} />
-            <Route path="/admin/contacts" component={AdminContactsList} />
-            <Route path="/admin/images" component={AdminImages} />
-            <Route path="/admin/prices" component={AdminPrices} />
-            <Route path="/admin/settings" component={AdminSettings} />
-            <Route path="/admin/csv-import" component={AdminCsvImport} />
-            <Route path="/admin/content" component={AdminContent} />
-            <Route path="/admin/resources" component={AdminResourcesPage} />
-            <Route path="/admin/price-sync" component={AdminPriceSync} />
-            <Route component={NotFound} />
-          </Switch>
-        </AdminLayout>
-      </AdminGuard>
+      <ErrorBoundary fallback={<AdminErrorFallback />}>
+        <AdminGuard>
+          <AdminLayout>
+            <Switch>
+              <Route path="/admin" component={AdminDashboard} />
+              <Route path="/admin/products/new" component={AdminNewProduct} />
+              <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
+              <Route path="/admin/products" component={AdminProductsList} />
+              <Route path="/admin/orders" component={AdminOrders} />
+              <Route path="/admin/categories" component={AdminCategories} />
+              <Route path="/admin/parts-id" component={AdminPartsIdList} />
+              <Route path="/admin/contacts" component={AdminContactsList} />
+              <Route path="/admin/images" component={AdminImages} />
+              <Route path="/admin/prices" component={AdminPrices} />
+              <Route path="/admin/settings" component={AdminSettings} />
+              <Route path="/admin/csv-import" component={AdminCsvImport} />
+              <Route path="/admin/content" component={AdminContent} />
+              <Route path="/admin/resources" component={AdminResourcesPage} />
+              <Route path="/admin/price-sync" component={AdminPriceSync} />
+              <Route component={NotFound} />
+            </Switch>
+          </AdminLayout>
+        </AdminGuard>
+      </ErrorBoundary>
     );
   }
 
