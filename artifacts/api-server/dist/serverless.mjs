@@ -161327,11 +161327,11 @@ function calculateShipping(subtotal) {
     }
   }
   let cost;
-  if (subtotal < 75) cost = 29.9;
-  else if (subtotal < 150) cost = 39.9;
-  else if (subtotal < 300) cost = 49.9;
-  else if (subtotal < 500) cost = 69.9;
-  else cost = 99.9;
+  if (subtotal < 75) cost = 22.4;
+  else if (subtotal < 150) cost = 29.9;
+  else if (subtotal < 300) cost = 37.4;
+  else if (subtotal < 500) cost = 52.45;
+  else cost = 74.95;
   return {
     cost,
     label: `Shipping & Handling (UPS/FedEx Ground) \u2014 $${cost.toFixed(2)}`,
