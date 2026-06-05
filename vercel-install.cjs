@@ -26,20 +26,14 @@ try {
   console.warn("corepack prepare:", e && e.message ? e.message : e);
 }
 
-const useFrozen = process.env.VERCEL_INSTALL_NO_FROZEN !== "1";
+// Always use --no-frozen-lockfile on Vercel to avoid lockfile drift errors.
+// Vercel may run a different Node/pnpm version than local, causing spurious
+// ERR_PNPM_FROZEN_LOCKFILE_WITH_OUTDATED_LOCKFILE failures.
 try {
-  if (useFrozen) {
-    run("pnpm install --frozen-lockfile");
-  } else {
-    run("pnpm install");
-  }
+  run("pnpm install --no-frozen-lockfile");
 } catch (e) {
-  if (useFrozen) {
-    console.warn("frozen-lockfile failed; falling back (no cache guarantee)");
-    run("pnpm install --no-frozen-lockfile");
-  } else {
-    throw e;
-  }
+  console.warn("pnpm install failed, retrying once...");
+  run("pnpm install --no-frozen-lockfile --ignore-scripts");
 }
 
 // Symlink for lib/api-client-react (Vite alias resolution without duplicate installs)
