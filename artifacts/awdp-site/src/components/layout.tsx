@@ -144,10 +144,8 @@ setNavSuggestionsOpen(data.length > 0);
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+        <div className="min-h-screen flex flex-col font-sans">
       {/* Skip to main content — accessibility */}
-      <a
-              {/* Skip to main content */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-primary focus:font-semibold focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:outline-none"
@@ -194,6 +192,7 @@ setNavSuggestionsOpen(data.length > 0);
           </div>
         </div>
       </div>
+          
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
         <div className="container mx-auto px-4 py-3">
