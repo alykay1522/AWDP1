@@ -41,9 +41,8 @@ export default defineConfig({
   },
 
   esbuild: {
-    // Cleaner, smaller production output
     legalComments: "none",
-    // Keep identifiers readable in dev; esbuild minifies in build anyway
+    sourcemap: true, // Fixes "Can't resolve original location of error" for shadcn/ui components
   },
 
   build: {
@@ -51,11 +50,11 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
     minify: "esbuild",
+    sourcemap: true,
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Vendor chunking for better caching + smaller initial bundles
           if (id.includes("node_modules")) {
             if (id.includes("react") || id.includes("@tanstack/react-query") || id.includes("wouter")) {
               return "react-vendor";
@@ -72,7 +71,6 @@ export default defineConfig({
             if (id.includes("date-fns") || id.includes("lucide-react") || id.includes("cmdk") || id.includes("sonner")) {
               return "utils";
             }
-            // Everything else in a generic vendor chunk
             return "vendor";
           }
         },
