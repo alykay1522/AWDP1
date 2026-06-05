@@ -125,35 +125,54 @@ router.post("/checkout/capture-order", async (req, res) => {
     }
 
     const [localOrder] = await db
-      .select()
+      .select({ orderId: ordersTable.orderId, total: ordersTable.total, status: ordersTable.status })
       .from(ordersTable)
       .where(eq(ordersTable.orderId, orderId))
       .limit(1);
 
-    if (!localOrder) return res.status(404).json({ error: "Order not found" });
-    if (localOrder.status === "paid") return res.status(400).json({ error: "Already paid" });
+    if (!localOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    if (localOrder.status === "paid") {
+      return res.status(400).json({ error: "Order has already been fulfilled" });
+    }
 
     const capture = await capturePayPalOrder(paypalOrderId);
 
     if (capture.status === "COMPLETED") {
+      // Verify that the captured PayPal order's reference_id matches the local orderId.
+      // This prevents an attacker from paying for a cheap order and marking an expensive
+      // local order as paid by substituting the expensive orderId in this request.
+      const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
+      if (!capturedReferenceId || capturedReferenceId !== orderId) {
+        logger.error(
+          { capturedReferenceId, requestedOrderId: orderId },
+          "[PayPal] reference_id mismatch"
+        );
+        return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
+      }
+
+      // Defense-in-depth: verify captured amount matches local order total
+      const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
+      const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
+      const localTotal = parseFloat(localOrder.total as string);
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+        logger.error(
+          { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
+          "[PayPal] Amount mismatch"
+        );
+        return res.status(400).json({ error: "Captured payment amount does not match order total." });
+      }
+
+      const payer = capture.payer;
       const pu = capture.purchase_units?.[0];
-      const payer = capture.payer || pu?.payer || {};
-
-      const customerEmail =
-        payer?.email_address ||
-        capture.payer?.email_address ||
-        pu?.payer?.email_address ||
-        (localOrder as any).customerEmail ||
-        "";
-
-      const customerName =
-        pu?.shipping?.name?.full_name ||
-        payer?.name?.full_name ||
-        `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
-        (localOrder as any).customerName ||
-        "Customer";
-
       const shipping = pu?.shipping;
+
+      const customerEmail = payer?.email_address || "";
+      const customerName =
+        shipping?.name?.full_name ||
+        `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
+        "Customer";
       const shippingAddress = shipping?.address
         ? {
             line1: shipping.address.address_line_1 || "",
@@ -183,19 +202,25 @@ router.post("/checkout/capture-order", async (req, res) => {
         .limit(1);
 
       if (order) {
+        const lineItems = Array.isArray(order.lineItems) ? order.lineItems as any[] : [];
         sendOrderNotification({
           orderId: order.orderId,
-          customerName: (order as any).customerName || customerName,
-          customerEmail: (order as any).customerEmail || customerEmail,
-          shippingAddress: (order as any).shippingAddress || shippingAddress,
-          items: Array.isArray(order.lineItems) ? order.lineItems : [],
-          subtotal: (order as any).subtotal || "0",
-          total: (order as any).total || "0",
+          customerName,
+          customerEmail,
+          shippingAddress,
+          items: lineItems.map((i: any) => ({
+            name: i.name,
+            sku: i.sku,
+            price: Number(i.price),
+            quantity: Number(i.quantity),
+          })),
+          subtotal: order.subtotal,
+          total: order.total,
           paymentMethod: "paypal",
-        }).catch((e) => logger.error({ e }, "sendOrderNotification error"));
+        }).catch((err) => logger.error({ err }, "[email] sendOrderNotification error"));
       }
 
-      return res.json({ success: true, orderId });
+      res.json({ success: true, orderId });
     }
 
     res.status(400).json({ error: "Payment not completed", status: capture.status });
