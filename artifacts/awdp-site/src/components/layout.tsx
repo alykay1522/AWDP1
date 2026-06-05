@@ -40,17 +40,8 @@ export function Layout({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [checkoutPayPalOnly, setCheckoutPayPalOnly] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    fetch("/api/checkout/options")
-      .then((r) => r.json())
-      .then((d: { checkoutPayPalOnly?: boolean }) => setCheckoutPayPalOnly(Boolean(d.checkoutPayPalOnly)))
-      .catch(() => setCheckoutPayPalOnly(false));
-  }, []);
 
   // Nav search autocomplete
   const [navSuggestions, setNavSuggestions]       = useState<string[]>([]);
@@ -60,60 +51,6 @@ export function Layout({ children }: { children: ReactNode }) {
   const ORDER_MINIMUM = 50;
   const belowMinimum = totalPrice < ORDER_MINIMUM && items.length > 0;
   const remaining = Math.max(0, ORDER_MINIMUM - totalPrice);
-
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
-    if (checkoutPayPalOnly) {
-      toast({
-        title: "Card checkout unavailable",
-        description: "Please use PayPal to complete your order.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (belowMinimum) {
-      toast({
-        title: "Minimum Order Not Met",
-        description: `Add $${remaining.toFixed(2)} more to reach the $${ORDER_MINIMUM} order minimum.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    setCheckoutLoading(true);
-    try {
-      const payload = {
-        items: items.map((item) => ({
-          sku: item.sku,
-          name: item.name,
-          price: Number(item.price),
-          quantity: item.quantity,
-          imageUrl: item.imageUrl ?? undefined,
-        })),
-      };
-      const res = await fetch("/api/checkout/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Checkout failed. Please try again.");
-      }
-      const data = await res.json();
-      if (data.url) {
-        setIsCartOpen(false);
-        window.location.href = data.url;
-      }
-    } catch (err: any) {
-      toast({
-        title: "Checkout Error",
-        description: err.message || "Unable to start checkout. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   const handleNavSearchChange = (val: string) => {
     setSearchQuery(val);
@@ -153,7 +90,7 @@ setNavSuggestionsOpen(data.length > 0);
       <div className="w-full bg-[#0f172a] text-white py-9 border-b border-white/10">
         <div className="container mx-auto px-4 text-center">
           <div className="inline-block bg-white/10 text-white text-xs font-bold tracking-[4px] px-5 py-1.5 rounded mb-4">
-            VETERAN OWNED &amp; OPERATED
+            VETERAN OWNED & OPERATED
           </div>
 
           <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-1">
@@ -356,7 +293,6 @@ setNavSuggestionsOpen(data.length > 0);
                         {totalItems}
                       </span>
                     )}
-                  </Button>
                 </SheetTrigger>
                 <SheetContent className="w-full sm:max-w-md flex flex-col">
                   <SheetHeader>
@@ -456,30 +392,10 @@ setNavSuggestionsOpen(data.length > 0);
                         </div>
                       </div>
 
-                      {!checkoutPayPalOnly && (
-                        <Button
-                          className="w-full text-base h-12 gap-2 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
-                          onClick={handleCheckout}
-                          disabled={checkoutLoading || belowMinimum}
-                        >
-                          {checkoutLoading ? (
-                            <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                          ) : (
-                            <><Lock className="w-4 h-4" /> Pay with Card — ${totalPrice.toFixed(2)}</>
-                          )}
-                        </Button>
-                      )}
-                      {!checkoutPayPalOnly && (
-                        <div className="relative flex items-center gap-2">
-                          <div className="flex-1 border-t" />
-                          <span className="text-xs text-muted-foreground">or</span>
-                          <div className="flex-1 border-t" />
-                        </div>
-                      )}
                       <PayPalCheckoutButton
                         items={items}
                         totalPrice={totalPrice}
-                        disabled={checkoutLoading || belowMinimum}
+                        disabled={belowMinimum}
                         onSuccess={(orderId) => {
                           clearCart();
                           setIsCartOpen(false);
@@ -487,10 +403,7 @@ setNavSuggestionsOpen(data.length > 0);
                         }}
                       />
                       <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-                        <Lock className="w-3 h-3" />{" "}
-                        {checkoutPayPalOnly
-                          ? "Secure checkout with PayPal"
-                          : "SSL encrypted · Visa · MC · Amex · PayPal"}
+                        <Lock className="w-3 h-3" /> SSL encrypted · PayPal • Visa • MC • Amex • Discover
                       </p>
                     </div>
                   )}
@@ -594,7 +507,7 @@ setNavSuggestionsOpen(data.length > 0);
               and our experts will match it for you — at no charge.
             </p>
             <p className="text-xs text-slate-500">
-              Veteran Owned &amp; Operated &nbsp;&middot;&nbsp; 40+ Years Experience &nbsp;&middot;&nbsp; SSL Secured Checkout &nbsp;&middot;&nbsp; Expert Parts Matching &nbsp;&middot;&nbsp; Hard-to-Find &amp; Obsolete Parts Specialists
+              Veteran Owned & Operated &nbsp;&middot;&nbsp; 40+ Years Experience &nbsp;&middot;&nbsp; SSL Secured Checkout &nbsp;&middot;&nbsp; Expert Parts Matching &nbsp;&middot;&nbsp; Hard-to-Find & Obsolete Parts Specialists
             </p>
           </div>
 
