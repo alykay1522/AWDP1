@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetCatalogStats, getGetCatalogStatsQueryKey } from "@workspace/api-client-react";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 type JobStatus = "idle" | "running" | "done" | "error";
 interface JobState {
@@ -92,7 +93,13 @@ export default function AdminDashboard() {
   const [imageLimit, setImageLimit] = useState(50);
   const [priceLimit, setPriceLimit] = useState(100);
 
-  const { data: catalogStats } = useGetCatalogStats({
+  const { 
+    data: catalogStats, 
+    isLoading: statsLoading, 
+    isError: statsError, 
+    error: statsErrorObj,
+    refetch: refetchStats 
+  } = useGetCatalogStats({
     query: {
       queryKey: getGetCatalogStatsQueryKey(),
       staleTime: 0,
@@ -101,32 +108,65 @@ export default function AdminDashboard() {
     },
   });
 
-  const { data: ordersData } = useQuery<AdminOrdersResponse>({
+  const { 
+    data: ordersData, 
+    isLoading: ordersLoading, 
+    isError: ordersError,
+    error: ordersErrorObj,
+    refetch: refetchOrders 
+  } = useQuery<AdminOrdersResponse>({
     queryKey: ["admin-orders-dash"],
     queryFn: async () => {
       const res = await fetch("/api/admin/orders");
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load orders");
       return res.json();
     },
   });
 
-  const { data: partsData } = useQuery<{ requests: any[] }>({
+  const { 
+    data: partsData, 
+    isError: partsError,
+    error: partsErrorObj,
+    refetch: refetchParts 
+  } = useQuery<{ requests: any[] }>({
     queryKey: ["admin-parts-id-dash"],
     queryFn: async () => {
       const res = await fetch("/api/admin/parts-id");
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load parts requests");
       return res.json();
     },
   });
 
-  const { data: contactsData } = useQuery<{ submissions: any[] }>({
+  const { 
+    data: contactsData, 
+    isError: contactsError,
+    error: contactsErrorObj,
+    refetch: refetchContacts 
+  } = useQuery<{ submissions: any[] }>({
     queryKey: ["admin-contacts-dash"],
     queryFn: async () => {
       const res = await fetch("/api/admin/contacts");
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load contacts");
       return res.json();
     },
   });
+
+  // Show error if any critical query fails
+  const hasCriticalError = statsError || ordersError;
+
+  if (hasCriticalError) {
+    return (
+      <div className="p-8">
+        <AdminQueryError 
+          error={statsErrorObj || ordersErrorObj} 
+          onRetry={() => {
+            if (statsError) refetchStats();
+            if (ordersError) refetchOrders();
+          }} 
+        />
+      </div>
+    );
+  }
 
   const stats = ordersData?.stats ?? [];
   const totalOrders = stats.reduce((s, r) => s + Number(r.count), 0);
@@ -140,7 +180,7 @@ export default function AdminDashboard() {
   const recentContacts = (contactsData?.submissions ?? []).slice(0, 4);
 
   const quickStats = [
-    { label: "Total Products", value: catalogStats?.totalProducts ?? "—", icon: <Package className="w-5 h-5 text-blue-500" />, href: "/admin/products", color: "text-blue-700" },
+    { label: "Total Products", value: catalogStats?.totalProducts ?? "—", икон: <Package className="w-5 h-5 text-blue-500" />, href: "/admin/products", color: "text-blue-700" },
     { label: "Total Orders", value: totalOrders, icon: <ShoppingBag className="w-5 h-5 text-indigo-500" />, href: "/admin/orders", color: "text-indigo-700" },
     { label: "Pending Orders", value: pendingOrders, icon: <Clock className="w-5 h-5 text-yellow-500" />, href: "/admin/orders", color: "text-yellow-700" },
     { label: "Revenue", value: `$${revenue.toFixed(2)}`, icon: <DollarSign className="w-5 h-5 text-green-500" />, href: "/admin/orders", color: "text-green-700" },
@@ -194,7 +234,7 @@ export default function AdminDashboard() {
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm ${a.color}`}
               >
                 {a.icon} {a.label}
-              </Link>
+            </Link>
             ))}
           </div>
         </div>
@@ -300,7 +340,9 @@ export default function AdminDashboard() {
               </h2>
               <Link href="/admin/orders" className="text-xs text-primary hover:underline flex items-center gap-1">View all <ChevronRight className="w-3 h-3" /></Link>
             </div>
-            {recentOrders.length === 0 ? (
+            {ordersLoading ? (
+              <div className="px-5 py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+            ) : recentOrders.length === 0 ? (
               <p className="px-5 py-8 text-sm text-muted-foreground text-center">No orders yet</p>
             ) : (
               <div className="divide-y">
@@ -333,7 +375,9 @@ export default function AdminDashboard() {
               </h2>
               <Link href="/admin/contacts" className="text-xs text-primary hover:underline flex items-center gap-1">View all <ChevronRight className="w-3 h-3" /></Link>
             </div>
-            {recentContacts.length === 0 ? (
+            {contactsError ? (
+              <div className="p-5"><AdminQueryError error={contactsErrorObj} onRetry={refetchContacts} /></div>
+            ) : recentContacts.length === 0 ? (
               <p className="px-5 py-8 text-sm text-muted-foreground text-center">No messages yet</p>
             ) : (
               <div className="divide-y">
