@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { PageSeo } from "@/components/page-seo";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 interface LineItem {
   sku: string;
@@ -106,7 +107,7 @@ export default function AdminOrders() {
       .catch(() => setCheckoutPayPalOnly(false));
   }, []);
 
-  const { data, isLoading, isError, refetch } = useQuery<AdminOrdersResponse>({
+  const { data, isLoading, isError, error: queryError, refetch } = useQuery<AdminOrdersResponse>({
     queryKey: ["admin-orders"],
     queryFn: async () => {
       const res = await fetch("/api/admin/orders");
@@ -243,7 +244,9 @@ export default function AdminOrders() {
         {isLoading ? (
           <div className="text-center py-20 text-muted-foreground">Loading orders…</div>
         ) : isError ? (
-          <div className="text-center py-20 text-red-500">Failed to load orders. Is the server running?</div>
+          <div className="p-8">
+            <AdminQueryError error={queryError} onRetry={refetch} />
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
