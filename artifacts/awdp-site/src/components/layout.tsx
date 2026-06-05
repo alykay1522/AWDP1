@@ -5,7 +5,7 @@ import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { logo, logoBanner, paypalImg } from "@/lib/assetUrls";
+import { logo, logoBanner, paypalImg, headerBg } from "@/lib/assetUrls";
 import { ProductImage } from "@/components/product-image";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -84,27 +84,69 @@ setNavSuggestionsOpen(data.length > 0);
         Skip to main content
       </a>
 
-      {/* CLASSIC FLAG BANNER - Restored exactly as requested */}
-      <div className="w-full bg-[#0f172a] text-white py-9 border-b border-white/10">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-block bg-white/10 text-white text-xs font-bold tracking-[4px] px-5 py-1.5 rounded mb-4">
-            VETERAN OWNED & OPERATED
+      {/* CLASSIC FLAG BANNER */}
+      <div
+        className="w-full relative border-b border-white/10 overflow-hidden"
+        style={{ minHeight: 200 }}
+      >
+        {/* Background photo */}
+        <img
+          src={headerBg}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none"
+          fetchpriority="high"
+          loading="eager"
+        />
+        {/* Subtle centre overlay so text stays legible over the grey area */}
+        <div className="absolute inset-0 bg-black/10" />
+
+        <div className="relative z-10 container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+
+          {/* Left — branding */}
+          <div className="text-center md:text-left">
+            {/* Title in blue matching the original image */}
+            <p className="text-4xl md:text-5xl font-serif font-bold tracking-tight leading-tight drop-shadow-md"
+               style={{ color: "#3a7bd5" }}>
+              All Window Door Parts
+            </p>
+            {/* Email in blue */}
+            <a
+              href="mailto:info@allwindowdoorparts.com"
+              className="text-lg md:text-xl font-medium drop-shadow-sm hover:underline"
+              style={{ color: "#3a7bd5" }}
+            >
+              info@AllWindowDoorParts.com
+            </a>
+            {/* Veteran line — red to match image */}
+            <p className="mt-1 text-sm font-bold tracking-wide drop-shadow-sm" style={{ color: "#e53e3e" }}>
+              Veteran Owned and Operated
+            </p>
+            {/* Rainbow-text group name matching original */}
+            <p className="mt-0.5 text-base font-extrabold tracking-wide drop-shadow-sm"
+               style={{
+                 background: "linear-gradient(90deg,#e53e3e,#dd6b20,#d69e2e,#38a169,#3182ce,#805ad5)",
+                 WebkitBackgroundClip: "text",
+                 WebkitTextFillColor: "transparent",
+               }}>
+              AllWindowDoorPartsGroup
+            </p>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-1">
-            All Window Door Parts
-          </h1>
-          <p className="text-2xl text-white/80 mb-4">info@AllWindowDoorParts.com</p>
-
-          <div className="text-red-400 font-semibold tracking-wide mb-1">Veteran Owned and Operated</div>
-          <div className="font-bold text-xl mb-5">AllWindowDoorPartsGroup</div>
-
-          <div className="flex justify-center gap-x-6 gap-y-1 text-sm font-bold flex-wrap">
-            <span>PayPal</span>
-            <span className="text-blue-400">VISA</span>
-            <span className="text-red-400">MC</span>
-            <span className="text-blue-500">AMEX</span>
-            <span className="text-orange-400">DISCOVER</span>
+          {/* Right — payment badges matching original */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* PayPal wordmark */}
+            <span className="text-2xl font-extrabold italic drop-shadow"
+                  style={{ color: "#003087" }}>
+              Pay<span style={{ color: "#009cde" }}>Pal</span>
+            </span>
+            {/* Card logos */}
+            <img
+              src={paypalImg}
+              alt="PayPal, Mastercard, American Express, Discover accepted"
+              className="h-10 object-contain drop-shadow"
+              loading="eager"
+            />
           </div>
         </div>
       </div>
