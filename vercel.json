@@ -1,6 +1,6 @@
 {
   "installCommand": "node vercel-install.cjs",
-  "buildCommand": "pnpm --filter @workspace/api-server run build && pnpm --filter awdp-site run build",
+  "buildCommand": "node vercel-build.cjs",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
