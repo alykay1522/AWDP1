@@ -12,6 +12,7 @@ import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -87,7 +88,6 @@ async function fetchProducts(params: {
   if (params.search)   q.set("search", params.search);
   if (params.category) q.set("category", params.category);
   if (params.inStock)  q.set("inStock", params.inStock);
-  // zeroPrice filter: pass a sentinel search that hits the price field
   if (params.zeroPrice) q.set("zeroPrice", "true");
   const res = await fetch(`/api/admin/products?${q}`, { credentials: "include" });
   const parsed = await parseApiResponseBody(res);
@@ -130,7 +130,13 @@ export default function AdminBulkEditor() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Query
-  const { data, isLoading, isError } = useQuery({
+  const { 
+    data, 
+    isLoading, 
+    isError, 
+    error: queryError,
+    refetch 
+  } = useQuery({
     queryKey: ["admin-bulk", debSearch, category, priceFilter, stockFilter, page],
     queryFn: () => fetchProducts({
       search: debSearch || undefined,
@@ -348,6 +354,8 @@ export default function AdminBulkEditor() {
             {allOnPageSelected && !selectAllMatching && total > products.length && (
               <Button variant="outline" size="sm" className="text-xs h-7 border-primary text-primary hover:bg-primary hover:text-white"
                 onClick={() => setSelectAllMatching(true)}>
+              <Button variant="outline" size="sm" className="text-xs h-7 border-primary text-primary hover:bg-primary hover:text-white"
+                onClick={() => setSelectAllMatching(true)}>
                 Select all {total.toLocaleString()} matching this filter
               </Button>
             )}
@@ -431,7 +439,7 @@ export default function AdminBulkEditor() {
                   onChange={(e) => setDescValue(e.target.value)}
                   placeholder={activeAction === "desc-set"
                     ? "New description text…"
-                    : "Text to append (e.g. contact CTA)…"}
+                    : "Text to append (e.g. contact CTA)…"
                   className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -458,7 +466,7 @@ export default function AdminBulkEditor() {
                 <Input
                   value={variantLabelValue}
                   onChange={(e) => setVariantLabelValue(e.target.value)}
-                  placeholder="e.g. Left Hand, White, 36&quot;"
+                  placeholder="e.g. Left Hand, White, 36""
                   className="bg-white"
                 />
                 <p className="text-xs text-slate-400 mt-1">Shown on the product page variant picker. Leave blank to clear.</p>
@@ -489,7 +497,6 @@ export default function AdminBulkEditor() {
                             </div>
                           </div>
                         ))}
-                      </div>
                     ) : (
                       <p className="text-sm text-emerald-600 flex items-center gap-1.5">
                         <Check className="w-4 h-4" /> All selected SKUs pass format validation.
@@ -508,7 +515,6 @@ export default function AdminBulkEditor() {
                 {confirmDelete ? (
                   <p className="text-red-600 font-bold text-sm">
                     Are you sure? This will permanently delete {selectionCount} product{selectionCount !== 1 ? "s" : ""}. Click Delete again to confirm.
-                  </p>
                 ) : (
                   <p className="text-slate-600 text-sm">
                     Permanently delete {selectionCount} selected product{selectionCount !== 1 ? "s" : ""} from the catalog.
@@ -585,7 +591,9 @@ export default function AdminBulkEditor() {
             <Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading products…
           </div>
         ) : isError ? (
-          <div className="text-center py-16 text-red-500">Failed to load products.</div>
+          <div className="p-8">
+            <AdminQueryError error={queryError} onRetry={refetch} />
+          </div>
         ) : products.length === 0 ? (
           <div className="text-center py-16 text-slate-400">
             <Filter className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -622,7 +630,7 @@ export default function AdminBulkEditor() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-300">
                         <Package className="w-4 h-4" />
-                      </div>
+                    </div>
                     )}
                   </div>
 
