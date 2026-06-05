@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 interface ProductImage {
   id: number; filename: string; objectName: string; url: string; uploadedAt: string;
@@ -57,7 +58,7 @@ export default function AdminImages() {
   const [diagResult, setDiagResult] = useState<any | null>(null);
   const [diagError, setDiagError] = useState<string | null>(null);
 
-  const { data, isLoading, refetch } = useQuery<{ images: ProductImage[] }>({
+  const { data, isLoading, isError, error: queryError, refetch } = useQuery<{ images: ProductImage[] }>({
     queryKey: ["admin-images"],
     queryFn: async () => {
       const res = await fetch("/api/admin/images");
@@ -204,6 +205,14 @@ export default function AdminImages() {
 
   const images = data?.images ?? [];
 
+  if (isError) {
+    return (
+      <div className="p-8">
+        <AdminQueryError error={queryError} onRetry={refetch} />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <div className="bg-slate-900 text-white py-6 px-6 flex items-center justify-between">
@@ -217,7 +226,7 @@ export default function AdminImages() {
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800" onClick={() => refetch()}>
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
-          <label className="cursor-pointer">
+          <label className="flex items-center gap-2">
             <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
             <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors select-none ${uploading ? "opacity-60 cursor-not-allowed pointer-events-none" : "cursor-pointer"}`}>
               {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
