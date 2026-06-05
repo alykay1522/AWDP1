@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { AdminQueryError } from "@/components/admin/admin-error";
+import { AdminQueryWrapper } from "@/components/admin/admin-query-wrapper";
 
 interface PriceAlert {
   id: number;
@@ -171,7 +171,7 @@ export default function AdminPrices() {
   const [distFilter, setDistFilter] = useState<string>("all");
   const [showManual, setShowManual] = useState<string | null>(null);
 
-  const { data, isLoading, isError, error: queryError, refetch } = useQuery({
+  const priceQuery = useQuery({
     queryKey: ["price-alerts"],
     queryFn: async () => {
       const res = await fetch("/api/admin/price-alerts");
@@ -180,26 +180,15 @@ export default function AdminPrices() {
     },
   });
 
-  const refresh = () => { refetch(); qc.invalidateQueries({ queryKey: ["price-alerts"] }); };
+  const refresh = () => { priceQuery.refetch(); qc.invalidateQueries({ queryKey: ["price-alerts"] }); };
 
-  const summary = data?.summary;
-  const allAlerts = data?.alerts ?? [];
-
-  const filtered = allAlerts.filter(a => {
+  const filtered = (priceQuery.data?.alerts ?? []).filter(a => {
     if (filter === "alerts" && (a.status === "ok")) return false;
     if (filter === "ok" && a.status !== "ok") return false;
     if (distFilter !== "all" && a.distributor !== distFilter) return false;
     if (search && !a.product_name?.toLowerCase().includes(search.toLowerCase()) && !a.product_sku?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
-
-  if (isError) {
-    return (
-      <div className="p-8 max-w-7xl mx-auto">
-        <AdminQueryError error={queryError} onRetry={refresh} />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
@@ -251,14 +240,14 @@ export default function AdminPrices() {
       </div>
 
       {/* Summary Cards */}
-      {summary && (
+      {priceQuery.data?.summary && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: "Tracked", value: summary.total, color: "text-foreground", bg: "bg-muted/40" },
-            { label: "OK", value: summary.ok, color: "text-green-700", bg: "bg-green-50" },
-            { label: "Needs Update", value: summary.needsUpdate, color: "text-red-700", bg: "bg-red-50" },
-            { label: "Cost Down", value: summary.costDown, color: "text-blue-700", bg: "bg-blue-50" },
-            { label: "No Price", value: summary.noPrice, color: "text-gray-600", bg: "bg-gray-50" },
+            { label: "Tracked", value: priceQuery.data.summary.total, color: "text-foreground", bg: "bg-muted/40" },
+            { label: "OK", value: priceQuery.data.summary.ok, color: "text-green-700", bg: "bg-green-50" },
+            { label: "Needs Update", value: priceQuery.data.summary.needsUpdate, color: "text-red-700", bg: "bg-red-50" },
+            { label: "Cost Down", value: priceQuery.data.summary.costDown, color: "text-blue-700", bg: "bg-blue-50" },
+            { label: "No Price", value: priceQuery.data.summary.noPrice, color: "text-gray-600", bg: "bg-gray-50" },
           ].map(c => (
             <div key={c.label} className={`rounded-lg border p-3 ${c.bg}`}>
               <div className={`text-2xl font-bold ${c.color}`}>{c.value}</div>
@@ -268,11 +257,11 @@ export default function AdminPrices() {
         </div>
       )}
 
-      {summary?.needsUpdate > 0 && (
+      {priceQuery.data?.summary?.needsUpdate > 0 && (
         <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
           <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-red-800">{summary.needsUpdate} product{summary.needsUpdate > 1 ? "s" : ""} need price updates</p>
+            <p className="font-semibold text-red-800">{priceQuery.data.summary.needsUpdate} product{priceQuery.data.summary.needsUpdate > 1 ? "s" : ""} need price updates</p>
             <p className="text-sm text-red-700">Distributor cost has increased — your markup has dropped below the target. Review and update selling prices.</p>
           </div>
         </div>
@@ -300,89 +289,155 @@ export default function AdminPrices() {
         </div>
       </div>
 
-      {/* Alerts Table */}
-      {isLoading ? (
-        <div className="text-center py-16 text-muted-foreground">Loading price data...</div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-green-500" />
-          {filter === "alerts" ? "No price alerts — everything looks good!" : "No results"}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map(alert => {
-            const cfg = STATUS_CONFIG[alert.status] || STATUS_CONFIG.ok;
-            const Icon = cfg.icon;
-            const isManualNeeded = alert.status === "no_price" && alert.distributor === "Strybuc";
-            const needsAction = ["needs_update", "cost_up"].includes(alert.status);
+      {/* Alerts list wrapped with AdminQueryWrapper */}
+      <AdminQueryWrapper query={priceQuery}>
+        {(data) => {
+          const summary = data.summary;
+          const filteredAlerts = data.alerts.filter(a => {
+            if (filter === "alerts" && (a.status === "ok")) return false;
+            if (filter === "ok" && a.status !== "ok") return false;
+            if (distFilter !== "all" && a.distributor !== distFilter) return false;
+            if (search && !a.product_name?.toLowerCase().includes(search.toLowerCase()) && !a.product_sku?.toLowerCase().includes(search.toLowerCase())) return false;
+            return true;
+          });
 
-            return (
-              <div key={alert.id} className={`border rounded-lg p-4 ${needsAction ? cfg.bg : "bg-card border-border"}`}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Icon className={`w-4 h-4 shrink-0 ${cfg.color}`} />
-                      <span className="font-medium text-sm">{alert.product_name || "Unknown Product"}</span>
-                      <Badge variant="outline" className="font-mono text-xs">{alert.product_sku}</Badge>
-                      <Badge variant="secondary" className="text-xs">{alert.distributor}</Badge>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
+          return (
+            <>
+              {/* Summary Cards (inside wrapper so they only show when data is ready) */}
+              {summary && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {[
+                    { label: "Tracked", value: summary.total, color: "text-foreground", bg: "bg-muted/40" },
+                    { label: "OK", value: summary.ok, color: "text-green-700", bg: "bg-green-50" },
+                    { label: "Needs Update", value: summary.needsUpdate, color: "text-red-700", bg: "bg-red-50" },
+                    { label: "Cost Down", value: summary.costDown, color: "text-blue-700", bg: "bg-blue-50" },
+                    { label: "No Price", value: summary.noPrice, color: "text-gray-600", bg: "bg-gray-50" },
+                  ].map(c => (
+                    <div key={c.label} className={`rounded-lg border p-3 ${c.bg}`}>
+                      <div className={`text-2xl font-bold ${c.color}`}>{c.value}</div>
+                      <div className="text-xs text-muted-foreground">{c.label}</div>
                     </div>
-                    <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1 text-sm">
-                      <div>
-                        <span className="text-muted-foreground text-xs">Distributor cost</span>
-                        <div className="font-semibold">{formatMoney(alert.cost_price)}</div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">Our price</span>
-                        <div className="font-semibold">{formatMoney(alert.our_price)}</div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">Current markup</span>
-                        <div>{formatMarkup(alert.markup_ratio, alert.target_markup)}</div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">Target markup</span>
-                        <div className="text-muted-foreground">{Number(alert.target_markup).toFixed(2)}x</div>
-                      </div>
-                    </div>
-                    {alert.notes && (
-                      <p className="text-xs text-muted-foreground mt-1.5 italic">{alert.notes}</p>
-                    )}
+                  ))}
+                </div>
+              )}
 
-                    {/* Actions */}
-                    {needsAction && alert.cost_price && (
-                      <UpdatePriceAction sku={alert.product_sku} costPrice={alert.cost_price} targetMarkup={alert.target_markup} onSave={refresh} />
-                    )}
-                    {(isManualNeeded || showManual === alert.product_sku) && (
-                      <ManualPriceEntry sku={alert.product_sku} distributor={alert.distributor} onSave={() => { refresh(); setShowManual(null); }} />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {alert.distributor_url && (
-                      <a href={alert.distributor_url} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                          <ExternalLink className="w-3 h-3" /> Check site
-                        </Button>
-                      </a>
-                    )}
-                    {!isManualNeeded && alert.status === "no_price" && (
-                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowManual(showManual === alert.product_sku ? null : alert.product_sku)}>
-                        <Edit2 className="w-3 h-3 mr-1" /> Enter price
-                      </Button>
-                    )}
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {alert.checked_at ? new Date(alert.checked_at).toLocaleDateString() : "—"}
-                    </span>
+              {summary?.needsUpdate > 0 && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-red-800">{summary.needsUpdate} product{summary.needsUpdate > 1 ? "s" : ""} need price updates</p>
+                    <p className="text-sm text-red-700">Distributor cost has increased — your markup has dropped below the target. Review and update selling prices.</p>
                   </div>
                 </div>
+              )}
+
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-48">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input placeholder="Search by name or SKU..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
+                </div>
+                <div className="flex gap-1">
+                  {["all", "alerts", "ok"].map(f => (
+                    <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="capitalize h-9" onClick={() => setFilter(f as any)}>
+                      {f === "alerts" ? "Needs Attention" : f}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {["all", "Alcosupply", "Strybuc", "AllBrand", "BiltBest", "Truth/EntryGard", "Oldach"].map(d => (
+                    <Button key={d} size="sm" variant={distFilter === d ? "secondary" : "ghost"} className="h-9 text-xs" onClick={() => setDistFilter(d)}>
+                      {d}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+
+              {/* Alerts Table */}
+              {filteredAlerts.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-green-500" />
+                  {filter === "alerts" ? "No price alerts — everything looks good!" : "No results"}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredAlerts.map(alert => {
+                    const cfg = STATUS_CONFIG[alert.status] || STATUS_CONFIG.ok;
+                    const Icon = cfg.icon;
+                    const isManualNeeded = alert.status === "no_price" && alert.distributor === "Strybuc";
+                    const needsAction = ["needs_update", "cost_up"].includes(alert.status);
+
+                    return (
+                      <div key={alert.id} className={`border rounded-lg p-4 ${needsAction ? cfg.bg : "bg-card border-border"}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Icon className={`w-4 h-4 shrink-0 ${cfg.color}`} />
+                              <span className="font-medium text-sm">{alert.product_name || "Unknown Product"}</span>
+                              <Badge variant="outline" className="font-mono text-xs">{alert.product_sku}</Badge>
+                              <Badge variant="secondary" className="text-xs">{alert.distributor}</Badge>
+                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
+                            </div>
+                            <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1 text-sm">
+                              <div>
+                                <span className="text-muted-foreground text-xs">Distributor cost</span>
+                                <div className="font-semibold">{formatMoney(alert.cost_price)}</div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground text-xs">Our price</span>
+                                <div className="font-semibold">{formatMoney(alert.our_price)}</div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground text-xs">Current markup</span>
+                                <div>{formatMarkup(alert.markup_ratio, alert.target_markup)}</div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground text-xs">Target markup</span>
+                                <div className="text-muted-foreground">{Number(alert.target_markup).toFixed(2)}x</div>
+                              </div>
+                            </div>
+                            {alert.notes && (
+                              <p className="text-xs text-muted-foreground mt-1.5 italic">{alert.notes}</p>
+                            )}
+
+                            {/* Actions */}
+                            {needsAction && alert.cost_price && (
+                              <UpdatePriceAction sku={alert.product_sku} costPrice={alert.cost_price} targetMarkup={alert.target_markup} onSave={refresh} />
+                            )}
+                            {(isManualNeeded || showManual === alert.product_sku) && (
+                              <ManualPriceEntry sku={alert.product_sku} distributor={alert.distributor} onSave={() => { refresh(); setShowManual(null); }} />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {alert.distributor_url && (
+                              <a href={alert.distributor_url} target="_blank" rel="noreferrer">
+                                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                                  <ExternalLink className="w-3 h-3" /> Check site
+                                </Button>
+                              </a>
+                            )}
+                            {!isManualNeeded && alert.status === "no_price" && (
+                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowManual(showManual === alert.product_sku ? null : alert.product_sku)}>
+                                <Edit2 className="w-3 h-3 mr-1" /> Enter price
+                              </Button>
+                            )}
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {alert.checked_at ? new Date(alert.checked_at).toLocaleDateString() : "—"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          );
+        }}
+      </AdminQueryWrapper>
 
       {/* How to use */}
-      {!isLoading && allAlerts.length === 0 && (
+      {!priceQuery.isLoading && (priceQuery.data?.alerts?.length === 0) && (
         <div className="border rounded-lg p-6 bg-muted/20 text-center space-y-3">
           <DollarSign className="w-10 h-10 mx-auto text-muted-foreground" />
           <h3 className="font-semibold">No price checks recorded yet</h3>
