@@ -563,14 +563,14 @@ export default function PartsIdentification() {
                   </div>
                 </div>
 
-                {/* Summary */}
+                {/* Summary - fixed conditional rendering to avoid esbuild JSX parse issues */}
                 <div className="bg-slate-50 rounded-xl border p-4 mb-6 text-sm text-slate-600 space-y-1">
                   <p className="font-semibold text-slate-800 mb-2">Your request summary:</p>
                   <p>🪟 <strong>Type:</strong> {PART_TYPES.find(t => t.id === partType)?.label}</p>
-                  {form.watch("windowDoorBrand") && <p>🏷️ <strong>Brand:</strong> {form.watch("windowDoorBrand")}</p>
-                  {form.watch("windowDoorAge") && <p>📅 <strong>Age:</strong> {form.watch("windowDoorAge")}</p>
+                  {form.watch("windowDoorBrand") ? <p>🏷️ <strong>Brand:</strong> {form.watch("windowDoorBrand")}</p> : null}
+                  {form.watch("windowDoorAge") ? <p>📅 <strong>Age:</strong> {form.watch("windowDoorAge")}</p> : null}
                   <p>📝 <strong>Description:</strong> {form.watch("description")?.slice(0, 80)}{(form.watch("description")?.length ?? 0) > 80 ? "…" : ""}</p>
-                  {selectedImage && <p>📷 <strong>Photo:</strong> {selectedImage.name}</p>
+                  {selectedImage ? <p>📷 <strong>Photo:</strong> {selectedImage.name}</p> : null}
                 </div>
 
                 <Button
