@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MessageSquare, RefreshCw, ChevronDown, ChevronUp, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
 interface ContactSubmission {
   id: number; name: string; email: string; phone?: string;
@@ -20,7 +21,6 @@ function isSingleEmail(value: string): boolean {
 
 function safeMailtoHref(email: string, params: Record<string, string> = {}): string | undefined {
   if (!isSingleEmail(email)) return undefined;
-  // Encode the entire address then restore @ so mailto: clients parse it correctly
   const encodedEmail = encodeURIComponent(email).replace(/%40/gi, "@");
   const qs = Object.entries(params)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
@@ -32,11 +32,11 @@ export default function AdminContactsList() {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const { data, isLoading, refetch } = useQuery<{ submissions: ContactSubmission[] }>({
+  const { data, isLoading, isError, error: queryError, refetch } = useQuery<{ submissions: ContactSubmission[] }>({
     queryKey: ["admin-contacts"],
     queryFn: async () => {
       const res = await fetch("/api/admin/contacts");
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load contacts");
       return res.json();
     },
   });
@@ -47,6 +47,14 @@ export default function AdminContactsList() {
     return !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) ||
       c.message.toLowerCase().includes(q) || c.subject?.toLowerCase().includes(q);
   });
+
+  if (isError) {
+    return (
+      <div className="p-8">
+        <AdminQueryError error={queryError} onRetry={refetch} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
