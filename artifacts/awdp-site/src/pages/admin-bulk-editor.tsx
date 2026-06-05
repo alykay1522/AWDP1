@@ -441,7 +441,7 @@ export default function AdminBulkEditor() {
                   onChange={(e) => setDescValue(e.target.value)}
                   placeholder={activeAction === "desc-set"
                     ? "New description text…"
-                    : "Text to append (e.g. contact CTA)…"
+                    : "Text to append (e.g. contact CTA)…"}
                   className="w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
