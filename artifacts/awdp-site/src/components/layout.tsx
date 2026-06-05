@@ -147,30 +147,53 @@ setNavSuggestionsOpen(data.length > 0);
     <div className="min-h-screen flex flex-col font-sans">
       {/* Skip to main content — accessibility */}
       <a
+              {/* Skip to main content */}
+      <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-white focus:text-primary focus:font-semibold focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:outline-none"
       >
         Skip to main content
       </a>
 
-      {/* Full-Width Logo Banner */}
-      <Link href="/" className="block w-full">
-        <img
-          src={logoBanner}
-          alt="All Window Door Parts — Veteran Owned Replacement Window and Door Parts"
-          width="1200"
-          height="200"
-          fetchpriority="high"
-          loading="eager"
-          decoding="async"
-          style={{ width: "100%", height: "auto", display: "block" }}
-        />
-      </Link>
-      {/* Site-wide Order Minimum Banner */}
-      <div className="bg-amber-500 text-amber-950 text-center text-xs font-semibold py-2 px-4 leading-tight">
-        Orders under $50 may require additional shipping charges &mdash; we will contact you before processing.
-      </div>
+      {/* Classic Flag Banner Header (restored) */}
+      <div className="relative w-full overflow-hidden bg-[#1a1a2e] text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] bg-[length:4px_4px]"></div>
+        
+        <div className="relative container mx-auto px-4 py-8 md:py-10 text-center">
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-1 rounded-full text-sm font-bold tracking-wider">
+              🇺🇸 VETERAN OWNED &amp; OPERATED
+            </div>
+          </div>
 
+          <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-2">
+            All Window Door Parts
+          </h1>
+          <p className="text-xl md:text-2xl text-white/90 mb-4">
+            info@AllWindowDoorParts.com
+          </p>
+
+          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-2 text-sm font-semibold">
+            <span className="text-red-400">Veteran Owned and Operated</span>
+            <span className="hidden md:inline text-white/40">•</span>
+            <span className="font-bold">AllWindowDoorPartsGroup</span>
+          </div>
+        </div>
+
+        {/* Payment logos */}
+        <div className="border-t border-white/20 py-3">
+          <div className="container mx-auto px-4 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm">
+            <span className="font-bold text-white/80">Secure Payments</span>
+            <div className="flex items-center gap-3">
+              <span className="font-bold">PayPal</span>
+              <span className="font-bold text-blue-400">VISA</span>
+              <span className="font-bold text-red-400">MC</span>
+              <span className="font-bold text-blue-500">AMEX</span>
+              <span className="font-bold text-orange-400">DISCOVER</span>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
         <div className="container mx-auto px-4 py-3">
