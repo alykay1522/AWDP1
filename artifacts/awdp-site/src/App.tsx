@@ -82,11 +82,14 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const [location] = useLocation();
 
-  if (location === "/admin/login") {
+  // Normalize location to handle trailing slashes and base variations
+  const normalized = (location || "/").replace(/\/$/, "") || "/";
+
+  if (normalized === "/admin/login") {
     return <AdminLogin />;
   }
 
-  if (location.startsWith("/admin")) {
+  if (normalized.startsWith("/admin")) {
     return (
       <AdminGuard>
         <AdminLayout>
@@ -150,7 +153,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <CartProvider>
           <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL.slice(0, -1) : import.meta.env.BASE_URL}>
+            <WouterRouter>
               <ScrollToTop />
               <AppContent />
             </WouterRouter>
