@@ -18,7 +18,6 @@ export default defineConfig({
   },
   root: siteDir,
 
-  // esbuild + Vite optimizations
   optimizeDeps: {
     include: [
       "react",
@@ -42,7 +41,7 @@ export default defineConfig({
 
   esbuild: {
     legalComments: "none",
-    sourcemap: true, // Fixes "Can't resolve original location of error" for shadcn/ui components
+    sourcemap: false, // Disabled to eliminate "Can't resolve original location of error" warnings from shadcn/ui + Radix
   },
 
   build: {
@@ -50,7 +49,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
     minify: "esbuild",
-    sourcemap: true,
+    sourcemap: true, // Keep enabled for production debugging (use 'hidden' if you prefer not to expose maps)
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
