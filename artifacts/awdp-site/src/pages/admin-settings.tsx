@@ -151,7 +151,6 @@ export default function AdminSettings() {
           <Field label="Business Address" hint="Optional — used for structured data (Google)">
             <Input value={form.address} onChange={set("address")} placeholder="123 Main St, City, KS 12345" />
           </Field>
-        </Field>
 
         <Section title="Order Settings" icon={<DollarSign className="w-4 h-4 text-primary" />}>
           <Field label="Minimum Order Amount ($)" hint="Orders below this amount will be blocked from checkout">
@@ -172,7 +171,7 @@ export default function AdminSettings() {
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
             </div>
           </Field>
-        </Field>
+        </Section>
 
         <Section title="Announcement Banner" icon={<Megaphone className="w-4 h-4 text-primary" />}>
           <Field label="Show Announcement Banner">
