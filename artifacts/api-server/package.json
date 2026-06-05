@@ -34,14 +34,14 @@
     "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
     "multer": "^2.1.1",
-    "nodemailer": "^8.0.10",
     "openai": "^6.33.0",
     "pino": "^9",
     "pino-http": "^11",
     "sharp": "^0.34.5",
     "stripe": "^22.1.0",
     "stripe-replit-sync": "^1.0.0",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "resend": "^4.0.0"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",

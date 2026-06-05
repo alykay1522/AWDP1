@@ -1,6 +1,5 @@
 /** Used when `CONTACT_FORWARD_EMAILS` is unset or parses to no valid addresses. */
-const DEFAULT_FORWARD_EMAILS =
-  "thepolak@wefixitusa.com,alyshameade.1522@gmail.com";
+const DEFAULT_FORWARD_EMAILS = "info@allwindowdoorparts.com";
 
 function isValidSingleForwardEmail(value: string): boolean {
   const s = value.trim();
