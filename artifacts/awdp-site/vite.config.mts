@@ -22,26 +22,16 @@ export default defineConfig({
     include: [
       "react",
       "react-dom",
+      "react/jsx-runtime",
       "@tanstack/react-query",
       "wouter",
-      "framer-motion",
-      "recharts",
-      "lucide-react",
-      "date-fns",
-      "cmdk",
-      "sonner",
-      // Core Radix (most used in shadcn/ui)
-      "@radix-ui/react-dialog",
-      "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-select",
-      "@radix-ui/react-popover",
-      "@radix-ui/react-toast",
     ],
+    force: true,
   },
 
   esbuild: {
     legalComments: "none",
-    sourcemap: false, // Disabled to eliminate "Can't resolve original location of error" warnings from shadcn/ui + Radix
+    sourcemap: false,
   },
 
   build: {
@@ -49,27 +39,25 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
     minify: "esbuild",
-    sourcemap: true, // Keep enabled for production debugging (use 'hidden' if you prefer not to expose maps)
+    sourcemap: false, // set to true only for debugging
     chunkSizeWarningLimit: 1200,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("react") || id.includes("@tanstack/react-query") || id.includes("wouter")) {
+            // React and its direct ecosystem get their own clean chunk
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("@tanstack/react-query") ||
+              id.includes("wouter")
+            ) {
               return "react-vendor";
             }
-            if (id.includes("@radix-ui")) {
-              return "ui-vendor";
-            }
-            if (id.includes("framer-motion")) {
-              return "motion";
-            }
-            if (id.includes("recharts")) {
-              return "charts";
-            }
-            if (id.includes("date-fns") || id.includes("lucide-react") || id.includes("cmdk") || id.includes("sonner")) {
-              return "utils";
-            }
+            // Everything else
             return "vendor";
           }
         },
