@@ -152,6 +152,14 @@ export default function AdminBulkEditor() {
   const total    = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
+  // Pre-compute SKU validation data (used only when that tab is active)
+  const skusToCheck = activeAction === "sku-validate"
+    ? (selectAllMatching ? products : products.filter(p => selectedSkus.has(p.sku)))
+    : [];
+  const issues = skusToCheck
+    .map(p => ({ ...p, skuIssues: getSkuIssues(p.sku) }))
+    .filter(p => p.skuIssues.length > 0);
+
   // ── Selection helpers ────────────────────────────────────────────────────────
 
   const pageSkus = products.map((p) => p.sku);
@@ -474,43 +482,40 @@ export default function AdminBulkEditor() {
                 <p className="text-xs text-slate-400 mt-1">Shown on the product page variant picker. Leave blank to clear.</p>
               </div>
             )}
-            {activeAction === "sku-validate" && (() => {
-              const skusToCheck = selectAllMatching ? products : products.filter(p => selectedSkus.has(p.sku));
-              const issues = skusToCheck.map(p => ({ ...p, skuIssues: getSkuIssues(p.sku) })).filter(p => p.skuIssues.length > 0);
-              return (
-                <div className="flex-1">
-                  <div className="rounded-lg border bg-white p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                      <p className="text-sm font-bold text-slate-800">
-                        Validated {skusToCheck.length} selected SKU{skusToCheck.length !== 1 ? "s" : ""} — {issues.length === 0 ? "no issues found" : `${issues.length} issue${issues.length !== 1 ? "s" : ""} found`}
-                      </p>
-                    </div>
-                    {issues.length > 0 ? (
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                        {issues.map(p => (
-                          <div key={p.sku} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-md px-3 py-2 text-xs">
-                            <span className="font-mono text-slate-700 shrink-0 font-bold">{p.sku}</span>
-                            <span className="text-slate-500 truncate">{p.name}</span>
-                            <div className="ml-auto flex gap-1 flex-wrap shrink-0">
-                              {p.skuIssues.map(issue => (
-                                <span key={issue} className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-semibold whitespace-nowrap">{issue}</span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                    ) : (
-                      <p className="text-sm text-emerald-600 flex items-center gap-1.5">
-                        <Check className="w-4 h-4" /> All selected SKUs pass format validation.
-                      </p>
-                    )}
-                    {skusToCheck.length === 0 && (
-                      <p className="text-xs text-slate-400 mt-1">Select products above to validate their SKU format.</p>
-                    )}
+            {activeAction === "sku-validate" && (
+              <div className="flex-1">
+                <div className="rounded-lg border bg-white p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                    <p className="text-sm font-bold text-slate-800">
+                      Validated {skusToCheck.length} selected SKU{skusToCheck.length !== 1 ? "s" : ""} — {issues.length === 0 ? "no issues found" : `${issues.length} issue${issues.length !== 1 ? "s" : ""} found`}
+                    </p>
                   </div>
+                  {issues.length > 0 ? (
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {issues.map(p => (
+                        <div key={p.sku} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-md px-3 py-2 text-xs">
+                          <span className="font-mono text-slate-700 shrink-0 font-bold">{p.sku}</span>
+                          <span className="text-slate-500 truncate">{p.name}</span>
+                          <div className="ml-auto flex gap-1 flex-wrap shrink-0">
+                            {p.skuIssues.map(issue => (
+                              <span key={issue} className="bg-red-100 text-red-700 px-2 py-0.5 rounded font-semibold whitespace-nowrap">{issue}</span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-emerald-600 flex items-center gap-1.5">
+                      <Check className="w-4 h-4" /> All selected SKUs pass format validation.
+                    </p>
+                  )}
+                  {skusToCheck.length === 0 && (
+                    <p className="text-xs text-slate-400 mt-1">Select products above to validate their SKU format.</p>
+                  )}
                 </div>
-              );
-            })()}
+              </div>
+            )}
 
             {activeAction === "delete" && (
               <div className="flex-1">
