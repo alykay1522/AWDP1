@@ -109,16 +109,7 @@ export default function PartsIdentification() {
     analytics.track("Parts ID Wizard Submitted", { partType, hasImage: !!selectedImage });
 
     try {
-      // 1. Save via existing system
       await submitMutation.mutateAsync({ data });
-
-      // 2. Send email via /api/parts-id
-      await fetch("/api/parts-id", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
       analytics.track("Parts ID Submission Success");
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -359,20 +350,36 @@ export default function PartsIdentification() {
                     </p>
                   </div>
                 ) : (
-                  <div
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
-                      ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
-                    onClick={() => document.getElementById("photo-upload")?.click()}
-                   >
-                     <div className="flex flex-col items-center gap-3">
-                       <UploadCloud className="w-8 h-8 text-slate-400" />
-                       <p className="font-medium text-slate-700">Drag and drop your photo here</p>
-                       <p className="text-sm text-slate-500">or click to browse</p>
-                     </div>
-                   </div>
+                  <div>
+                    {/* Hidden file input — required for click-to-browse to work */}
+                    <input
+                      id="photo-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) processFile(file);
+                        // Reset so same file can be re-selected
+                        e.target.value = "";
+                      }}
+                    />
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={handleDrop}
+                      className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
+                        ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
+                      onClick={() => document.getElementById("photo-upload")?.click()}
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <UploadCloud className="w-8 h-8 text-slate-400" />
+                        <p className="font-medium text-slate-700">Drag and drop your photo here</p>
+                        <p className="text-sm text-slate-500">or click to browse</p>
+                        <p className="text-xs text-slate-400">JPEG, PNG, WebP up to 5MB</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Photo Examples Section - Collapsible */}
