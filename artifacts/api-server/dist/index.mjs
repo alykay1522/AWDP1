@@ -144983,6 +144983,17 @@ router10.post("/admin/products/import", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router10.delete("/admin/products/all", async (req, res) => {
+  if (req.query.confirm !== "true") {
+    return res.status(400).json({ error: "Pass ?confirm=true to delete all products" });
+  }
+  try {
+    const result = await db.delete(productsTable).returning({ id: productsTable.id });
+    res.json({ deleted: result.length, message: `Deleted all ${result.length} products` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router10.delete("/admin/products/:sku", async (req, res) => {
   try {
     const { sku } = req.params;

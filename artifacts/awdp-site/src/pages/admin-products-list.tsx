@@ -90,6 +90,8 @@ export default function AdminProductsList() {
   const [importing, setImporting]     = useState(false);
   const [exporting, setExporting]     = useState(false);
   const [renaming, setRenaming]       = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const fileInputRef      = useRef<HTMLInputElement>(null);
   const renameInputRef    = useRef<HTMLInputElement>(null);
 
@@ -182,6 +184,27 @@ export default function AdminProductsList() {
     },
     onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
   });
+
+  // ── Export ────────────────────────────────────────────────────────────────
+  const handleDeleteAll = async () => {
+    if (!confirmDeleteAll) { setConfirmDeleteAll(true); return; }
+    setDeletingAll(true);
+    try {
+      const res = await fetch("/api/admin/products/all?confirm=true", {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
+      const { deleted } = await res.json();
+      toast({ title: "All products deleted", description: `${deleted} products removed.` });
+      qc.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      setConfirmDeleteAll(false);
+    } catch (e: any) {
+      toast({ title: "Delete failed", description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingAll(false);
+    }
+  };
 
   // ── Export ────────────────────────────────────────────────────────────────
   const handleExport = async () => {
@@ -368,6 +391,20 @@ export default function AdminProductsList() {
             onClick={handleExport} disabled={exporting}>
             {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             Export All CSV
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => { if (confirmDeleteAll) handleDeleteAll(); else setConfirmDeleteAll(true); }}
+            onBlur={() => setTimeout(() => setConfirmDeleteAll(false), 3000)}
+            disabled={deletingAll}
+            className="gap-1.5"
+          >
+            {deletingAll
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Trash2 className="w-3.5 h-3.5" />}
+            {confirmDeleteAll ? "⚠️ Click again to confirm — deletes ALL products" : "Delete All Products"}
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
             onClick={() => fileInputRef.current?.click()} disabled={importing}

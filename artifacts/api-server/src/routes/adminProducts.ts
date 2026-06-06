@@ -619,6 +619,19 @@ router.post("/admin/products/import", async (req, res) => {
 
 // ──────────────────────────────────────────────────────────────────────────────
 
+// DELETE /api/admin/products/all — delete every product (requires confirm=true query param)
+router.delete("/admin/products/all", async (req, res) => {
+  if (req.query.confirm !== "true") {
+    return res.status(400).json({ error: "Pass ?confirm=true to delete all products" });
+  }
+  try {
+    const result = await db.delete(productsTable).returning({ id: productsTable.id });
+    res.json({ deleted: result.length, message: `Deleted all ${result.length} products` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/admin/products/:sku — delete a product
 router.delete("/admin/products/:sku", async (req, res) => {
   try {
