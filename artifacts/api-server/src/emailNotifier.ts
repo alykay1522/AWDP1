@@ -1,16 +1,22 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { getContactForwardEmails } from "./lib/notifyRecipients.js";
 
 const FROM_EMAIL = "All Window Door Parts <info@allwindowdoorparts.com>";
 
-function getResend(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) { console.warn("[email] RESEND_API_KEY not set — skipping email"); return null; }
-  return new Resend(apiKey);
+function createTransport() {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) {
+    console.warn("[email] SMTP not configured — skipping order notification");
+    return null;
+  }
+  const port   = parseInt(process.env.SMTP_PORT ?? "465", 10);
+  const secure = process.env.SMTP_SECURE !== "false";
+  return nodemailer.createTransport({ host, port, secure, auth: { user, pass }, tls: { rejectUnauthorized: true } });
 }
 
 interface OrderItem { name: string; sku: string; price: number; quantity: number; }
-
 interface OrderEmailPayload {
   orderId: string;
   customerName: string;
@@ -36,7 +42,7 @@ function ownerHtml(o: OrderEmailPayload): string {
     <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${(i.price*i.quantity).toFixed(2)}</td>
   </tr>`).join("");
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#1e293b">
-  <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">New Order Received</h1><p style="color:#bfdbfe;margin:6px 0 0">All Window Door Parts</p></div>
+  <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">New Order Received</h1></div>
   <div style="padding:24px">
     <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
       <tr><td style="padding:8px 0"><strong>Order ID:</strong></td><td>${o.orderId}</td></tr>
@@ -52,7 +58,9 @@ function ownerHtml(o: OrderEmailPayload): string {
       <tbody>${rows}</tbody>
       <tfoot><tr><td colspan="3" style="padding:12px 8px;text-align:right;font-weight:bold;font-size:16px">Order Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;font-size:16px;color:#1e3a8a">$${o.total}</td></tr></tfoot>
     </table>
-    <div style="margin-top:24px;padding:16px;background:#fef9c3;border-left:4px solid #f59e0b;border-radius:4px"><strong>Action Required:</strong> Fulfill this order. Contact: <a href="mailto:${o.customerEmail}">${o.customerEmail}</a></div>
+    <div style="margin-top:24px;padding:16px;background:#fef9c3;border-left:4px solid #f59e0b">
+      <strong>Action Required:</strong> Fulfill this order. Contact: <a href="mailto:${o.customerEmail}">${o.customerEmail}</a>
+    </div>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">All Window Door Parts — 785-533-0244 — info@allwindowdoorparts.com</div>
 </body></html>`;
@@ -65,11 +73,13 @@ function customerHtml(o: OrderEmailPayload): string {
     <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">$${(i.price*i.quantity).toFixed(2)}</td>
   </tr>`).join("");
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#1e293b">
-  <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">Thank You for Your Order!</h1><p style="color:#bfdbfe;margin:6px 0 0">All Window Door Parts</p></div>
+  <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">Thank You for Your Order!</h1></div>
   <div style="padding:24px">
     <p>Hi ${o.customerName||"Valued Customer"},</p>
     <p>We've received your order and will be in touch shortly to confirm shipping details.</p>
-    <table style="width:100%;border-collapse:collapse;margin:4px 0 16px;background:#f8fafc"><tr><td style="padding:8px"><strong>Order ID:</strong></td><td style="padding:8px">${o.orderId}</td></tr></table>
+    <table style="width:100%;border-collapse:collapse;margin:4px 0 16px;background:#f8fafc">
+      <tr><td style="padding:8px"><strong>Order ID:</strong></td><td style="padding:8px">${o.orderId}</td></tr>
+    </table>
     <h3 style="border-bottom:2px solid #1e3a8a;padding-bottom:8px">Your Items</h3>
     <table style="width:100%;border-collapse:collapse">
       <thead><tr style="background:#f1f5f9"><th style="padding:8px;text-align:left">Product</th><th style="padding:8px;text-align:center">Qty</th><th style="padding:8px;text-align:right">Total</th></tr></thead>
@@ -77,26 +87,21 @@ function customerHtml(o: OrderEmailPayload): string {
       <tfoot><tr><td colspan="2" style="padding:12px 8px;text-align:right;font-weight:bold">Order Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;color:#1e3a8a">$${o.total}</td></tr></tfoot>
     </table>
     <p style="margin-top:24px">Questions? <a href="tel:785-533-0244">785-533-0244</a> or <a href="mailto:info@allwindowdoorparts.com">info@allwindowdoorparts.com</a></p>
-    <p>Thank you for choosing All Window Door Parts — veteran owned &amp; operated, 40+ years of experience.</p>
+    <p>Thank you for choosing All Window Door Parts — veteran owned &amp; operated, 40+ years experience.</p>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">All Window Door Parts — 785-533-0244 — info@allwindowdoorparts.com</div>
 </body></html>`;
 }
 
 export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
-  const resend = getResend();
-  if (!resend) return;
+  const transport = createTransport();
+  if (!transport) return;
 
   const staff = getContactForwardEmails();
   if (staff.length > 0) {
-    const { error } = await resend.emails.send({ from: FROM_EMAIL, to: staff, subject: `New Order ${payload.orderId} — $${payload.total}`, html: ownerHtml(payload) });
-    if (error) console.error("[email] Owner notification failed:", error);
-    else console.log("[email] Owner notification sent");
+    await transport.sendMail({ from: FROM_EMAIL, to: staff.join(", "), subject: `New Order ${payload.orderId} — $${payload.total}`, html: ownerHtml(payload) });
   }
-
   if (payload.customerEmail) {
-    const { error } = await resend.emails.send({ from: FROM_EMAIL, to: [payload.customerEmail], reply_to: "info@allwindowdoorparts.com", subject: `Order Confirmation — ${payload.orderId}`, html: customerHtml(payload) });
-    if (error) console.error("[email] Customer confirmation failed:", error);
-    else console.log("[email] Customer confirmation sent");
+    await transport.sendMail({ from: FROM_EMAIL, to: payload.customerEmail, replyTo: "info@allwindowdoorparts.com", subject: `Order Confirmation — ${payload.orderId}`, html: customerHtml(payload) });
   }
 }
