@@ -28,7 +28,7 @@ export default function AdminCategories() {
   const categoriesQuery = useQuery<{ categories: Category[] }>({
     queryKey: ["admin-categories"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/categories");
+      const res = await fetch("/api/admin/categories", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load categories");
       return res.json();
     },
@@ -38,7 +38,7 @@ export default function AdminCategories() {
     mutationFn: async () => {
       if (!newName.trim()) throw new Error("Name is required");
       const slug = slugify(newName);
-      const res = await fetch("/api/admin/categories", {
+      const res = await fetch("/api/admin/categories", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim(), slug, description: newDesc.trim() }),
@@ -56,7 +56,7 @@ export default function AdminCategories() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id }: { id: number }) => {
-      const res = await fetch(`/api/admin/categories/${id}`, {
+      const res = await fetch(`/api/admin/categories/${id}`, { credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName, slug: editSlug, description: editDesc }),
@@ -75,7 +75,7 @@ export default function AdminCategories() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       if (!confirm("Delete this category?")) throw new Error("cancelled");
-      const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/categories/${id}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-categories"] }); toast({ title: "Category deleted" }); },

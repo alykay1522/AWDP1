@@ -35,7 +35,7 @@ export default function AdminContactsList() {
   const { data, isLoading, isError, error: queryError, refetch } = useQuery<{ submissions: ContactSubmission[] }>({
     queryKey: ["admin-contacts"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/contacts");
+      const res = await fetch("/api/admin/contacts", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load contacts");
       return res.json();
     },

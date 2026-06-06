@@ -192,7 +192,7 @@ export default function AdminBulkEditor() {
 
   const applyMutation = useMutation({
     mutationFn: async (body: object) => {
-      const res = await fetch("/api/admin/products/bulk-update", {
+      const res = await fetch("/api/admin/products/bulk-update", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -218,7 +218,7 @@ export default function AdminBulkEditor() {
     mutationFn: async (skus: string[]) => {
       const results = await Promise.all(
         skus.map((sku) =>
-          fetch(`/api/admin/products/${encodeURIComponent(sku)}`, { method: "DELETE" })
+          fetch(`/api/admin/products/${encodeURIComponent(sku)}`, { credentials: "include", method: "DELETE" })
         )
       );
       return results.length;

@@ -119,7 +119,7 @@ export default function AdminProductsList() {
   } = useQuery<ProductsResponse>({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/admin/products?${params}`);
+      const res = await fetch(`/api/admin/products?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load products");
       return res.json();
     },
@@ -130,7 +130,7 @@ export default function AdminProductsList() {
   const { data: categories, isError: categoriesError } = useQuery<Category[]>({
     queryKey: ["admin-categories-list"],
     queryFn: async () => {
-      const res = await fetch("/api/categories");
+      const res = await fetch("/api/categories", { credentials: "include" });
       if (!res.ok) return [];
       return res.json();
     },
@@ -152,7 +152,7 @@ export default function AdminProductsList() {
   // ── Mutations ─────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: async ({ sku, updates }: { sku: string; updates: Record<string, unknown> }) => {
-      const res = await fetch(`/api/admin/products/${sku}`, {
+      const res = await fetch(`/api/admin/products/${sku}`, { credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -171,7 +171,7 @@ export default function AdminProductsList() {
   const deleteMutation = useMutation({
     mutationFn: async (sku: string) => {
       if (!confirm(`Delete ${sku}? This cannot be undone.`)) throw new Error("cancelled");
-      const res = await fetch(`/api/admin/products/${sku}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/products/${sku}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Delete failed"); }
       return res.json();
     },
@@ -187,7 +187,7 @@ export default function AdminProductsList() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const res = await fetch("/api/admin/products/export");
+      const res = await fetch("/api/admin/products/export", { credentials: "include" });
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -223,7 +223,7 @@ export default function AdminProductsList() {
 
       for (let c = 0; c < totalChunks; c++) {
         const slice = rows.slice(c * PRODUCT_IMPORT_CHUNK, (c + 1) * PRODUCT_IMPORT_CHUNK);
-        const res = await fetch("/api/admin/products/import", {
+        const res = await fetch("/api/admin/products/import", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -294,7 +294,7 @@ export default function AdminProductsList() {
         return;
       }
 
-      const res = await fetch("/api/admin/products/bulk-rename", {
+      const res = await fetch("/api/admin/products/bulk-rename", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

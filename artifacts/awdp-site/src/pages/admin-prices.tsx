@@ -125,7 +125,7 @@ function UpdatePriceAction({ sku, costPrice, targetMarkup, onSave }: { sku: stri
   const suggestedPrice = costPrice ? (Number(costPrice) * Number(targetMarkup)).toFixed(2) : "";
 
   const handleApply = async (price: string) => {
-    const res = await fetch("/api/admin/price-update-our", {
+    const res = await fetch("/api/admin/price-update-our", { credentials: "include",
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productSku: sku, newPrice: Number(price) }),
@@ -174,7 +174,7 @@ export default function AdminPrices() {
   const priceQuery = useQuery({
     queryKey: ["price-alerts"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/price-alerts");
+      const res = await fetch("/api/admin/price-alerts", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load price alerts");
       return res.json() as Promise<{ summary: Summary; alerts: PriceAlert[] }>;
     },

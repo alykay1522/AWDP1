@@ -117,7 +117,7 @@ export default function AdminDashboard() {
   } = useQuery<AdminOrdersResponse>({
     queryKey: ["admin-orders-dash"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/orders");
+      const res = await fetch("/api/admin/orders", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load orders");
       return res.json();
     },
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
   } = useQuery<{ requests: any[] }>({
     queryKey: ["admin-parts-id-dash"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/parts-id");
+      const res = await fetch("/api/admin/parts-id", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load parts requests");
       return res.json();
     },
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
   } = useQuery<{ submissions: any[] }>({
     queryKey: ["admin-contacts-dash"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/contacts");
+      const res = await fetch("/api/admin/contacts", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load contacts");
       return res.json();
     },

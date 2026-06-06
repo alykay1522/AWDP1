@@ -61,7 +61,7 @@ export default function AdminImages() {
   const { data, isLoading, isError, error: queryError, refetch } = useQuery<{ images: ProductImage[] }>({
     queryKey: ["admin-images"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/images");
+      const res = await fetch("/api/admin/images", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load images");
       return res.json();
     },
@@ -70,7 +70,7 @@ export default function AdminImages() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       if (!confirm("Delete this image? This cannot be undone.")) throw new Error("cancelled");
-      const res = await fetch(`/api/admin/images/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/images/${id}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-images"] }); toast({ title: "Image deleted" }); },
@@ -87,7 +87,7 @@ export default function AdminImages() {
       for (const file of Array.from(files)) {
         msgs.push(`Uploading ${file.name}…`);
         setUploadProgress([...msgs]);
-        const urlRes = await fetch("/api/admin/images/request-upload", {
+        const urlRes = await fetch("/api/admin/images/request-upload", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: file.name, contentType: file.type }),
@@ -96,7 +96,7 @@ export default function AdminImages() {
         const { uploadURL, objectName } = await urlRes.json();
         const putRes = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
         if (!putRes.ok) throw new Error(`GCS upload failed for ${file.name}`);
-        const saveRes = await fetch("/api/admin/images", {
+        const saveRes = await fetch("/api/admin/images", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ filename: file.name, objectName }),
@@ -150,7 +150,7 @@ export default function AdminImages() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/products/import-image-urls", {
+      const res = await fetch("/api/admin/products/import-image-urls", { credentials: "include",
         method: "POST",
         body: form,
         credentials: "include",
@@ -178,7 +178,7 @@ export default function AdminImages() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/admin/products/diagnose-zip", {
+      const res = await fetch("/api/admin/products/diagnose-zip", { credentials: "include",
         method: "POST",
         body: form,
         credentials: "include",
