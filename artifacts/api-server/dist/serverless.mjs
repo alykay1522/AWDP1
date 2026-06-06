@@ -144983,9 +144983,9 @@ router10.post("/admin/products/import", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router10.delete("/admin/products/all", async (req, res) => {
-  if (req.query.confirm !== "true") {
-    return res.status(400).json({ error: "Pass ?confirm=true to delete all products" });
+router10.post("/admin/products/delete-all", async (req, res) => {
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({ error: "Send { confirm: true } in request body to delete all products" });
   }
   try {
     const result = await db.delete(productsTable).returning({ id: productsTable.id });

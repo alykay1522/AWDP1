@@ -190,9 +190,11 @@ export default function AdminProductsList() {
     if (!confirmDeleteAll) { setConfirmDeleteAll(true); return; }
     setDeletingAll(true);
     try {
-      const res = await fetch("/api/admin/products/all?confirm=true", {
-        method: "DELETE",
+      const res = await fetch("/api/admin/products/delete-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ confirm: true }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
       const { deleted } = await res.json();
