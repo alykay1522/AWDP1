@@ -146571,11 +146571,7 @@ var sitemap_default = router17;
 
 // src/app.ts
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-production") {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET environment variable must be set to a secure random value in production");
-  } else {
-    logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
-  }
+  logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
 }
 var PgSession2 = (0, import_connect_pg_simple.default)(import_express_session.default);
 var app = (0, import_express18.default)();

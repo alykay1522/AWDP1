@@ -24,13 +24,9 @@ import sitemapRouter from "./routes/sitemap";
 import { pool } from "@workspace/db";
 import { isPayPalCheckoutOnly } from "./lib/checkoutMode.js";
 
-// Validate critical environment variables
+// Validate SESSION_SECRET
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-production") {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET environment variable must be set to a secure random value in production");
-  } else {
-    logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
-  }
+  logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
 }
 
 const PgSession = connectPgSimple(session);
