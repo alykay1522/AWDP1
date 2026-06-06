@@ -161114,6 +161114,32 @@ function isPayPalCheckoutOnly() {
   return !stripeLooksConfigured();
 }
 
+// src/lib/shipping.ts
+function calculateShipping(subtotal) {
+  const flatOverride = process.env.SHIPPING_FLAT_RATE;
+  if (flatOverride) {
+    const flat = parseFloat(flatOverride);
+    if (!isNaN(flat) && flat >= 0) {
+      return {
+        cost: flat,
+        label: flat === 0 ? "Free Shipping" : `Shipping & Handling \u2014 $${flat.toFixed(2)}`,
+        carrier: "UPS/FedEx/USPS"
+      };
+    }
+  }
+  let cost;
+  if (subtotal < 75) cost = 22.4;
+  else if (subtotal < 150) cost = 29.9;
+  else if (subtotal < 300) cost = 37.4;
+  else if (subtotal < 500) cost = 52.45;
+  else cost = 74.95;
+  return {
+    cost,
+    label: `Shipping & Handling (UPS/FedEx Ground) \u2014 $${cost.toFixed(2)}`,
+    carrier: "UPS/FedEx Ground"
+  };
+}
+
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino2(), 1);
 var isVercel = process.env.VERCEL === "1";
@@ -161198,10 +161224,13 @@ router4.post("/checkout/create-order", async (req, res) => {
     if (subtotal < 50) {
       return res.status(400).json({ error: `Order minimum is $50.` });
     }
+    const shipping = calculateShipping(subtotal);
+    const total = subtotal + shipping.cost;
     const orderId = generateOrderId();
     const paypalOrder = await createPayPalOrder({
       items: items.map((i) => ({ name: i.name, sku: i.sku, price: i.price, quantity: i.quantity })),
-      orderId
+      orderId,
+      shippingCost: shipping.cost
     });
     await db.insert(ordersTable).values({
       orderId,
@@ -161209,11 +161238,11 @@ router4.post("/checkout/create-order", async (req, res) => {
       customerEmail: "",
       lineItems: items,
       subtotal: subtotal.toFixed(2),
-      shippingCost: "0",
-      total: subtotal.toFixed(2),
+      shippingCost: shipping.cost.toFixed(2),
+      total: total.toFixed(2),
       status: "pending"
     });
-    res.json({ paypalOrderId: paypalOrder.id, orderId });
+    res.json({ paypalOrderId: paypalOrder.id, orderId, shippingCost: shipping.cost, shippingLabel: shipping.label, total });
   } catch (err) {
     logger.error({ err }, "create-order error");
     res.status(500).json({ error: "Failed to create order" });
@@ -161245,7 +161274,7 @@ router4.post("/checkout/capture-order", async (req, res) => {
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total);
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"
@@ -161312,34 +161341,6 @@ var routes_default = router5;
 // src/routes/paypal.ts
 var import_express6 = __toESM(require_express2(), 1);
 init_drizzle_orm();
-
-// src/lib/shipping.ts
-function calculateShipping(subtotal) {
-  const flatOverride = process.env.SHIPPING_FLAT_RATE;
-  if (flatOverride) {
-    const flat = parseFloat(flatOverride);
-    if (!isNaN(flat) && flat >= 0) {
-      return {
-        cost: flat,
-        label: flat === 0 ? "Free Shipping" : `Shipping & Handling \u2014 $${flat.toFixed(2)}`,
-        carrier: "UPS/FedEx/USPS"
-      };
-    }
-  }
-  let cost;
-  if (subtotal < 75) cost = 22.4;
-  else if (subtotal < 150) cost = 29.9;
-  else if (subtotal < 300) cost = 37.4;
-  else if (subtotal < 500) cost = 52.45;
-  else cost = 74.95;
-  return {
-    cost,
-    label: `Shipping & Handling (UPS/FedEx Ground) \u2014 $${cost.toFixed(2)}`,
-    carrier: "UPS/FedEx Ground"
-  };
-}
-
-// src/routes/paypal.ts
 var router6 = (0, import_express6.Router)();
 var CartItemSchema2 = external_exports2.object({
   sku: external_exports2.string(),
