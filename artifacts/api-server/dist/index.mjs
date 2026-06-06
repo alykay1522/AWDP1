@@ -144440,39 +144440,10 @@ var upload = (0, import_multer.default)({
   limits: { fileSize: 2 * 1024 * 1024 * 1024 }
 });
 var router10 = (0, import_express10.Router)();
-var NUM_TO_LETTER = {
-  "0": "E",
-  "1": "P",
-  "2": "R",
-  "3": "O",
-  "4": "F",
-  "5": "I",
-  "6": "T",
-  "7": "A",
-  "8": "B",
-  "9": "L"
-};
-var LETTER_TO_NUM = {
-  "P": "1",
-  "R": "2",
-  "O": "3",
-  "F": "4",
-  "I": "5",
-  "T": "6",
-  "A": "7",
-  "B": "8",
-  "L": "9",
-  "E": "0"
-};
-function applyCipher(input) {
-  return input.toUpperCase().split("").map((ch) => {
-    if (NUM_TO_LETTER[ch] !== void 0) return NUM_TO_LETTER[ch];
-    if (LETTER_TO_NUM[ch] !== void 0) return LETTER_TO_NUM[ch];
-    return ch;
-  }).join("");
-}
 function buildSku(originalSku) {
-  return "AWDP-" + applyCipher(originalSku.trim());
+  const clean = originalSku.trim().toUpperCase();
+  if (clean.startsWith("AWDP-")) return clean;
+  return "AWDP-" + clean;
 }
 async function generateUniqueSku(originalSku) {
   const base = buildSku(originalSku);
