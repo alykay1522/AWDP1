@@ -104,6 +104,8 @@ console.log(`[vercel-install] Workspace packages: ${Object.keys(wsMap).length}`)
 
 // Install each package that needs it
 const targets = [
+  path.join(root, "lib", "db"),
+  path.join(root, "lib", "api-zod"),
   path.join(root, "artifacts", "api-server"),
   path.join(root, "artifacts", "awdp-site"),
 ];
