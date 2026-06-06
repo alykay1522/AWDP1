@@ -1,11 +1,13 @@
 {
   "framework": null,
-  "buildCommand": "npx vite build",
+  "installCommand": "cd ../.. && node vercel-install.cjs",
+  "buildCommand": "cd ../.. && node vercel-build.cjs",
   "outputDirectory": "dist/public",
   "rewrites": [
-    { "source": "/api/:path*",  "destination": "/api/:path*" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
-    { "source": "/:path*",      "destination": "/index.html" }
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
