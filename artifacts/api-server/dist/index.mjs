@@ -144145,6 +144145,20 @@ router8.post("/admin/logout", (req, res) => {
 router8.get("/admin/auth-check", requireAdmin, (_req, res) => {
   res.json({ authenticated: true });
 });
+router8.get("/admin/env-check", (_req, res) => {
+  res.json({
+    DATABASE_URL: !!process.env.DATABASE_URL,
+    SESSION_SECRET: !!process.env.SESSION_SECRET && process.env.SESSION_SECRET !== "change-me-in-production",
+    ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD,
+    PAYPAL_CLIENT_ID: !!process.env.PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET: !!process.env.PAYPAL_CLIENT_SECRET,
+    SMTP_HOST: !!process.env.SMTP_HOST,
+    SMTP_USER: !!process.env.SMTP_USER,
+    SMTP_PASS: !!process.env.SMTP_PASS,
+    VERCEL: !!process.env.VERCEL,
+    NODE_ENV: process.env.NODE_ENV || "unset"
+  });
+});
 router8.get("/admin/session", (req, res) => {
   res.json({ authenticated: req.session?.adminAuthenticated === true });
 });
@@ -146584,7 +146598,7 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-
 var PgSession2 = (0, import_connect_pg_simple.default)(import_express_session.default);
 var app = (0, import_express18.default)();
 app.disable("etag");
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -146711,16 +146725,17 @@ app.use(
       return Date.now().toString();
     },
     cookie: (() => {
+      const isVercel2 = !!process.env.VERCEL;
+      const isProduction = process.env.NODE_ENV === "production" || isVercel2;
       const sameSite = process.env.SESSION_COOKIE_SAME_SITE === "none" ? "none" : "lax";
-      const secure = sameSite === "none" ? true : process.env.NODE_ENV === "production";
+      const secure = isProduction;
       return {
         httpOnly: true,
         secure,
         maxAge: 7 * 24 * 60 * 60 * 1e3,
         // 7 days
-        // Lax is correct for the same-origin Vercel serverless backend.
-        // Use SESSION_COOKIE_SAME_SITE=none only for an intentional cross-site API deployment.
-        sameSite
+        sameSite,
+        path: "/"
       };
     })()
   })
