@@ -165,6 +165,28 @@ app.use(
     return callback(new Error(`Not allowed by CORS: ${originHeader}`));
   }),
 );
+
+// Disable HTTP caching on all API responses so browsers never serve stale data
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
+app.use("/api/admin", (req, res, next) => {
+  if (!shouldBlockAdminSessionRoutes()) {
+    return next();
+  }
+
+  if (req.path === "/env-check" || req.path.startsWith("/images/serve/")) {
+    return next();
+  }
+
+  return res.status(503).json({
+    error: "Admin session secret is not configured.",
+    detail: "Set SESSION_SECRET to a secure random value before using admin authentication.",
+  });
+});
+
 // Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
 const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT ?? "32mb";
 app.use(express.json({ limit: jsonBodyLimit }));
@@ -206,27 +228,6 @@ app.use(
     })(),
   })
 );
-
-// Disable HTTP caching on all API responses so browsers never serve stale data
-app.use("/api", (_req, res, next) => {
-  res.setHeader("Cache-Control", "no-store");
-  next();
-});
-
-app.use("/api/admin", (req, res, next) => {
-  if (!shouldBlockAdminSessionRoutes()) {
-    return next();
-  }
-
-  if (req.path === "/env-check" || req.path.startsWith("/images/serve/")) {
-    return next();
-  }
-
-  return res.status(503).json({
-    error: "Admin session secret is not configured.",
-    detail: "Set SESSION_SECRET to a secure random value before using admin authentication.",
-  });
-});
 
 // Public routes
 app.use("/api", router);
