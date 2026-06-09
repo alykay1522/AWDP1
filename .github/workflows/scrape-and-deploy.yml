@@ -25,17 +25,20 @@ jobs:
       - name: Run wefixitusa scraper
         run: python scrapers/wefixitusa_scraper.py
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '24'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build site
-        run: npm run build
+        run: pnpm --filter awdp-site run build
         env:
           VITE_SITE_NAME: All Window Door Parts
           VITE_CONTACT_EMAIL: Info@allwindowdoorparts.com
