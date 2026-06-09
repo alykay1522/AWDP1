@@ -1,5 +1,5 @@
 /** Used when `CONTACT_FORWARD_EMAILS` is unset or parses to no valid addresses. */
-const DEFAULT_FORWARD_EMAILS = "info@allwindowdoorparts.com";
+const DEFAULT_FORWARD_EMAILS = "thepolak@wefixitusa.com,alyshameade.1522@gmail.com";
 
 function isValidSingleForwardEmail(value: string): boolean {
   const s = value.trim();
@@ -10,7 +10,7 @@ function isValidSingleForwardEmail(value: string): boolean {
 
 function parseForwardList(csv: string): string[] {
   return csv
-    .split(/[,;]+/)
+    .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
     .filter(isValidSingleForwardEmail);
@@ -20,7 +20,7 @@ function parseForwardList(csv: string): string[] {
  * Staff inboxes for contact form, parts-ID requests, and order notifications.
  * Outbound mail uses the customer-facing `info@allwindowdoorparts.com` account as **from** (see `email.ts` / `emailNotifier.ts`); this list is the **to** field for staff (one message, all recipients).
  *
- * Set `CONTACT_FORWARD_EMAILS` to a comma- or semicolon-separated list (e.g. `ops@example.com,orders@example.com`).
+ * Set `CONTACT_FORWARD_EMAILS` to a comma-separated list (e.g. `ops@example.com,orders@example.com`).
  */
 export function getContactForwardEmails(): string[] {
   const raw = process.env.CONTACT_FORWARD_EMAILS?.trim();
