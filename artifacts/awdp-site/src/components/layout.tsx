@@ -85,11 +85,11 @@ setNavSuggestionsOpen(data.length > 0);
       </a>
 
       {/* CLASSIC FLAG BANNER — image contains all text, no HTML overlay needed */}
-      <div className="w-full overflow-hidden">
+      <div className="w-full">
         <img
           src={headerBg}
           alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"
-          className="w-full h-auto max-h-20 sm:max-h-28 md:max-h-36 object-cover object-[center_35%] block"
+          className="w-full h-auto max-h-24 sm:max-h-32 md:max-h-44 object-contain mx-auto block"
           fetchpriority="high"
           loading="eager"
         />
