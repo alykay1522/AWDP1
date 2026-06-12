@@ -66,7 +66,7 @@ export default function AdminSettings() {
   const settingsQuery = useQuery<{ settings: Settings }>({
     queryKey: ["admin-settings"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/settings");
+      const res = await fetch("/api/admin/settings", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load settings");
       return res.json();
     },
@@ -78,7 +78,7 @@ export default function AdminSettings() {
 
   const mutation = useMutation({
     mutationFn: async (updates: Settings) => {
-      const res = await fetch("/api/admin/settings", {
+      const res = await fetch("/api/admin/settings", { credentials: "include",
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),

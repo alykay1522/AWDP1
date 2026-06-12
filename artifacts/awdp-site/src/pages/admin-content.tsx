@@ -228,7 +228,7 @@ export default function AdminContent() {
   const { data, isLoading } = useQuery<{ settings: Settings }>({
     queryKey: ["admin-settings"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/settings");
+      const res = await fetch("/api/admin/settings", { credentials: "include" });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -240,7 +240,7 @@ export default function AdminContent() {
 
   const mutation = useMutation({
     mutationFn: async (updates: Settings) => {
-      const res = await fetch("/api/admin/settings", {
+      const res = await fetch("/api/admin/settings", { credentials: "include",
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),

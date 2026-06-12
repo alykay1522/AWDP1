@@ -12,7 +12,9 @@ export default defineConfig({
     alias: {
       "@": path.resolve(siteDir, "src"),
       "@assets": path.resolve(siteDir, "..", "..", "attached_assets"),
-      "@workspace/api-client-react": path.resolve(siteDir, "..", "..", "lib", "api-client-react", "src", "index.ts"),
+      // Use the inlined copy inside src/ — eliminates cross-workspace pnpm
+      // catalog: resolution that breaks Vercel's isolated install
+      "@workspace/api-client-react": path.resolve(siteDir, "src", "lib", "api-client", "index.ts"),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -39,29 +41,17 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
     minify: "esbuild",
-    sourcemap: false, // set to true only for debugging
-    chunkSizeWarningLimit: 1200,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
+    sourcemap: false,
+    // Suppress "Can't resolve original location" warnings from radix-ui/shadcn
+    // sourcemap references — these are harmless but cause fatal errors on Vite 7
     rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            // React and its direct ecosystem get their own clean chunk
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("@tanstack/react-query") ||
-              id.includes("wouter")
-            ) {
-              return "react-vendor";
-            }
-            // Everything else
-            return "vendor";
-          }
-        },
+      onwarn(warning, warn) {
+        // Suppress sourcemap warnings from dependencies
+        if (warning.code === "SOURCEMAP_ERROR") return;
+        if (warning.message?.includes("Can't resolve original location")) return;
+        warn(warning);
       },
+      output: {},
     },
   },
 

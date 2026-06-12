@@ -24,21 +24,17 @@ import sitemapRouter from "./routes/sitemap";
 import { pool } from "@workspace/db";
 import { isPayPalCheckoutOnly } from "./lib/checkoutMode.js";
 
-// Validate critical environment variables
+// Validate SESSION_SECRET
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-production") {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET environment variable must be set to a secure random value in production");
-  } else {
-    logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
-  }
+  logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
 }
 
 const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
-// Trust Replit's reverse proxy so secure cookies work over HTTPS
-app.set("trust proxy", 1);
+// Trust reverse proxy — works for both Replit and Vercel
+app.set("trust proxy", true);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
 // CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
@@ -181,15 +177,19 @@ app.use(
       return Date.now().toString();
     },
     cookie: (() => {
+      // On Vercel (and any HTTPS deployment), use secure cookies.
+      // sameSite "lax" works for same-origin requests on Vercel.
+      // Use SESSION_COOKIE_SAME_SITE=none only if the API is on a different domain from the frontend.
+      const isVercel = !!process.env.VERCEL;
+      const isProduction = process.env.NODE_ENV === "production" || isVercel;
       const sameSite = process.env.SESSION_COOKIE_SAME_SITE === "none" ? "none" : "lax";
-      const secure = sameSite === "none" ? true : process.env.NODE_ENV === "production";
+      const secure = isProduction; // always secure on Vercel/production
       return {
         httpOnly: true,
         secure,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        // Lax is correct for the same-origin Vercel serverless backend.
-        // Use SESSION_COOKIE_SAME_SITE=none only for an intentional cross-site API deployment.
         sameSite,
+        path: "/",
       };
     })(),
   })

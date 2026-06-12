@@ -84,71 +84,15 @@ setNavSuggestionsOpen(data.length > 0);
         Skip to main content
       </a>
 
-      {/* CLASSIC FLAG BANNER */}
-      <div
-        className="w-full relative border-b border-white/10 overflow-hidden"
-        style={{ minHeight: 200 }}
-      >
-        {/* Background photo */}
+      {/* CLASSIC FLAG BANNER — image contains all text, no HTML overlay needed */}
+      <div className="w-full">
         <img
           src={headerBg}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none"
+          alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"
+          className="w-full h-auto block"
           fetchpriority="high"
           loading="eager"
         />
-        {/* Subtle centre overlay so text stays legible over the grey area */}
-        <div className="absolute inset-0 bg-black/10" />
-
-        <div className="relative z-10 container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-
-          {/* Left — branding */}
-          <div className="text-center md:text-left">
-            {/* Title in blue matching the original image */}
-            <p className="text-4xl md:text-5xl font-serif font-bold tracking-tight leading-tight drop-shadow-md"
-               style={{ color: "#3a7bd5" }}>
-              All Window Door Parts
-            </p>
-            {/* Email in blue */}
-            <a
-              href="mailto:info@allwindowdoorparts.com"
-              className="text-lg md:text-xl font-medium drop-shadow-sm hover:underline"
-              style={{ color: "#3a7bd5" }}
-            >
-              info@AllWindowDoorParts.com
-            </a>
-            {/* Veteran line — red to match image */}
-            <p className="mt-1 text-sm font-bold tracking-wide drop-shadow-sm" style={{ color: "#e53e3e" }}>
-              Veteran Owned and Operated
-            </p>
-            {/* Rainbow-text group name matching original */}
-            <p className="mt-0.5 text-base font-extrabold tracking-wide drop-shadow-sm"
-               style={{
-                 background: "linear-gradient(90deg,#e53e3e,#dd6b20,#d69e2e,#38a169,#3182ce,#805ad5)",
-                 WebkitBackgroundClip: "text",
-                 WebkitTextFillColor: "transparent",
-               }}>
-              AllWindowDoorPartsGroup
-            </p>
-          </div>
-
-          {/* Right — payment badges matching original */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* PayPal wordmark */}
-            <span className="text-2xl font-extrabold italic drop-shadow"
-                  style={{ color: "#003087" }}>
-              Pay<span style={{ color: "#009cde" }}>Pal</span>
-            </span>
-            {/* Card logos */}
-            <img
-              src={paypalImg}
-              alt="PayPal, Mastercard, American Express, Discover accepted"
-              className="h-10 object-contain drop-shadow"
-              loading="eager"
-            />
-          </div>
-        </div>
       </div>
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
@@ -393,6 +337,26 @@ setNavSuggestionsOpen(data.length > 0);
                         <span>Subtotal</span>
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
+                      {!belowMinimum && (() => {
+                        // Mirror server-side shipping tiers so customer sees the charge before PayPal opens
+                        let ship = 22.40;
+                        if (totalPrice >= 500)      ship = 74.95;
+                        else if (totalPrice >= 300) ship = 52.45;
+                        else if (totalPrice >= 150) ship = 37.40;
+                        else if (totalPrice >= 75)  ship = 29.90;
+                        return (
+                          <>
+                            <div className="flex justify-between items-center text-sm text-slate-600">
+                              <span>Shipping (UPS/FedEx Ground)</span>
+                              <span>${ship.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-bold text-base border-t pt-2">
+                              <span>Est. Total</span>
+                              <span>${(totalPrice + ship).toFixed(2)}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                       {belowMinimum ? (
                         <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 space-y-1.5">
                           <p className="text-xs font-semibold text-amber-800">$50.00 order minimum required</p>

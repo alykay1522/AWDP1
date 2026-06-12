@@ -90,6 +90,8 @@ export default function AdminProductsList() {
   const [importing, setImporting]     = useState(false);
   const [exporting, setExporting]     = useState(false);
   const [renaming, setRenaming]       = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const fileInputRef      = useRef<HTMLInputElement>(null);
   const renameInputRef    = useRef<HTMLInputElement>(null);
 
@@ -119,7 +121,7 @@ export default function AdminProductsList() {
   } = useQuery<ProductsResponse>({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/admin/products?${params}`);
+      const res = await fetch(`/api/admin/products?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load products");
       return res.json();
     },
@@ -130,7 +132,7 @@ export default function AdminProductsList() {
   const { data: categories, isError: categoriesError } = useQuery<Category[]>({
     queryKey: ["admin-categories-list"],
     queryFn: async () => {
-      const res = await fetch("/api/categories");
+      const res = await fetch("/api/categories", { credentials: "include" });
       if (!res.ok) return [];
       return res.json();
     },
@@ -152,7 +154,7 @@ export default function AdminProductsList() {
   // ── Mutations ─────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: async ({ sku, updates }: { sku: string; updates: Record<string, unknown> }) => {
-      const res = await fetch(`/api/admin/products/${sku}`, {
+      const res = await fetch(`/api/admin/products/${sku}`, { credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -171,7 +173,7 @@ export default function AdminProductsList() {
   const deleteMutation = useMutation({
     mutationFn: async (sku: string) => {
       if (!confirm(`Delete ${sku}? This cannot be undone.`)) throw new Error("cancelled");
-      const res = await fetch(`/api/admin/products/${sku}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/products/${sku}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Delete failed"); }
       return res.json();
     },
@@ -184,10 +186,33 @@ export default function AdminProductsList() {
   });
 
   // ── Export ────────────────────────────────────────────────────────────────
+  const handleDeleteAll = async () => {
+    if (!confirmDeleteAll) { setConfirmDeleteAll(true); return; }
+    setDeletingAll(true);
+    try {
+      const res = await fetch("/api/admin/products/delete-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ confirm: true }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
+      const { deleted } = await res.json();
+      toast({ title: "All products deleted", description: `${deleted} products removed.` });
+      qc.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      setConfirmDeleteAll(false);
+    } catch (e: any) {
+      toast({ title: "Delete failed", description: e.message, variant: "destructive" });
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
+  // ── Export ────────────────────────────────────────────────────────────────
   const handleExport = async () => {
     setExporting(true);
     try {
-      const res = await fetch("/api/admin/products/export");
+      const res = await fetch("/api/admin/products/export", { credentials: "include" });
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -223,7 +248,7 @@ export default function AdminProductsList() {
 
       for (let c = 0; c < totalChunks; c++) {
         const slice = rows.slice(c * PRODUCT_IMPORT_CHUNK, (c + 1) * PRODUCT_IMPORT_CHUNK);
-        const res = await fetch("/api/admin/products/import", {
+        const res = await fetch("/api/admin/products/import", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -294,7 +319,7 @@ export default function AdminProductsList() {
         return;
       }
 
-      const res = await fetch("/api/admin/products/bulk-rename", {
+      const res = await fetch("/api/admin/products/bulk-rename", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -368,6 +393,20 @@ export default function AdminProductsList() {
             onClick={handleExport} disabled={exporting}>
             {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             Export All CSV
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => { if (confirmDeleteAll) handleDeleteAll(); else setConfirmDeleteAll(true); }}
+            onBlur={() => setTimeout(() => setConfirmDeleteAll(false), 3000)}
+            disabled={deletingAll}
+            className="gap-1.5"
+          >
+            {deletingAll
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Trash2 className="w-3.5 h-3.5" />}
+            {confirmDeleteAll ? "⚠️ Click again to confirm — deletes ALL products" : "Delete All Products"}
           </Button>
           <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 gap-1.5"
             onClick={() => fileInputRef.current?.click()} disabled={importing}

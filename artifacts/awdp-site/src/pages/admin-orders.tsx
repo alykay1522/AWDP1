@@ -101,7 +101,7 @@ export default function AdminOrders() {
   const [checkoutPayPalOnly, setCheckoutPayPalOnly] = useState(false);
 
   useEffect(() => {
-    fetch("/api/checkout/options")
+    fetch("/api/checkout/options", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { checkoutPayPalOnly?: boolean }) => setCheckoutPayPalOnly(Boolean(d.checkoutPayPalOnly)))
       .catch(() => setCheckoutPayPalOnly(false));
@@ -110,7 +110,7 @@ export default function AdminOrders() {
   const { data, isLoading, isError, error: queryError, refetch } = useQuery<AdminOrdersResponse>({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/orders");
+      const res = await fetch("/api/admin/orders", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load orders");
       return res.json();
     },
@@ -119,7 +119,7 @@ export default function AdminOrders() {
 
   const statusMutation = useMutation({
     mutationFn: async ({ orderId, status, notes }: { orderId: string; status: string; notes?: string }) => {
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, { credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, notes }),

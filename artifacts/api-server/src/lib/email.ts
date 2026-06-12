@@ -1,16 +1,44 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { adminPortalUrl } from "./adminSiteUrl.js";
 import { getContactForwardEmails } from "./notifyRecipients.js";
 
 const FROM_ADDRESS = "All Window Door Parts <info@allwindowdoorparts.com>";
 
-function getResend(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn("[email] RESEND_API_KEY not set — skipping outbound mail");
+/**
+ * Creates a nodemailer transporter using cPanel SMTP.
+ * Required env vars:
+ *   SMTP_HOST     — e.g. mail.allwindowdoorparts.com
+ *   SMTP_PORT     — e.g. 465 (SSL) or 587 (TLS)
+ *   SMTP_USER     — e.g. info@allwindowdoorparts.com
+ *   SMTP_PASS     — cPanel email account password
+ *   SMTP_SECURE   — "true" for port 465 SSL, omit/false for 587 STARTTLS
+ */
+function createTransport() {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    console.warn("[email] SMTP_HOST / SMTP_USER / SMTP_PASS not set — skipping outbound mail");
     return null;
   }
-  return new Resend(apiKey);
+
+  const port   = parseInt(process.env.SMTP_PORT ?? "465", 10);
+  const secure = process.env.SMTP_SECURE !== "false"; // default true (SSL 465)
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: true },
+  });
+}
+
+function esc(str: string): string {
+  return str
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function formatSubmittedAt(iso?: string | Date | null): string {
@@ -19,9 +47,7 @@ function formatSubmittedAt(iso?: string | Date | null): string {
   return d.toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "medium", timeStyle: "short" });
 }
 
-function esc(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
+// ── Contact form ──────────────────────────────────────────────────────────────
 
 export interface ContactSubmission {
   name: string;
@@ -36,8 +62,9 @@ export interface ContactSubmission {
 export async function forwardContactEmail(sub: ContactSubmission): Promise<void> {
   const to = getContactForwardEmails();
   if (!to.length) { console.warn("[email] No forward addresses configured"); return; }
-  const resend = getResend();
-  if (!resend) return;
+
+  const transport = createTransport();
+  if (!transport) return;
 
   const when = formatSubmittedAt(sub.submittedAt);
   const adminLink = adminPortalUrl("/admin/contacts");
@@ -57,12 +84,19 @@ export async function forwardContactEmail(sub: ContactSubmission): Promise<void>
     </table>
     <p><a href="${esc(adminLink)}" style="display:inline-block;background:#1e3a5f;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold">View in Admin Portal</a></p>
     <hr style="border:none;border-top:1px solid #e8eaed;margin:24px 0">
-    <p style="color:#666;font-size:12px;margin:0">Submitted via allwindowdoorparts.com contact form. Reply to respond to ${esc(sub.name)}.</p>
+    <p style="color:#666;font-size:12px;margin:0">Submitted via allwindowdoorparts.com. Reply to respond to ${esc(sub.name)}.</p>
   </div>`;
 
-  const { error } = await resend.emails.send({ from: FROM_ADDRESS, to, reply_to: sub.email, subject: subjectLine, html });
-  if (error) throw new Error(`Resend error (contact): ${JSON.stringify(error)}`);
+  await transport.sendMail({
+    from: FROM_ADDRESS,
+    to: to.join(", "),
+    replyTo: sub.email,
+    subject: subjectLine,
+    html,
+  });
 }
+
+// ── Parts ID ─────────────────────────────────────────────────────────────────
 
 export interface PartsIdSubmission {
   ticketId: string;
@@ -81,8 +115,9 @@ export interface PartsIdSubmission {
 export async function forwardPartsIdEmail(sub: PartsIdSubmission): Promise<void> {
   const to = getContactForwardEmails();
   if (!to.length) { console.warn("[email] No forward addresses configured"); return; }
-  const resend = getResend();
-  if (!resend) return;
+
+  const transport = createTransport();
+  if (!transport) return;
 
   const when = formatSubmittedAt(sub.submittedAt);
   const adminLink = adminPortalUrl("/admin/parts-id");
@@ -105,19 +140,24 @@ export async function forwardPartsIdEmail(sub: PartsIdSubmission): Promise<void>
     <p style="color:#666;font-size:12px;margin:0">Submitted via allwindowdoorparts.com. Reply to respond to ${esc(sub.name)}.</p>
   </div>`;
 
-  const attachments: Array<{ filename: string; content: string }> = [];
+  const attachments: nodemailer.SendMailOptions["attachments"] = [];
   if (sub.imageBase64) {
     const m = sub.imageBase64.match(/^data:([^;]+);base64,(.+)$/s);
     if (m) {
-      const ext = m[1].split("/")[1] ?? "jpg";
-      attachments.push({ filename: sub.imageFileName ?? `photo.${ext}`, content: m[2] });
+      attachments.push({
+        filename: sub.imageFileName ?? `photo.${m[1].split("/")[1] ?? "jpg"}`,
+        content: Buffer.from(m[2], "base64"),
+        contentType: m[1],
+      });
     }
   }
 
-  const { error } = await resend.emails.send({
-    from: FROM_ADDRESS, to, reply_to: sub.email,
+  await transport.sendMail({
+    from: FROM_ADDRESS,
+    to: to.join(", "),
+    replyTo: sub.email,
     subject: `Parts ID Request [${sub.ticketId}] from ${sub.name}`,
-    html, attachments,
+    html,
+    attachments,
   });
-  if (error) throw new Error(`Resend error (parts-id): ${JSON.stringify(error)}`);
 }

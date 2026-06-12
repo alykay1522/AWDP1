@@ -49,3 +49,7 @@ Thumbs.db
 .local/
 .vercel
 .env*.local
+
+# Keep api-server dist — Vercel serverless functions import from it at runtime
+!artifacts/api-server/dist/
+!artifacts/api-server/dist/**

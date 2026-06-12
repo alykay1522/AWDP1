@@ -22,34 +22,11 @@ const upload = multer({
 
 const router = Router();
 
-// ── PROFITABLE Cipher ──────────────────────────────────────────────────────────
-// P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
-// Each digit → its PROFITABLE letter, each PROFITABLE letter → its digit
-// Every other character passes through unchanged
-
-const NUM_TO_LETTER: Record<string, string> = {
-  "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
-  "5": "I", "6": "T", "7": "A", "8": "B", "9": "L",
-};
-const LETTER_TO_NUM: Record<string, string> = {
-  "P": "1", "R": "2", "O": "3", "F": "4", "I": "5",
-  "T": "6", "A": "7", "B": "8", "L": "9", "E": "0",
-};
-
-function applyCipher(input: string): string {
-  return input
-    .toUpperCase()
-    .split("")
-    .map((ch) => {
-      if (NUM_TO_LETTER[ch] !== undefined) return NUM_TO_LETTER[ch];
-      if (LETTER_TO_NUM[ch] !== undefined) return LETTER_TO_NUM[ch];
-      return ch;
-    })
-    .join("");
-}
-
 function buildSku(originalSku: string): string {
-  return "AWDP-" + applyCipher(originalSku.trim());
+  const clean = originalSku.trim().toUpperCase();
+  // If already prefixed, return as-is
+  if (clean.startsWith("AWDP-")) return clean;
+  return "AWDP-" + clean;
 }
 
 async function generateUniqueSku(originalSku: string): Promise<string> {
@@ -641,6 +618,19 @@ router.post("/admin/products/import", async (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
+
+// POST /api/admin/products/delete-all — delete every product (requires confirm:true in body)
+router.post("/admin/products/delete-all", async (req, res) => {
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({ error: "Send { confirm: true } in request body to delete all products" });
+  }
+  try {
+    const result = await db.delete(productsTable).returning({ id: productsTable.id });
+    res.json({ deleted: result.length, message: `Deleted all ${result.length} products` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // DELETE /api/admin/products/:sku — delete a product
 router.delete("/admin/products/:sku", async (req, res) => {

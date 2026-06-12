@@ -12,6 +12,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState<{ cost: number; label: string } | null>(null);
 
   // useRef avoids the stale-closure bug: PayPal SDK captures onApprove at render time,
   // so reading orderData from state may return the pre-setOrderData null. A ref is
@@ -66,9 +67,21 @@ export default function Checkout() {
                   </div>
                 </div>
               ))}
-              <div className="pt-4 flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>${totalPrice.toFixed(2)}</span>
+              <div className="pt-4 space-y-2 border-t">
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>Subtotal</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
+                {shippingInfo && (
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>Shipping (UPS/FedEx Ground)</span>
+                    <span>${shippingInfo.cost.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>{shippingInfo ? "Total" : "Subtotal"}</span>
+                  <span>${shippingInfo ? (totalPrice + shippingInfo.cost).toFixed(2) : totalPrice.toFixed(2)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -87,7 +100,7 @@ export default function Checkout() {
                     setError(null);
                     orderDataRef.current = null;
                     try {
-                      const res = await fetch("/api/checkout/create-order", {
+                      const res = await fetch("/api/paypal/create-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -123,7 +136,7 @@ export default function Checkout() {
 
                     setProcessingPayment(true);
                     try {
-                      const res = await fetch("/api/checkout/capture-order", {
+                      const res = await fetch("/api/paypal/capture-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

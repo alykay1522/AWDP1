@@ -7,6 +7,7 @@ import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
 import { isPayPalCheckoutOnly } from "../lib/checkoutMode.js";
+import { calculateShipping } from "../lib/shipping.js";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -91,11 +92,14 @@ router.post("/checkout/create-order", async (req, res) => {
       return res.status(400).json({ error: `Order minimum is $50.` });
     }
 
+    const shipping = calculateShipping(subtotal);
+    const total = subtotal + shipping.cost;
     const orderId = generateOrderId();
 
     const paypalOrder = await createPayPalOrder({
       items: items.map(i => ({ name: i.name, sku: i.sku, price: i.price, quantity: i.quantity })),
       orderId,
+      shippingCost: shipping.cost,
     });
 
     await db.insert(ordersTable).values({
@@ -104,12 +108,12 @@ router.post("/checkout/create-order", async (req, res) => {
       customerEmail: "",
       lineItems: items,
       subtotal: subtotal.toFixed(2),
-      shippingCost: "0",
-      total: subtotal.toFixed(2),
+      shippingCost: shipping.cost.toFixed(2),
+      total: total.toFixed(2),
       status: "pending",
     });
 
-    res.json({ paypalOrderId: paypalOrder.id, orderId });
+    res.json({ paypalOrderId: paypalOrder.id, orderId, shippingCost: shipping.cost, shippingLabel: shipping.label, total });
   } catch (err: any) {
     logger.error({ err }, "create-order error");
     res.status(500).json({ error: "Failed to create order" });
@@ -156,7 +160,7 @@ router.post("/checkout/capture-order", async (req, res) => {
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total as string);
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.01) {
+      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"
