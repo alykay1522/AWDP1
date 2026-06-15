@@ -219,8 +219,8 @@ importers:
   artifacts/awdp-site:
     dependencies:
       '@paypal/react-paypal-js':
-        specifier: ^9.1.0
-        version: 9.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^10.0.0
+        version: 10.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(react@18.3.1)
@@ -1199,11 +1199,8 @@ packages:
   '@paypal/paypal-js@10.0.0':
     resolution: {integrity: sha512-IOAA8Ls7A5WXH8vV8Lbh+QTyVsQWbmqzCMvNFmGO/56D+7i5OMXhjzG2Qhz0WHSiVe+IutqJMWPX2dHJXA7Kgw==}
 
-  '@paypal/paypal-js@9.8.0':
-    resolution: {integrity: sha512-qZ+jq36Y10MA2E28lnCh4nCNX3uH9s4TKUw6UkjenRkGYJD94z4vkZ2uUKzIYqgCIRZTDlacdU4274API5WzjA==}
-
-  '@paypal/react-paypal-js@9.2.0':
-    resolution: {integrity: sha512-wckuxilT+fYYwg0TYbEbxkclYeJnhIlThpNtV9RLXQA6uBbt5xPIzGv9wt2ykQTLiNIqhXhw1Hlz5yxUeCteKQ==}
+  '@paypal/react-paypal-js@10.0.0':
+    resolution: {integrity: sha512-65ry+7rJE2sjwPGrW2pSPM8ye2pYxIFO/DpAd0QfkJ56FHc281paAHc5OTg/cZf88UUXkn7hltLDZ60CRfjIrQ==}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
       react-dom: ^16.8.0 || ^17 || ^18 || ^19
@@ -5412,13 +5409,9 @@ snapshots:
     dependencies:
       promise-polyfill: 8.3.0
 
-  '@paypal/paypal-js@9.8.0':
+  '@paypal/react-paypal-js@10.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      promise-polyfill: 8.3.0
-
-  '@paypal/react-paypal-js@9.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@paypal/paypal-js': 9.8.0
+      '@paypal/paypal-js': 10.0.0
       '@paypal/sdk-constants': 1.0.158
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
