@@ -16,8 +16,8 @@ export const partsIdRequestsTable = pgTable("parts_id_requests", {
   // ⭐ REQUIRED FOR IMAGE SUPPORT
   imageUrl: text("image_url"),
 
-  status: text("status").default("pending"),
-  createdAt: timestamp("created_at").defaultNow(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // ------------------------------
