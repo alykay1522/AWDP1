@@ -5,7 +5,7 @@ import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 // ------------------------------
 export const partsIdRequestsTable = pgTable("parts_id_requests", {
   id: serial("id").primaryKey(),
-  ticketId: text("ticket_id").notNull(),
+  ticketId: text("ticket_id").notNull().unique(),
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
