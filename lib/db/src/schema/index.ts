@@ -30,5 +30,5 @@ export const contactSubmissionsTable = pgTable("contact_submissions", {
   phone: text("phone"),
   subject: text("subject"),
   message: text("message").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
