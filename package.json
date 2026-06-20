@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.34.1",
   "dependencies": {
-    "nodemailer": "^8.0.10",
+    "nodemailer": "^9.0.1",
     "pg": "^8.13.0"
   },
   "scripts": {
