@@ -15,6 +15,6 @@
     { "src": "/api/ping", "dest": "/api/ping" },
     { "src": "/api/(.*)", "dest": "/api/[...path]" },
     { "src": "/assets/(.*)", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "dest": "/assets/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)", "dest": "/api/ssr?path=$1" }
   ]
 }
