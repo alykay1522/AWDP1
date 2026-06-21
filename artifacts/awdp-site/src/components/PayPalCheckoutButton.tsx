@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "../hooks/use-toast.js";
 
 interface CartItem {
   sku: string;

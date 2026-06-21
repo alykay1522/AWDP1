@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Wrench } from "lucide-react";
-import { logo as logoRainbow } from "@/lib/assetUrls";
+import { logo as logoRainbow } from "../lib/assetUrls.js";
 
 interface ProductImageProps {
   src: string | null | undefined;

@@ -1,16 +1,16 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState, useRef, useEffect } from "react";
-import { useCart } from "@/lib/cart";
+import { useCart } from "../lib/cart.jsx";
 import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { logo, logoBanner, paypalImg, headerBg } from "@/lib/assetUrls";
-import { ProductImage } from "@/components/product-image";
-import { toast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
-import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
+import { Button } from "./ui/button.jsx";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet.jsx";
+import { ScrollArea } from "./ui/scroll-area.jsx";
+import { logo, logoBanner, paypalImg, headerBg } from "../lib/assetUrls.js";
+import { ProductImage } from "./product-image.jsx";
+import { toast } from "../hooks/use-toast.js";
+import { Input } from "./ui/input.jsx";
+import { PayPalCheckoutButton } from "./PayPalCheckoutButton.jsx";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "../lib/siteContact.js";
 
 const SHOP_CATEGORIES = [
   ["Window Balances",               "Window+Balances"],

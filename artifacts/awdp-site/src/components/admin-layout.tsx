@@ -6,7 +6,7 @@ import {
   ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
   FileText, PenLine, RefreshCcw,
 } from "lucide-react";
-import { useAdminLogout } from "@/lib/useAdminAuth";
+import { useAdminLogout } from "../lib/useAdminAuth.js";
 
 interface NavItem {
   href: string;
