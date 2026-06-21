@@ -158,7 +158,7 @@ importers:
         specifier: ^8.1.0
         version: 8.2.0
       multer:
-        specifier: ^2.2.0
+        specifier: ^2.1.1
         version: 2.2.0
       nodemailer:
         specifier: ^9.0.1
@@ -176,11 +176,11 @@ importers:
         specifier: ^0.34.5
         version: 0.34.5
       stripe:
-        specifier: ^22.1.0
-        version: 22.1.1(@types/node@25.9.1)
+        specifier: ^22.2.2
+        version: 22.2.2(@types/node@25.9.1)
       stripe-replit-sync:
         specifier: ^1.0.0
-        version: 1.0.0(stripe@22.1.1(@types/node@25.9.1))
+        version: 1.0.0(stripe@22.2.2(@types/node@25.9.1))
       zod:
         specifier: 'catalog:'
         version: 3.25.76
@@ -4515,8 +4515,8 @@ packages:
     peerDependencies:
       stripe: '> 11'
 
-  stripe@22.1.1:
-    resolution: {integrity: sha512-cmodIYP27tBkJ8G7DuGgWw0PFuemlFZbuF3Wwr1TrjFjUa3T7NIgCe6TVwX8BO2ynu+xtTuDGfHafNDCPt9lXA==}
+  stripe@22.2.2:
+    resolution: {integrity: sha512-lRXLiarjW/I2QVa6QuFfz1Ma7Dc2yBQ7vlYH6NEmp5htMJNQGfiWExmOv0McfqY5wMCGV8DLuCvsyVRIPJlUUQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
@@ -9669,11 +9669,11 @@ snapshots:
 
   strip-json-comments@5.0.3: {}
 
-  stripe-replit-sync@1.0.0(stripe@22.1.1(@types/node@25.9.1)):
+  stripe-replit-sync@1.0.0(stripe@22.2.2(@types/node@25.9.1)):
     dependencies:
       pg: 8.21.0
       pg-node-migrations: 0.0.8
-      stripe: 22.1.1(@types/node@25.9.1)
+      stripe: 22.2.2(@types/node@25.9.1)
       ws: 8.21.0
       yesql: 7.0.0
     transitivePeerDependencies:
@@ -9681,7 +9681,7 @@ snapshots:
       - pg-native
       - utf-8-validate
 
-  stripe@22.1.1(@types/node@25.9.1):
+  stripe@22.2.2(@types/node@25.9.1):
     optionalDependencies:
       '@types/node': 25.9.1
 
