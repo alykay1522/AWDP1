@@ -13,7 +13,7 @@
     "skipDefaultLibCheck": true,
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*", "./artifacts/awdp-site/src/*"]
     }
   },
   "references": [
