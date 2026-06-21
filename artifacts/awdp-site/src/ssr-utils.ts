@@ -5,7 +5,7 @@
 
 import React from "react";
 import { renderToString } from "react-dom/server";
-import type { PageMetadata } from "./ssr-metadata";
+import type { PageMetadata } from "./ssr-metadata.js";
 
 /**
  * Convert PageMetadata to PageSeo component props

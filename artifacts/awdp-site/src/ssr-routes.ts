@@ -3,7 +3,7 @@
  * Maps request paths to metadata fetchers and components
  */
 
-import type { PageMetadata } from "./ssr-metadata";
+import type { PageMetadata } from "./ssr-metadata.js";
 import {
   getShopMetadata,
   getCategoriesMetadata,
@@ -15,7 +15,7 @@ import {
   getResourcesMetadata,
   getContactMetadata,
   getHomeMetadata,
-} from "./ssr-metadata";
+} from "./ssr-metadata.js";
 
 export interface RouteHandler {
   metadata: () => Promise<PageMetadata>;
