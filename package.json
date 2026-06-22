@@ -4,8 +4,10 @@
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "dependencies": {
-    "nodemailer": "^8.0.10",
-    "pg": "^8.13.0"
+    "@vercel/speed-insights": "^2.0.0",
+    "nodemailer": "^9.0.1",
+    "pg": "^8.13.0",
+    "vercel": "^54.4.1"
   },
   "scripts": {
     "dev": "pnpm --filter awdp-site run dev",
@@ -26,4 +28,3 @@
     }
   }
 }
-
