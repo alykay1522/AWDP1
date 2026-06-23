@@ -15,6 +15,9 @@ export default defineConfig({
       // Use the inlined copy inside src/ — eliminates cross-workspace pnpm
       // catalog: resolution that breaks Vercel's isolated install
       "@workspace/api-client-react": path.resolve(siteDir, "src", "lib", "api-client", "index.ts"),
+      // Subpath alias: @workspace/api-client-react/src/generated/api.schemas
+      // resolves to the local inlined copy at src/lib/api-client/generated/api.schemas
+      "@workspace/api-client-react/src": path.resolve(siteDir, "src", "lib", "api-client"),
     },
     dedupe: ["react", "react-dom"],
   },
