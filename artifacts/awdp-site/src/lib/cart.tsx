@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { toast } from "@/components/ui/use-toast";
+
 
 // Swap this back to the generated import once the workspace package resolves
 export interface Product {
