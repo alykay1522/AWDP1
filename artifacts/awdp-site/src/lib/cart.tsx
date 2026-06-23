@@ -1,6 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
+
+// Swap this back to the generated import once the workspace package resolves
+export interface Product {
+  id: number;
+  name: string;
+  price: string | number;
+  [key: string]: unknown;
+}
 
 interface CartItem extends Product {
   quantity: number;
@@ -29,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
-  
+
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
