@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
-
-// Swap this back to the generated import once the workspace package resolves
 export interface Product {
   id: number;
   name: string;
@@ -56,10 +54,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...current, { ...product, quantity }];
     });
     setIsCartOpen(true);
-    toast({
-      title: "Added to Cart",
-      description: `${quantity}x ${product.name} added to your cart.`,
-    });
   };
 
   const removeFromCart = (productId: number) => {
