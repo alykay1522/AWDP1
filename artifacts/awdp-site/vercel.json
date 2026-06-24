@@ -1,20 +1,6 @@
 {
-  "framework": null,
-  "installCommand": "cd ../.. && node vercel-install.cjs",
-  "buildCommand": "cd ../.. && node vercel-build.cjs",
-  "outputDirectory": "dist/public",
-  "routes": [
-    { "src": "/api/admin/(.*)", "dest": "/api/admin/[...path]" },
-    { "src": "/api/checkout/(.*)", "dest": "/api/checkout/[...path]" },
-    { "src": "/api/paypal/(.*)", "dest": "/api/paypal/[...path]" },
-    { "src": "/api/products/(.*)", "dest": "/api/products/[...path]" },
-    { "src": "/api/catalog/(.*)", "dest": "/api/catalog/[...path]" },
-    { "src": "/api/storage/(.*)", "dest": "/api/storage/[...path]" },
-    { "src": "/api/contact", "dest": "/api/contact" },
-    { "src": "/api/parts-id", "dest": "/api/parts-id" },
-    { "src": "/api/ping", "dest": "/api/ping" },
-    { "src": "/api/(.*)", "dest": "/api/[...path]" },
-    { "src": "/assets/(.*)", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "dest": "/assets/$1" },
-    { "src": "/(.*)", "dest": "/api/ssr?path=$1" }
-  ]
+  "version": 2,
+  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }
