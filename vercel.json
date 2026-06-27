@@ -4,9 +4,9 @@
   "buildCommand": "node vercel-build.cjs",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
-    { "source": "/api", "destination": "/api/proxy" },
-    { "source": "/api/:path*", "destination": "/api/proxy?__awdp_path=:path*" },
-    { "source": "/sitemap.xml", "destination": "/api/proxy?__awdp_root=sitemap.xml" },
+    { "source": "/api", "destination": "/api/catalog-proxy" },
+    { "source": "/api/:path*", "destination": "/api/catalog-proxy?__awdp_path=:path*" },
+    { "source": "/sitemap.xml", "destination": "/api/catalog-proxy?__awdp_root=sitemap.xml" },
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [
