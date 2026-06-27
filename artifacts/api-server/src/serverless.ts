@@ -3,6 +3,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
 import { ensureCatalogNormalized } from "./lib/catalogNormalization";
+import { ensureCatalogSkuGuard } from "./lib/catalogSkuGuard";
 
 let readyPromise: Promise<void> | undefined;
 
@@ -32,7 +33,8 @@ function ensureReady(): Promise<void> {
         }
 
         const catalogSummary = await ensureCatalogNormalized();
-        logger.info({ catalogSummary }, "catalog normalization verified");
+        await ensureCatalogSkuGuard();
+        logger.info({ catalogSummary }, "catalog normalization and SKU guard verified");
       })
       .catch((error) => {
         readyPromise = undefined;
