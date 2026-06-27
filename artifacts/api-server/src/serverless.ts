@@ -2,8 +2,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
-import { ensureCatalogNormalized } from "./lib/catalogNormalization";
-import { ensureCatalogSkuGuard } from "./lib/catalogSkuGuard";
+import { ensureCatalogRecovered } from "./lib/catalogRecovery";
+import { ensureCatalogSkuGuardV2 } from "./lib/catalogSkuGuardV2";
 
 let readyPromise: Promise<void> | undefined;
 
@@ -32,9 +32,12 @@ function ensureReady(): Promise<void> {
           logger.info("serverless auto-created admin_sessions table");
         }
 
-        const catalogSummary = await ensureCatalogNormalized();
-        await ensureCatalogSkuGuard();
-        logger.info({ catalogSummary }, "catalog normalization and SKU guard verified");
+        const catalogRecovery = await ensureCatalogRecovered();
+        await ensureCatalogSkuGuardV2();
+        logger.info(
+          { catalogRecovery },
+          "catalog recovery and SKU guard verified",
+        );
       })
       .catch((error) => {
         readyPromise = undefined;
