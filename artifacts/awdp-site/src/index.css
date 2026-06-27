@@ -205,3 +205,11 @@
     @apply text-white;
   }
 }
+
+/* Header artwork should span the viewport at its natural aspect ratio. */
+img[alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"] {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+}
