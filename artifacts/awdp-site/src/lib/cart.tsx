@@ -12,6 +12,7 @@ export interface Product {
   name: string;
   price: string | number;
   selectedAttributes?: Record<string, string>;
+  catalogProductId?: number;
   [key: string]: unknown;
 }
 
@@ -20,11 +21,13 @@ export interface CartItem extends Product {
   cartLineKey: string;
 }
 
+type CartLineIdentifier = string | number;
+
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (cartLineKey: string) => void;
-  updateQuantity: (cartLineKey: string, quantity: number) => void;
+  removeFromCart: (identifier: CartLineIdentifier) => void;
+  updateQuantity: (identifier: CartLineIdentifier, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -34,28 +37,76 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+type SelectionWindow = Window & {
+  __awdpSelectedAttributes?: Record<string, string>;
+};
+
 function normalizedSelections(
   selections: Record<string, string> | undefined,
 ): Record<string, string> {
   if (!selections) return {};
   return Object.fromEntries(
     Object.entries(selections)
-      .filter(([, value]) => String(value).trim() !== "")
+      .map(([key, value]) => [key, String(value).trim()])
+      .filter(([, value]) => value !== "")
       .sort(([left], [right]) => left.localeCompare(right)),
   );
 }
 
+function productPageSelections(product: Product): Record<string, string> {
+  if (product.selectedAttributes) {
+    return normalizedSelections(product.selectedAttributes);
+  }
+  if (
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/product/")
+  ) {
+    return normalizedSelections(
+      (window as SelectionWindow).__awdpSelectedAttributes,
+    );
+  }
+  return {};
+}
+
+function baseProductId(product: Product): number {
+  return Number(product.catalogProductId ?? product.id);
+}
+
 function buildCartLineKey(product: Product): string {
-  return `${product.id}:${JSON.stringify(normalizedSelections(product.selectedAttributes))}`;
+  return `${baseProductId(product)}:${JSON.stringify(
+    normalizedSelections(product.selectedAttributes),
+  )}`;
+}
+
+function numericLineId(key: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < key.length; index++) {
+    hash ^= key.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash | 0) || 1;
 }
 
 function hydrateCartItem(item: Partial<CartItem> & Product): CartItem {
+  const catalogProductId = Number(item.catalogProductId ?? item.id);
+  const selectedAttributes = normalizedSelections(item.selectedAttributes);
+  const cartLineKey =
+    item.cartLineKey ||
+    `${catalogProductId}:${JSON.stringify(selectedAttributes)}`;
   return {
     ...item,
-    selectedAttributes: normalizedSelections(item.selectedAttributes),
+    id: numericLineId(cartLineKey),
+    catalogProductId,
+    selectedAttributes,
     quantity: Math.max(1, Number(item.quantity) || 1),
-    cartLineKey: item.cartLineKey || buildCartLineKey(item),
+    cartLineKey,
   };
+}
+
+function matchesLine(item: CartItem, identifier: CartLineIdentifier): boolean {
+  return typeof identifier === "number"
+    ? item.id === identifier
+    : item.cartLineKey === identifier;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -76,11 +127,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addToCart = (product: Product, quantity = 1) => {
-    const normalizedProduct = {
+    const catalogProductId = baseProductId(product);
+    const selectedAttributes = productPageSelections(product);
+    const normalizedProduct: Product = {
       ...product,
-      selectedAttributes: normalizedSelections(product.selectedAttributes),
+      catalogProductId,
+      selectedAttributes,
     };
     const cartLineKey = buildCartLineKey(normalizedProduct);
+    const lineId = numericLineId(cartLineKey);
 
     setItems((current) => {
       const existing = current.find((item) => item.cartLineKey === cartLineKey);
@@ -95,6 +150,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ...current,
         {
           ...normalizedProduct,
+          id: lineId,
           quantity,
           cartLineKey,
         },
@@ -103,20 +159,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (cartLineKey: string) => {
+  const removeFromCart = (identifier: CartLineIdentifier) => {
     setItems((current) =>
-      current.filter((item) => item.cartLineKey !== cartLineKey),
+      current.filter((item) => !matchesLine(item, identifier)),
     );
   };
 
-  const updateQuantity = (cartLineKey: string, quantity: number) => {
+  const updateQuantity = (
+    identifier: CartLineIdentifier,
+    quantity: number,
+  ) => {
     if (quantity <= 0) {
-      removeFromCart(cartLineKey);
+      removeFromCart(identifier);
       return;
     }
     setItems((current) =>
       current.map((item) =>
-        item.cartLineKey === cartLineKey ? { ...item, quantity } : item,
+        matchesLine(item, identifier) ? { ...item, quantity } : item,
       ),
     );
   };
