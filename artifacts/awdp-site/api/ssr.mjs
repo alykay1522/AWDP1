@@ -146,7 +146,13 @@ function staticMetadata(pathname) {
 
 async function productMetadata(pathname, origin) {
   if (!pathname.startsWith("/product/")) return null;
-  const sku = decodeURIComponent(pathname.slice("/product/".length));
+  const rawSku = pathname.slice("/product/".length);
+  let sku;
+  try {
+    sku = decodeURIComponent(rawSku);
+  } catch {
+    sku = rawSku;
+  }
   if (!sku) return null;
 
   try {
