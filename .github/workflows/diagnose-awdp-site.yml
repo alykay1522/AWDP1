@@ -1,0 +1,49 @@
+name: Diagnose AWDP Storefront Build
+
+on:
+  push:
+    paths:
+      - ".github/workflows/diagnose-awdp-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Capture build output
+        id: build
+        shell: bash
+        run: |
+          set +e
+          mkdir -p .diagnostics
+          pnpm --filter awdp-site run build > .diagnostics/awdp-site-build.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          cat .diagnostics/awdp-site-build.log
+          exit 0
+      - name: Commit diagnostic log
+        shell: bash
+        run: |
+          git config user.name "AWDP Build Diagnostics"
+          git config user.email "actions@users.noreply.github.com"
+          git add .diagnostics/awdp-site-build.log
+          git commit -m "chore: record storefront build diagnostic" || exit 0
+          git push
+      - name: Fail when build failed
+        if: steps.build.outputs.status != '0'
+        run: exit 1
