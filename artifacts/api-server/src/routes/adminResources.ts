@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { pdfResourcesTable } from "@workspace/db/schema";
+import { pdfResourcesTable, type PdfResource } from "@workspace/db/schema";
 import { eq, asc } from "drizzle-orm";
 
 const router = Router();
 
-const masterRollerWheelResource = {
-  id: "master-roller-wheel-catalog-2023-2024",
+const masterRollerWheelResource: PdfResource = {
+  id: -1,
   title: "Master Roller and Wheel Parts Guide — 2023–2024",
   brand: "All Brands",
   category: "Patio Doors",
