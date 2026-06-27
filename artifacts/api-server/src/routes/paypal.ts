@@ -14,6 +14,7 @@ const CartItemSchema = z.object({
   sku: z.string(),
   quantity: z.number().int().positive(),
   imageUrl: z.string().optional(),
+  selectedAttributes: z.record(z.string()).optional(),
   // name and price accepted but IGNORED — server re-prices from catalog
   name: z.string().optional(),
   price: z.number().optional(),
@@ -32,14 +33,34 @@ function generateOrderId(): string {
   return id;
 }
 
+function optionLabel(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 /**
  * Re-prices every cart item against the live catalog.
  * Throws if any SKU is unknown or not available for online purchase.
  */
 async function serverPriceItems(
-  rawItems: Array<{ sku: string; quantity: number; imageUrl?: string }>,
-): Promise<Array<{ sku: string; name: string; price: number; quantity: number; imageUrl?: string }>> {
-  const skus = rawItems.map((i) => i.sku);
+  rawItems: Array<{
+    sku: string;
+    quantity: number;
+    imageUrl?: string;
+    selectedAttributes?: Record<string, string>;
+  }>,
+): Promise<
+  Array<{
+    sku: string;
+    name: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string;
+    selectedAttributes?: Record<string, string>;
+  }>
+> {
+  const skus = rawItems.map((item) => item.sku);
 
   const dbProducts = await db
     .select({
@@ -51,27 +72,39 @@ async function serverPriceItems(
     .from(productsTable)
     .where(inArray(productsTable.sku, skus));
 
-  const productMap = new Map(dbProducts.map((p) => [p.sku, p]));
+  const productMap = new Map(dbProducts.map((product) => [product.sku, product]));
 
-  const missing = skus.filter((s) => !productMap.has(s));
+  const missing = skus.filter((sku) => !productMap.has(sku));
   if (missing.length > 0) {
     throw new Error(`Unknown SKU(s): ${missing.join(", ")}`);
   }
 
   return rawItems.map((item) => {
-    const p = productMap.get(item.sku)!;
-    const price = parseFloat(p.price as string);
+    const product = productMap.get(item.sku)!;
+    const price = parseFloat(product.price as string);
     if (price <= 0) {
       throw new Error(
-        `Item "${p.name}" (${item.sku}) is not available for online purchase. Please call 785-533-0244 for pricing.`,
+        `Item "${product.name}" (${item.sku}) is not available for online purchase. Please call 785-533-0244 for pricing.`,
       );
     }
+
+    const selectedAttributes = Object.fromEntries(
+      Object.entries(item.selectedAttributes ?? {})
+        .map(([key, value]) => [key, String(value).trim()])
+        .filter(([, value]) => value !== "")
+        .sort(([left], [right]) => left.localeCompare(right)),
+    );
+    const optionSummary = Object.entries(selectedAttributes)
+      .map(([key, value]) => `${optionLabel(key)}: ${value}`)
+      .join(", ");
+
     return {
-      sku: p.sku,
-      name: p.name,
+      sku: product.sku,
+      name: optionSummary ? `${product.name} (${optionSummary})` : product.name,
       price,
       quantity: item.quantity,
-      imageUrl: p.imageUrl ?? undefined,
+      imageUrl: product.imageUrl ?? undefined,
+      selectedAttributes,
     };
   });
 }
@@ -84,12 +117,11 @@ router.post("/paypal/create-order", async (req, res) => {
       return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
     }
 
-    // Re-price every item from the catalog — ignore client-supplied prices
     let items: Awaited<ReturnType<typeof serverPriceItems>>;
     try {
       items = await serverPriceItems(parsed.data.items);
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
 
     const ORDER_MINIMUM = 50;
@@ -100,10 +132,8 @@ router.post("/paypal/create-order", async (req, res) => {
       });
     }
 
-    // Calculate shipping at the highest standard carrier rate
     const shipping = calculateShipping(subtotal);
     const total = subtotal + shipping.cost;
-
     const orderId = generateOrderId();
 
     const paypalOrder = await createPayPalOrder({
@@ -117,7 +147,6 @@ router.post("/paypal/create-order", async (req, res) => {
       shippingCost: shipping.cost,
     });
 
-    // Save pending order to DB using server-verified prices + shipping
     await db.insert(ordersTable).values({
       orderId,
       customerName: "Customer",
@@ -129,23 +158,31 @@ router.post("/paypal/create-order", async (req, res) => {
       status: "pending",
     });
 
-    res.json({ paypalOrderId: paypalOrder.id, orderId, shippingCost: shipping.cost, shippingLabel: shipping.label, total });
-  } catch (err: any) {
-    logger.error({ err }, "PayPal create-order error");
-    res.status(500).json({ error: err.message || "Failed to create PayPal order" });
+    res.json({
+      paypalOrderId: paypalOrder.id,
+      orderId,
+      shippingCost: shipping.cost,
+      shippingLabel: shipping.label,
+      total,
+    });
+  } catch (error: any) {
+    logger.error({ error }, "PayPal create-order error");
+    res.status(500).json({ error: error.message || "Failed to create PayPal order" });
   }
 });
 
 // POST /api/paypal/capture-order
 router.post("/paypal/capture-order", async (req, res) => {
   try {
-    const { paypalOrderId, orderId } = req.body as { paypalOrderId: string; orderId: string };
+    const { paypalOrderId, orderId } = req.body as {
+      paypalOrderId: string;
+      orderId: string;
+    };
 
     if (!paypalOrderId || !orderId) {
       return res.status(400).json({ error: "paypalOrderId and orderId are required" });
     }
 
-    // Fetch the local pending order BEFORE capture so we can validate amounts
     const [localOrder] = await db
       .select({ orderId: ordersTable.orderId, total: ordersTable.total, status: ordersTable.status })
       .from(ordersTable)
@@ -162,34 +199,30 @@ router.post("/paypal/capture-order", async (req, res) => {
     const capture = await capturePayPalOrder(paypalOrderId);
 
     if (capture.status === "COMPLETED") {
-      // Verify that the captured PayPal order's reference_id matches the local orderId.
-      // This prevents an attacker from paying for a cheap order and marking an expensive
-      // local order as paid by substituting the expensive orderId in this request.
       const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
       if (!capturedReferenceId || capturedReferenceId !== orderId) {
         logger.error(
           { capturedReferenceId, requestedOrderId: orderId },
-          "[PayPal] reference_id mismatch"
+          "[PayPal] reference_id mismatch",
         );
         return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
       }
 
-      // Defense-in-depth: verify captured amount matches local order total (subtotal + shipping)
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
-      const localTotal = parseFloat(localOrder.total as string); // total already includes shipping
+      const localTotal = parseFloat(localOrder.total as string);
       if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
-          "[PayPal] Amount mismatch"
+          "[PayPal] Amount mismatch",
         );
         return res.status(400).json({ error: "Captured payment amount does not match order total." });
       }
 
       const payer = capture.payer;
-      const pu = capture.purchase_units?.[0];
-      const shipping = pu?.shipping;
-      const captureId = pu?.payments?.captures?.[0]?.id;
+      const purchaseUnit = capture.purchase_units?.[0];
+      const shipping = purchaseUnit?.shipping;
+      const captureId = purchaseUnit?.payments?.captures?.[0]?.id;
 
       const customerEmail = payer?.email_address || "";
       const customerName =
@@ -218,7 +251,6 @@ router.post("/paypal/capture-order", async (req, res) => {
         })
         .where(eq(ordersTable.orderId, orderId));
 
-      // Fetch order for email
       const [order] = await db
         .select()
         .from(ordersTable)
@@ -226,31 +258,31 @@ router.post("/paypal/capture-order", async (req, res) => {
         .limit(1);
 
       if (order) {
-        const lineItems = Array.isArray(order.lineItems) ? order.lineItems as any[] : [];
+        const lineItems = Array.isArray(order.lineItems) ? (order.lineItems as any[]) : [];
         sendOrderNotification({
           orderId: order.orderId,
           customerName,
           customerEmail,
           shippingAddress,
-          items: lineItems.map((i: any) => ({
-            name: i.name,
-            sku: i.sku,
-            price: Number(i.price),
-            quantity: Number(i.quantity),
+          items: lineItems.map((item: any) => ({
+            name: item.name,
+            sku: item.sku,
+            price: Number(item.price),
+            quantity: Number(item.quantity),
           })),
           subtotal: order.subtotal,
           total: order.total,
           paymentMethod: "paypal",
-        }).catch((err) => logger.error({ err }, "[email] sendOrderNotification error"));
+        }).catch((error) => logger.error({ error }, "[email] sendOrderNotification error"));
       }
 
       res.json({ success: true, orderId, captureId });
     } else {
       res.status(400).json({ error: "Payment not completed", status: capture.status });
     }
-  } catch (err: any) {
-    logger.error({ err }, "PayPal capture error");
-    res.status(500).json({ error: err.message || "Failed to capture PayPal payment" });
+  } catch (error: any) {
+    logger.error({ error }, "PayPal capture error");
+    res.status(500).json({ error: error.message || "Payment capture failed" });
   }
 });
 
