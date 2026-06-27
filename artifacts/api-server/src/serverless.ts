@@ -2,21 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
-
-/** Vercel captures pino lines; localhost debug ingest may also receive the same payload. */
-function agentDebugLog(payload: Record<string, unknown>) {
-  logger.info({ agentDebug: true, ...payload }, "agent-debug");
-  if (process.env.VERCEL) {
-    console.error("[agent-debug]", JSON.stringify({ sessionId: "0e9545", ...payload, t: Date.now() }));
-  }
-  // #region agent log
-  fetch("http://127.0.0.1:7256/ingest/d6a176f9-8366-4471-9af1-d6201858799f", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "0e9545" },
-    body: JSON.stringify({ sessionId: "0e9545", timestamp: Date.now(), ...payload }),
-  }).catch(() => {});
-  // #endregion
-}
+import { ensureCatalogNormalized } from "./lib/catalogNormalization";
 
 let readyPromise: Promise<void> | undefined;
 
@@ -28,7 +14,6 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   CONSTRAINT session_pkey PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE
 )`;
 
-/** Non-CONCURRENTLY index: safe for rare cold-start DDL when the table was missing. */
 const ADMIN_SESSIONS_INDEX_DDL = `
 CREATE INDEX IF NOT EXISTS idx_session_expire ON admin_sessions (expire)`;
 
@@ -36,127 +21,68 @@ function ensureReady(): Promise<void> {
   if (!readyPromise) {
     readyPromise = pool
       .query<{ exists: boolean }>(`
-      SELECT to_regclass('public.admin_sessions') IS NOT NULL AS "exists"
-    `)
+        SELECT to_regclass('public.admin_sessions') IS NOT NULL AS "exists"
+      `)
       .then(async (result) => {
-        let exists = result.rows[0]?.exists === true;
-        agentDebugLog({
-          runId: "post-fix",
-          hypothesisId: "H1",
-          location: "serverless.ts:ensureReady:afterQuery",
-          message: "admin_sessions regclass check",
-          data: { adminSessionsTableExists: exists },
-        });
+        const exists = result.rows[0]?.exists === true;
         if (!exists) {
-          agentDebugLog({
-            runId: "post-fix",
-            hypothesisId: "H1",
-            location: "serverless.ts:ensureReady:autoDdl",
-            message: "admin_sessions missing; running CREATE TABLE + index",
-            data: {},
-          });
           await pool.query(ADMIN_SESSIONS_DDL);
           await pool.query(ADMIN_SESSIONS_INDEX_DDL);
-          exists = true;
-          agentDebugLog({
-            runId: "post-fix",
-            hypothesisId: "H1",
-            location: "serverless.ts:ensureReady:autoDdlDone",
-            message: "admin_sessions auto DDL finished",
-            data: { adminSessionsTableExists: exists },
-          });
           logger.info("serverless auto-created admin_sessions table");
         }
-        logger.info("serverless admin_sessions table verified");
+
+        const catalogSummary = await ensureCatalogNormalized();
+        logger.info({ catalogSummary }, "catalog normalization verified");
       })
-      .catch((err) => {
+      .catch((error) => {
         readyPromise = undefined;
-        logger.warn({ err }, "serverless database startup failed");
-        agentDebugLog({
-          runId: "post-fix",
-          hypothesisId: "H1-H2",
-          location: "serverless.ts:ensureReady:catch",
-          message: "ensureReady failed",
-          data: {
-            errName: err && typeof err === "object" && "name" in err ? String((err as Error).name) : "unknown",
-            errMessage: err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400),
-          },
-        });
-        throw err;
+        logger.warn({ error }, "serverless database startup failed");
+        throw error;
       });
   }
 
   return readyPromise;
 }
 
-function sendJson503(res: ServerResponse, body: Record<string, unknown>) {
+function sendJson(
+  res: ServerResponse,
+  statusCode: number,
+  body: Record<string, unknown>,
+) {
   if (res.headersSent || res.writableEnded) return;
-  res.statusCode = 503;
+  res.statusCode = statusCode;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(body));
 }
 
-function sendJson500(res: ServerResponse, body: Record<string, unknown>) {
-  if (res.headersSent || res.writableEnded) return;
-  res.statusCode = 500;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(body));
-}
-
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  const url = typeof (req as { url?: string }).url === "string" ? (req as { url: string }).url.slice(0, 200) : "";
-  agentDebugLog({
-    runId: "post-fix",
-    hypothesisId: "H0",
-    location: "serverless.ts:handler:entry",
-    message: "vercel serverless handler entry",
-    data: { method: req.method, url },
-  });
+export default async function handler(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
   try {
     await ensureReady();
-  } catch (err) {
-    agentDebugLog({
-      runId: "post-fix",
-      hypothesisId: "H1-H2",
-      location: "serverless.ts:handler:ensureReadyCatch",
-      message: "ensureReady rejected in handler",
-      data: {
-        errName: err && typeof err === "object" && "name" in err ? String((err as Error).name) : "unknown",
-        errMessage: err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400),
-      },
-    });
+  } catch (error) {
     const detail =
-      err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400);
-    sendJson503(res, {
-      error: "Admin API database is unavailable or session storage could not be initialized.",
+      error && typeof error === "object" && "message" in error
+        ? String((error as Error).message).slice(0, 400)
+        : String(error).slice(0, 400);
+    sendJson(res, 503, {
+      error: "API database initialization failed.",
       detail,
     });
     return;
   }
-  agentDebugLog({
-    runId: "post-fix",
-    hypothesisId: "H4-H5",
-    location: "serverless.ts:handler:beforeApp",
-    message: "calling express app",
-    data: { method: req.method, url },
-  });
+
   try {
     await Promise.resolve(app(req, res));
-  } catch (err) {
-    agentDebugLog({
-      runId: "post-fix",
-      hypothesisId: "H6",
-      location: "serverless.ts:handler:expressCatch",
-      message: "express app threw or rejected",
-      data: {
-        errName: err && typeof err === "object" && "name" in err ? String((err as Error).name) : "unknown",
-        errMessage: err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400),
-      },
-    });
+  } catch (error) {
+    logger.error({ error }, "serverless request handler failed");
     const detail =
-      err && typeof err === "object" && "message" in err ? String((err as Error).message).slice(0, 400) : String(err).slice(0, 400);
-    sendJson500(res, {
-      error: "Admin API request failed during handling.",
+      error && typeof error === "object" && "message" in error
+        ? String((error as Error).message).slice(0, 400)
+        : String(error).slice(0, 400);
+    sendJson(res, 500, {
+      error: "API request failed during handling.",
       detail,
     });
   }
