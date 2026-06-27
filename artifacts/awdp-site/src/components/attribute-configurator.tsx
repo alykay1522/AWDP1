@@ -49,45 +49,15 @@ const ATTR_LABELS: Record<string, string> = {
 };
 
 const HIDDEN_KEYS = new Set(["subcategory", "original_sku"]);
-
 const ATTR_ORDER = [
-  "balance_type",
-  "operator_type",
-  "part_type",
-  "series",
-  "length",
-  "length_inches",
-  "diameter",
-  "arm_length_inches",
-  "weight_code",
-  "tip_color",
-  "terminal_color",
-  "color",
-  "colors",
-  "fastener_color",
-  "shoe_type",
-  "top_guide",
-  "mount_type",
-  "hand",
-  "coastal_stainless",
-  "configuration",
-  "adjustment",
-  "door_type",
-  "material",
-  "wheel_material",
-  "wheel_diameter_inches",
-  "housing_material",
-  "profile_width",
-  "dimension",
-  "sold_by",
-  "coil_weight",
-  "sash_position",
-  "jamb_liner_type",
-  "keyed",
-  "oem_family",
-  "brand",
-  "brand_compatibility",
-  "compatibility",
+  "balance_type", "operator_type", "part_type", "series", "length",
+  "length_inches", "diameter", "arm_length_inches", "weight_code",
+  "tip_color", "terminal_color", "color", "colors", "fastener_color",
+  "shoe_type", "top_guide", "mount_type", "hand", "coastal_stainless",
+  "configuration", "adjustment", "door_type", "material", "wheel_material",
+  "wheel_diameter_inches", "housing_material", "profile_width", "dimension",
+  "sold_by", "coil_weight", "sash_position", "jamb_liner_type", "keyed",
+  "oem_family", "brand", "brand_compatibility", "compatibility",
 ];
 
 const BALANCE_TYPE_COLORS: Record<string, string> = {
@@ -102,17 +72,20 @@ const BALANCE_TYPE_COLORS: Record<string, string> = {
   OEM: "bg-rose-100 text-rose-800 border-rose-200",
 };
 
+type SelectionWindow = Window & {
+  __awdpSelectedAttributes?: Record<string, string>;
+};
+
+function publishSelection(selection: Record<string, string>) {
+  if (typeof window !== "undefined") {
+    (window as SelectionWindow).__awdpSelectedAttributes = selection;
+  }
+}
+
 function normalizeToArray(value: unknown): string[] {
   if (value === null || value === undefined) return [];
   if (Array.isArray(value)) {
-    return [
-      ...new Set(
-        value
-          .map(String)
-          .map((item) => item.trim())
-          .filter(Boolean),
-      ),
-    ];
+    return [...new Set(value.map(String).map((item) => item.trim()).filter(Boolean))];
   }
   if (typeof value === "boolean") return [value ? "Yes" : "No"];
   const text = String(value).trim();
@@ -135,12 +108,12 @@ export function AttributeConfigurator({
   const allKeys = useMemo(() => {
     if (!attributes) return [];
     const visibleKeys = Object.keys(attributes).filter(
-      (key) =>
-        !HIDDEN_KEYS.has(key) && normalizeToArray(attributes[key]).length > 0,
+      (key) => !HIDDEN_KEYS.has(key) && normalizeToArray(attributes[key]).length > 0,
     );
-    const orderedKeys = ATTR_ORDER.filter((key) => visibleKeys.includes(key));
-    const extraKeys = visibleKeys.filter((key) => !ATTR_ORDER.includes(key));
-    return [...orderedKeys, ...extraKeys];
+    return [
+      ...ATTR_ORDER.filter((key) => visibleKeys.includes(key)),
+      ...visibleKeys.filter((key) => !ATTR_ORDER.includes(key)),
+    ];
   }, [attributes]);
 
   const initialSelection = useMemo(() => {
@@ -153,12 +126,13 @@ export function AttributeConfigurator({
     return next;
   }, [allKeys, attributes]);
 
-  const [selection, setSelection] =
-    useState<Record<string, string>>(initialSelection);
+  const [selection, setSelection] = useState<Record<string, string>>(initialSelection);
 
   useEffect(() => {
     setSelection(initialSelection);
+    publishSelection(initialSelection);
     onSelectionChange?.(initialSelection);
+    return () => publishSelection({});
   }, [initialSelection, onSelectionChange]);
 
   if (!attributes || allKeys.length === 0) return null;
@@ -166,27 +140,22 @@ export function AttributeConfigurator({
   const updateSelection = (key: string, value: string) => {
     setSelection((current) => {
       const next = { ...current, [key]: value };
+      publishSelection(next);
       onSelectionChange?.(next);
       return next;
     });
   };
-
-  const isBrandCompat = (key: string) =>
-    key === "brand_compatibility" || key === "compatibility";
 
   return (
     <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Tag className="w-4 h-4 text-primary" />
-          <span className="text-sm font-bold text-slate-800">
-            Select Product Options
-          </span>
+          <span className="text-sm font-bold text-slate-800">Select Product Options</span>
         </div>
         {soldAs && (
           <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
-            <Package className="w-3 h-3" />
-            Sold as: {soldAs}
+            <Package className="w-3 h-3" /> Sold as: {soldAs}
           </div>
         )}
       </div>
@@ -194,61 +163,32 @@ export function AttributeConfigurator({
       <div className="divide-y divide-slate-100">
         {allKeys.map((key) => {
           const values = normalizeToArray(attributes[key]);
-          const label =
-            ATTR_LABELS[key] ??
-            key
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (character) => character.toUpperCase());
-          const isCompat = isBrandCompat(key);
-
+          const label = ATTR_LABELS[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+          const isCompat = key === "brand_compatibility" || key === "compatibility";
           return (
-            <div
-              key={key}
-              className="grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1fr)] gap-2 sm:gap-4 px-4 py-3 items-center"
-            >
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                {label}
-              </label>
-
+            <div key={key} className="grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1fr)] gap-2 sm:gap-4 px-4 py-3 items-center">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</label>
               {values.length > 1 ? (
-                <Select
-                  value={selection[key] ?? values[0]}
-                  onValueChange={(value) => updateSelection(key, value)}
-                >
-                  <SelectTrigger
-                    className="w-full bg-white"
-                    aria-label={`Select ${label}`}
-                  >
+                <Select value={selection[key] ?? values[0]} onValueChange={(value) => updateSelection(key, value)}>
+                  <SelectTrigger className="w-full bg-white" aria-label={`Select ${label}`}>
                     <SelectValue placeholder={`Select ${label}`} />
                   </SelectTrigger>
                   <SelectContent>
-                    {values.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {value}
-                      </SelectItem>
-                    ))}
+                    {values.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}
                   </SelectContent>
                 </Select>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {values.map((value) => {
-                    const balanceTypeColor =
-                      key === "balance_type"
-                        ? (BALANCE_TYPE_COLORS[value] ??
-                          "bg-slate-100 text-slate-700 border-slate-200")
-                        : null;
+                    const balanceTypeColor = key === "balance_type"
+                      ? (BALANCE_TYPE_COLORS[value] ?? "bg-slate-100 text-slate-700 border-slate-200")
+                      : null;
                     return (
-                      <span
-                        key={value}
-                        className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-md border ${
-                          balanceTypeColor ??
-                          (isCompat
-                            ? "bg-slate-50 text-slate-600 border-slate-200"
-                            : "bg-white text-slate-800 border-slate-300")
-                        }`}
-                      >
-                        {value}
-                      </span>
+                      <span key={value} className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-md border ${
+                        balanceTypeColor ?? (isCompat
+                          ? "bg-slate-50 text-slate-600 border-slate-200"
+                          : "bg-white text-slate-800 border-slate-300")
+                      }`}>{value}</span>
                     );
                   })}
                 </div>
@@ -263,17 +203,11 @@ export function AttributeConfigurator({
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-amber-800 mb-1">
-                Before Ordering
-              </p>
+              <p className="text-xs font-bold text-amber-800 mb-1">Before Ordering</p>
               <ul className="space-y-0.5">
                 {notes.map((note) => (
-                  <li
-                    key={note}
-                    className="flex items-center gap-1.5 text-xs text-amber-700"
-                  >
-                    <CheckCircle2 className="w-3 h-3 shrink-0" />
-                    {note}
+                  <li key={note} className="flex items-center gap-1.5 text-xs text-amber-700">
+                    <CheckCircle2 className="w-3 h-3 shrink-0" /> {note}
                   </li>
                 ))}
               </ul>
