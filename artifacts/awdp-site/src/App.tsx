@@ -1,5 +1,5 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
@@ -13,7 +13,7 @@ import { useAdminAuth } from "./lib/useAdminAuth.js";
 import NotFound from "./pages/not-found.jsx";
 import { ErrorBoundary } from "./components/error-boundary.jsx";
 
-// Public pages
+// Public storefront pages remain eager so customer navigation stays immediate.
 import Home from "./pages/home.jsx";
 import Shop from "./pages/shop.jsx";
 import ProductDetail from "./pages/product.jsx";
@@ -33,23 +33,25 @@ import GuideDoorLock from "./pages/guide-door-lock.jsx";
 import GuideGlazingBead from "./pages/guide-glazing-bead.jsx";
 import Resources from "./pages/resources.jsx";
 import BalanceWizard from "./components/BalanceWizard.jsx";
-// Admin pages
-import AdminLogin from "./pages/admin-login.jsx";
-import AdminDashboard from "./pages/admin-dashboard.jsx";
-import AdminProductsList from "./pages/admin-products-list.jsx";
-import AdminNewProduct from "./pages/admin-new-product.jsx";
-import AdminOrders from "./pages/admin-orders.jsx";
-import AdminCategories from "./pages/admin-categories.jsx";
-import AdminPartsIdList from "./pages/admin-parts-id-list.jsx";
-import AdminContactsList from "./pages/admin-contacts-list.jsx";
-import AdminPrices from "./pages/admin-prices.jsx";
-import AdminSettings from "./pages/admin-settings.jsx";
-import AdminImages from "./pages/admin-images.jsx";
-import AdminBulkEditor from "./pages/admin-bulk-editor.jsx";
-import AdminCsvImport from "./pages/admin-csv-import.jsx";
-import AdminContent from "./pages/admin-content.jsx";
-import AdminResourcesPage from "./pages/admin-resources.jsx";
-import AdminPriceSync from "./pages/admin-price-sync.jsx";
+
+// Admin code is never needed by storefront visitors. Keeping it in separate
+// chunks materially reduces the initial customer-facing JavaScript payload.
+const AdminLogin = lazy(() => import("./pages/admin-login.jsx"));
+const AdminDashboard = lazy(() => import("./pages/admin-dashboard.jsx"));
+const AdminProductsList = lazy(() => import("./pages/admin-products-list.jsx"));
+const AdminNewProduct = lazy(() => import("./pages/admin-new-product.jsx"));
+const AdminOrders = lazy(() => import("./pages/admin-orders.jsx"));
+const AdminCategories = lazy(() => import("./pages/admin-categories.jsx"));
+const AdminPartsIdList = lazy(() => import("./pages/admin-parts-id-list.jsx"));
+const AdminContactsList = lazy(() => import("./pages/admin-contacts-list.jsx"));
+const AdminPrices = lazy(() => import("./pages/admin-prices.jsx"));
+const AdminSettings = lazy(() => import("./pages/admin-settings.jsx"));
+const AdminImages = lazy(() => import("./pages/admin-images.jsx"));
+const AdminBulkEditor = lazy(() => import("./pages/admin-bulk-editor.jsx"));
+const AdminCsvImport = lazy(() => import("./pages/admin-csv-import.jsx"));
+const AdminContent = lazy(() => import("./pages/admin-content.jsx"));
+const AdminResourcesPage = lazy(() => import("./pages/admin-resources.jsx"));
+const AdminPriceSync = lazy(() => import("./pages/admin-price-sync.jsx"));
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -61,18 +63,26 @@ function ScrollToTop() {
 
 const queryClient = new QueryClient();
 
+function AdminLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center" role="status" aria-live="polite">
+      <div className="text-slate-500 text-sm">Loading admin tools…</div>
+    </div>
+  );
+}
+
 function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?: () => void }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center">
         <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-          <span className="text-3xl">⚠️</span>
+          <span className="text-3xl" aria-hidden="true">⚠️</span>
         </div>
         <h2 className="text-2xl font-semibold text-slate-900 mb-2">Admin failed to load</h2>
         <p className="text-slate-600 mb-6">
           Something went wrong while loading the admin panel. This could be a temporary connection issue or a component error.
         </p>
-        
+
         <div className="space-y-3">
           <button
             onClick={() => {
@@ -83,15 +93,15 @@ function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?:
           >
             Try again
           </button>
-          
+
           <button
-            onClick={() => window.location.href = "/admin/login"}
+            onClick={() => { window.location.href = "/admin/login"; }}
             className="w-full px-4 py-2.5 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors"
           >
             Go to login
           </button>
 
-          <a 
+          <a
             href="mailto:info@allwindowdoorparts.com?subject=Admin%20Panel%20Error"
             className="block text-sm text-slate-500 hover:text-slate-700 mt-4"
           >
@@ -115,25 +125,19 @@ function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?:
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, isError, error } = useAdminAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-400 text-sm">Loading admin…</div>
-      </div>
-    );
-  }
+  if (isLoading) return <AdminLoadingFallback />;
 
   if (isError) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="max-w-md text-center">
-          <div className="text-red-600 mb-3 text-4xl">🔒</div>
+          <div className="text-red-600 mb-3 text-4xl" aria-hidden="true">🔒</div>
           <h3 className="text-xl font-semibold mb-2">Unable to verify admin access</h3>
           <p className="text-slate-600 mb-4">
             We couldn't check your authentication status. Please try logging in again.
           </p>
           <button
-            onClick={() => window.location.href = "/admin/login"}
+            onClick={() => { window.location.href = "/admin/login"; }}
             className="px-6 py-2 bg-primary text-white rounded-lg font-medium"
           >
             Go to Admin Login
@@ -144,24 +148,13 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Redirect to="/admin/login" replace />;
-  }
-
+  if (!isAuthenticated) return <Redirect to="/admin/login" replace />;
   return <>{children}</>;
 }
 
-function AppContent() {
-  const [location] = useLocation();
-
-  const normalized = (location || "/").replace(/\/$/, "") || "/";
-
-  if (normalized === "/admin/login") {
-    return <AdminLogin />;
-  }
-
-  if (normalized.startsWith("/admin")) {
-    return (
+function AdminRoutes() {
+  return (
+    <Suspense fallback={<AdminLoadingFallback />}>
       <ErrorBoundary fallback={<AdminErrorFallback />}>
         <AdminGuard>
           <AdminLayout>
@@ -186,8 +179,25 @@ function AppContent() {
           </AdminLayout>
         </AdminGuard>
       </ErrorBoundary>
+    </Suspense>
+  );
+}
+
+function AppContent() {
+  const [location] = useLocation();
+  const normalized = (location || "/").replace(/\/$/, "") || "/";
+
+  if (normalized === "/admin/login") {
+    return (
+      <Suspense fallback={<AdminLoadingFallback />}>
+        <ErrorBoundary fallback={<AdminErrorFallback />}>
+          <AdminLogin />
+        </ErrorBoundary>
+      </Suspense>
     );
   }
+
+  if (normalized.startsWith("/admin")) return <AdminRoutes />;
 
   return (
     <Layout>

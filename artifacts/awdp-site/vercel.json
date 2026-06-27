@@ -1,6 +1,47 @@
 {
   "version": 2,
   "buildCommand": "pnpm install --frozen-lockfile=false && pnpm build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  "outputDirectory": "dist/public",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/", "destination": "/api/ssr?path=/" },
+    { "source": "/shop", "destination": "/api/ssr?path=/shop" },
+    { "source": "/categories", "destination": "/api/ssr?path=/categories" },
+    { "source": "/parts-identification", "destination": "/api/ssr?path=/parts-identification" },
+    { "source": "/identify-balance", "destination": "/api/ssr?path=/identify-balance" },
+    { "source": "/guides", "destination": "/api/ssr?path=/guides" },
+    { "source": "/guides/:slug", "destination": "/api/ssr?path=/guides/:slug" },
+    { "source": "/product/:sku", "destination": "/api/ssr?path=/product/:sku" },
+    { "source": "/resources", "destination": "/api/ssr?path=/resources" },
+    { "source": "/about", "destination": "/api/ssr?path=/about" },
+    { "source": "/contact", "destination": "/api/ssr?path=/contact" },
+    { "source": "/policies", "destination": "/api/ssr?path=/policies" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(self \"https://*.paypal.com\")" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self' https://*.paypal.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://*.paypal.com https://*.paypalobjects.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.paypal.com; frame-src https://*.paypal.com; upgrade-insecure-requests" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/resources/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    }
+  ]
 }
