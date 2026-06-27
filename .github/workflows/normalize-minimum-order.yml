@@ -1,0 +1,109 @@
+name: Normalize minimum order copy
+
+on:
+  push:
+    paths:
+      - ".github/workflows/normalize-minimum-order.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove outdated under-$50 shipping language
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path(".")
+          product = root / "artifacts/awdp-site/src/pages/product.tsx"
+          layout = root / "artifacts/awdp-site/src/components/layout.tsx"
+          home = root / "artifacts/awdp-site/src/pages/home.tsx"
+
+          # Remove the outdated warning from individual product listings entirely.
+          text = product.read_text(encoding="utf-8")
+          product_pattern = re.compile(
+              r'\n\s*<div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 font-semibold text-xs mt-1">\s*'
+              r'<AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />\s*'
+              r'Orders under \$50 may require additional shipping charges — we\'ll contact you before processing\s*'
+              r'</div>',
+              re.MULTILINE,
+          )
+          text, product_count = product_pattern.subn("", text)
+          product.write_text(text, encoding="utf-8")
+
+          # Keep a concise, accurate minimum-order notice in the global footer.
+          text = layout.read_text(encoding="utf-8")
+          old_footer = "Orders under $50 may require additional shipping. We'll contact you before processing."
+          new_footer = "Minimum merchandise order: $50.00."
+          footer_count = text.count(old_footer)
+          text = text.replace(old_footer, new_footer)
+          layout.write_text(text, encoding="utf-8")
+
+          # Make both the visible FAQ and FAQ structured data match the enforced rule.
+          text = home.read_text(encoding="utf-8")
+          old_faq = "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing."
+          new_faq = "Our minimum merchandise order is $50. Checkout is available once the cart subtotal reaches $50."
+          faq_count = text.count(old_faq)
+          text = text.replace(old_faq, new_faq)
+          home.write_text(text, encoding="utf-8")
+
+          # Remove equivalent outdated wording from generated text bundles, if present.
+          replacements = {
+              "Orders under $50 may require additional shipping charges — we'll contact you before processing": "$50 minimum merchandise order required.",
+              "Orders under $50 may require additional shipping. We'll contact you before processing.": "Minimum merchandise order: $50.00.",
+              "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing.": new_faq,
+          }
+          extensions = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".html", ".json", ".md"}
+          for path in (root / "artifacts").rglob("*"):
+              if not path.is_file() or path.suffix.lower() not in extensions:
+                  continue
+              try:
+                  body = path.read_text(encoding="utf-8")
+              except UnicodeDecodeError:
+                  continue
+              updated = body
+              for old, new in replacements.items():
+                  updated = updated.replace(old, new)
+              if updated != body:
+                  path.write_text(updated, encoding="utf-8")
+
+          checkout = (root / "artifacts/api-server/src/routes/checkout.ts").read_text(encoding="utf-8")
+          cart = layout.read_text(encoding="utf-8")
+          assert "if (subtotal < 50)" in checkout, "Server-side $50 minimum enforcement is missing"
+          assert "const ORDER_MINIMUM = 50" in cart, "Cart-side $50 minimum enforcement is missing"
+          assert product_count >= 1, "Product-page warning was not found"
+          assert footer_count >= 1, "Footer warning was not found"
+          assert faq_count >= 2, "Expected visible and structured-data FAQ copies"
+          PY
+
+      - name: Verify outdated copy is gone
+        shell: bash
+        run: |
+          ! grep -RIn --exclude-dir=node_modules --exclude-dir=.git \
+            -e "Orders under \$50 may require additional shipping" \
+            -e "Orders below \$50 may require additional handling charges" \
+            artifacts
+          git diff --check
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "AWDP Site Maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add artifacts
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "fix: clarify and enforce $50 minimum order copy"
+          git push
