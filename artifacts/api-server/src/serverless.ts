@@ -72,7 +72,14 @@ async function handleRestore(req: IncomingMessage, res: ServerResponse) {
   if (action === "chunk") {
     const part = Number(url.searchParams.get("part"));
     const data = url.searchParams.get("data") ?? "";
-    if (!Number.isInteger(part) || part < 0 || part > 20 || data.length < 1 || data.length > 3500) {
+    if (
+      !Number.isInteger(part) ||
+      part < 0 ||
+      part > 20 ||
+      data.length < 1 ||
+      data.length > 3500 ||
+      !/^[0-9a-f]+$/i.test(data)
+    ) {
       sendJson(res, 400, { error: "Invalid restore chunk" });
       return true;
     }
@@ -105,7 +112,7 @@ async function handleRestore(req: IncomingMessage, res: ServerResponse) {
     }
 
     const encoded = keys.map((key) => values.get(key)).join("");
-    const decoded = gunzipSync(Buffer.from(encoded, "base64url")).toString("utf8");
+    const decoded = gunzipSync(Buffer.from(encoded, "hex")).toString("utf8");
     const products = JSON.parse(decoded) as Array<Record<string, unknown>>;
     const skus = products.map((product) => String(product.sku ?? ""));
     if (
