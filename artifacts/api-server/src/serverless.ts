@@ -4,6 +4,7 @@ import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
 import { ensureCatalogNormalized } from "./lib/catalogNormalization";
 import { ensureCatalogSkuGuard } from "./lib/catalogSkuGuard";
+import { ensureCatalogSeeded } from "./lib/catalogSeed";
 
 let readyPromise: Promise<void> | undefined;
 
@@ -34,7 +35,11 @@ function ensureReady(): Promise<void> {
 
         const catalogSummary = await ensureCatalogNormalized();
         await ensureCatalogSkuGuard();
-        logger.info({ catalogSummary }, "catalog normalization and SKU guard verified");
+        const seedSummary = await ensureCatalogSeeded();
+        logger.info(
+          { catalogSummary, seedSummary },
+          "catalog normalization, SKU guard, and recovery seed verified",
+        );
       })
       .catch((error) => {
         readyPromise = undefined;
