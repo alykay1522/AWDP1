@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const siteRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const siteRoot = path.resolve(scriptDir, "..");
 const indexPath = path.join(siteRoot, "dist/public/index.html");
 const vercelPath = path.join(siteRoot, "vercel.json");
 const robotsPath = path.join(siteRoot, "public/robots.txt");
@@ -30,7 +32,11 @@ assert(!html.includes("PROPERTY_ID/WIDGET_ID"), "no placeholder chat widget is s
 assert(!html.includes("localhost:3000"), "production HTML contains no localhost API URL");
 
 assert(vercel.outputDirectory === "dist/public", "Vercel serves the actual Vite output directory");
-assert(Array.isArray(vercel.routes) && vercel.routes.some((route) => route.dest?.includes("/api/ssr")), "public routes use the SEO renderer");
+assert(
+  Array.isArray(vercel.rewrites) && vercel.rewrites.some((rewrite) => rewrite.destination?.includes("/api/ssr")),
+  "public routes use the SEO renderer",
+);
+assert(!vercel.routes, "legacy Vercel routes are not mixed with modern headers");
 
 const allHeaders = (vercel.headers || []).flatMap((entry) => entry.headers || []);
 const headerNames = new Set(allHeaders.map((header) => String(header.key).toLowerCase()));
