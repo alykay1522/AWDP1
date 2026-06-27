@@ -190,7 +190,9 @@ function AppContent() {
   if (normalized === "/admin/login") {
     return (
       <Suspense fallback={<AdminLoadingFallback />}>
-        <AdminLogin />
+        <ErrorBoundary fallback={<AdminErrorFallback />}>
+          <AdminLogin />
+        </ErrorBoundary>
       </Suspense>
     );
   }
