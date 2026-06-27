@@ -12,6 +12,29 @@ const REPLACEMENTS: Array<[string, string]> = [
   ],
 ];
 
+function addFullFaqLink() {
+  if (window.location.pathname !== "/") return;
+  if (document.querySelector('[data-full-faq-link="true"]')) return;
+
+  const heading = Array.from(document.querySelectorAll("h1, h2, h3"))
+    .find((element) => element.textContent?.trim() === "Frequently Asked Questions");
+  const section = heading?.closest("section");
+  const container = section?.querySelector(".max-w-3xl") ?? section?.querySelector(".container") ?? section;
+  if (!container) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.dataset.fullFaqLink = "true";
+  wrapper.className = "mt-8 text-center";
+
+  const link = document.createElement("a");
+  link.href = "/faq";
+  link.className = "inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90";
+  link.textContent = "View All Frequently Asked Questions";
+
+  wrapper.appendChild(link);
+  container.appendChild(wrapper);
+}
+
 function cleanLegacyCopy() {
   if (!document.body) return;
 
@@ -38,6 +61,8 @@ function cleanLegacyCopy() {
     }
     if (updated !== value) node.nodeValue = updated;
   }
+
+  addFullFaqLink();
 }
 
 export function SiteCopyCleanup() {
