@@ -3,21 +3,20 @@
   "buildCommand": "pnpm install --frozen-lockfile=false && pnpm build",
   "outputDirectory": "dist/public",
   "framework": "vite",
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "^/$", "dest": "/api/ssr?path=/" },
-    { "src": "^/shop/?$", "dest": "/api/ssr?path=/shop" },
-    { "src": "^/categories/?$", "dest": "/api/ssr?path=/categories" },
-    { "src": "^/parts-identification/?$", "dest": "/api/ssr?path=/parts-identification" },
-    { "src": "^/identify-balance/?$", "dest": "/api/ssr?path=/identify-balance" },
-    { "src": "^/guides/?$", "dest": "/api/ssr?path=/guides" },
-    { "src": "^/guides/([^/]+)/?$", "dest": "/api/ssr?path=/guides/$1" },
-    { "src": "^/product/([^/]+)/?$", "dest": "/api/ssr?path=/product/$1" },
-    { "src": "^/resources/?$", "dest": "/api/ssr?path=/resources" },
-    { "src": "^/about/?$", "dest": "/api/ssr?path=/about" },
-    { "src": "^/contact/?$", "dest": "/api/ssr?path=/contact" },
-    { "src": "^/policies/?$", "dest": "/api/ssr?path=/policies" },
-    { "src": "/.*", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/", "destination": "/api/ssr?path=/" },
+    { "source": "/shop", "destination": "/api/ssr?path=/shop" },
+    { "source": "/categories", "destination": "/api/ssr?path=/categories" },
+    { "source": "/parts-identification", "destination": "/api/ssr?path=/parts-identification" },
+    { "source": "/identify-balance", "destination": "/api/ssr?path=/identify-balance" },
+    { "source": "/guides", "destination": "/api/ssr?path=/guides" },
+    { "source": "/guides/:slug", "destination": "/api/ssr?path=/guides/:slug" },
+    { "source": "/product/:sku", "destination": "/api/ssr?path=/product/:sku" },
+    { "source": "/resources", "destination": "/api/ssr?path=/resources" },
+    { "source": "/about", "destination": "/api/ssr?path=/about" },
+    { "source": "/contact", "destination": "/api/ssr?path=/contact" },
+    { "source": "/policies", "destination": "/api/ssr?path=/policies" },
+    { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [
     {
