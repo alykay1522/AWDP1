@@ -1,0 +1,44 @@
+name: Apply full-width header banner update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/apply-full-width-banner-main.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update-banner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Remove banner height constraint
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("artifacts/awdp-site/src/components/layout.tsx")
+          source = path.read_text()
+          old = 'className="w-full h-auto max-h-24 sm:max-h-32 md:max-h-44 object-contain mx-auto block"'
+          new = 'className="block w-full h-auto"'
+
+          if old not in source:
+              raise SystemExit("Expected banner class was not found")
+
+          path.write_text(source.replace(old, new, 1))
+          PY
+
+      - name: Commit banner update
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/awdp-site/src/components/layout.tsx
+          git commit -m "fix: make header banner full width"
+          git push origin HEAD:main
