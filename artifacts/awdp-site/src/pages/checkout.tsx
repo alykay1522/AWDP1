@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+function attributeLabel(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 export default function Checkout() {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
   const [, navigate] = useLocation();
@@ -14,9 +20,6 @@ export default function Checkout() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<{ cost: number; label: string } | null>(null);
 
-  // useRef avoids the stale-closure bug: PayPal SDK captures onApprove at render time,
-  // so reading orderData from state may return the pre-setOrderData null. A ref is
-  // always current regardless of when PayPal calls the callback.
   const orderDataRef = useRef<{ paypalOrderId: string; orderId: string } | null>(null);
 
   if (items.length === 0) {
@@ -43,23 +46,31 @@ export default function Checkout() {
         )}
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Order Summary */}
           <Card>
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {items.map((item: any) => (
-                <div key={item.sku} className="flex justify-between items-start border-b pb-3">
+              {items.map((item) => (
+                <div key={item.cartLineKey} className="flex justify-between items-start border-b pb-3">
                   <div>
                     <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-slate-500">SKU: {item.sku}</div>
+                    <div className="text-sm text-slate-500">SKU: {String(item.sku)}</div>
+                    {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
+                      <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                        {Object.entries(item.selectedAttributes).map(([key, value]) => (
+                          <div key={key}>
+                            <span className="font-medium">{attributeLabel(key)}:</span> {value}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="text-sm mt-1">Qty: {item.quantity}</div>
                   </div>
                   <div className="text-right">
-                    <div>${(item.price * item.quantity).toFixed(2)}</div>
-                    <button 
-                      onClick={() => removeFromCart(item.id)}
+                    <div>${(Number(item.price) * item.quantity).toFixed(2)}</div>
+                    <button
+                      onClick={() => removeFromCart(item.cartLineKey)}
                       className="text-xs text-red-500 hover:underline mt-1"
                     >
                       Remove
@@ -86,7 +97,6 @@ export default function Checkout() {
             </CardContent>
           </Card>
 
-          {/* Payment */}
           <div>
             <Card>
               <CardHeader>
@@ -104,25 +114,35 @@ export default function Checkout() {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          items: items.map(i => ({ sku: i.sku, quantity: i.quantity }))
+                          items: items.map((item) => ({
+                            sku: item.sku,
+                            quantity: item.quantity,
+                            selectedAttributes: item.selectedAttributes,
+                          })),
                         }),
                       });
 
                       if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        throw new Error(err.error || "Failed to create order");
+                        const responseError = await res.json().catch(() => ({}));
+                        throw new Error(responseError.error || "Failed to create order");
                       }
 
                       const data = await res.json();
-                      // Write to ref immediately — always readable in onApprove regardless of render timing
-                      orderDataRef.current = { paypalOrderId: data.paypalOrderId, orderId: data.orderId };
+                      orderDataRef.current = {
+                        paypalOrderId: data.paypalOrderId,
+                        orderId: data.orderId,
+                      };
+                      setShippingInfo({
+                        cost: Number(data.shippingCost) || 0,
+                        label: data.shippingLabel || "Ground",
+                      });
                       return data.paypalOrderId;
-                    } catch (err: any) {
-                      const msg = err.message || "Could not start payment. Please try again.";
-                      setError(msg);
-                      toast.error(msg);
+                    } catch (requestError: any) {
+                      const message = requestError.message || "Could not start payment. Please try again.";
+                      setError(message);
+                      toast.error(message);
                       setLoading(false);
-                      throw err;
+                      throw requestError;
                     }
                   }}
                   onApprove={async (data: any) => {
@@ -146,33 +166,33 @@ export default function Checkout() {
                       });
 
                       if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        throw new Error(err.error || "Payment capture failed");
+                        const responseError = await res.json().catch(() => ({}));
+                        throw new Error(responseError.error || "Payment capture failed");
                       }
 
                       clearCart();
                       navigate("/checkout/success");
-                    } catch (err: any) {
-                      const msg = err.message || "Payment failed. Please contact support.";
-                      setError(msg);
-                      toast.error(msg);
+                    } catch (captureError: any) {
+                      const message = captureError.message || "Payment failed. Please contact support.";
+                      setError(message);
+                      toast.error(message);
                     } finally {
                       setProcessingPayment(false);
                       setLoading(false);
                     }
                   }}
                   onError={() => {
-                    const msg = "There was an error with your PayPal payment. Please try again.";
-                    setError(msg);
-                    toast.error(msg);
+                    const message = "There was an error with your PayPal payment. Please try again.";
+                    setError(message);
+                    toast.error(message);
                     setLoading(false);
                   }}
                 />
 
                 {(loading || processingPayment) && (
                   <div className="mt-4 text-center text-sm text-slate-600">
-                    {processingPayment 
-                      ? "Processing your payment... Please do not close this window." 
+                    {processingPayment
+                      ? "Processing your payment... Please do not close this window."
                       : "Preparing your order..."}
                   </div>
                 )}
