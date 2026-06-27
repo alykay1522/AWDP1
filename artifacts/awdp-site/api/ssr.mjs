@@ -319,9 +319,7 @@ export default async function handler(req, res) {
   if (!template) return res.status(500).send("Unable to load storefront template");
 
   const pathname = normalizePath(req.query.path || req.url || "/");
-  const host = req.headers["x-forwarded-host"] || req.headers.host || "www.allwindowdoorparts.com";
-  const protocol = req.headers["x-forwarded-proto"] || "https";
-  const origin = process.env.SITE_URL || `${protocol}://${host}`;
+  const origin = process.env.SITE_URL || BASE_URL;
   const metadata = (await productMetadata(pathname, origin)) || staticMetadata(pathname);
 
   if (!metadata) {
