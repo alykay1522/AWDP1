@@ -1,0 +1,48 @@
+name: Storefront quality checks
+
+on:
+  pull_request:
+    paths:
+      - "artifacts/awdp-site/**"
+      - ".github/workflows/site-quality.yml"
+      - "pnpm-lock.yaml"
+      - "package.json"
+  push:
+    branches: [main]
+    paths:
+      - "artifacts/awdp-site/**"
+      - ".github/workflows/site-quality.yml"
+      - "pnpm-lock.yaml"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Type-check storefront
+        run: pnpm --filter awdp-site run typecheck
+
+      - name: Build storefront
+        run: pnpm --filter awdp-site run build
+
+      - name: Verify SEO and deployment output
+        run: node artifacts/awdp-site/scripts/verify-seo-build.mjs
