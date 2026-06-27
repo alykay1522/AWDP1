@@ -257,13 +257,19 @@ function managedHead(metadata) {
 }
 
 function stripManagedHead(html) {
-  return html
-    .replace(/<title>[\s\S]*?<\/title>/i, "")
-    .replace(/<meta\s+name=["'](?:description|robots|keywords)["'][^>]*>/gi, "")
-    .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "")
-    .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "")
-    .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "")
-    .replace(/<script\s+id=["']awdp-page-schema["'][\s\S]*?<\/script>/gi, "");
+  let previous;
+  let current = html;
+  do {
+    previous = current;
+    current = current
+      .replace(/<title>[\s\S]*?<\/title>/i, "")
+      .replace(/<meta\s+name=["'](?:description|robots|keywords)["'][^>]*>/gi, "")
+      .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "")
+      .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "")
+      .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "")
+      .replace(/<script\s+id=["']awdp-page-schema["'][\s\S]*?<\/script>/gi, "");
+  } while (current !== previous);
+  return current;
 }
 
 function renderBody(metadata) {
