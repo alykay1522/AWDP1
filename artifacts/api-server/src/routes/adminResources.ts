@@ -5,6 +5,20 @@ import { eq, asc } from "drizzle-orm";
 
 const router = Router();
 
+const masterRollerWheelResource = {
+  id: "master-roller-wheel-catalog-2023-2024",
+  title: "Master Roller and Wheel Parts Guide — 2023–2024",
+  brand: "All Brands",
+  category: "Patio Doors",
+  type: "Product Catalog",
+  url: "https://allwindowdoorparts.com/wp-content/uploads/2023/04/WindowDoorHardwareParts-PDF-Catalog.pdf",
+  description:
+    "Free illustrated roller and wheel identification catalog covering patio and screen door assemblies from Marvin, Integrity, Guardian, Truth, Peachtree, Weather-Shield, Seal-Rite, Thermal-Guard, Wenco, Silverline, Traco, Lincoln, Eagle, Herculite, PPG, PGT, and other brands. Includes diagrams, measurements, pictures, schematics, and specifications for hard-to-find and obsolete parts.",
+  sortOrder: 0,
+  isActive: true,
+  createdAt: null,
+};
+
 // GET /api/resources — public, returns active resources sorted by category + sortOrder
 router.get("/resources", async (_req, res) => {
   try {
@@ -13,7 +27,16 @@ router.get("/resources", async (_req, res) => {
       .from(pdfResourcesTable)
       .where(eq(pdfResourcesTable.isActive, true))
       .orderBy(asc(pdfResourcesTable.sortOrder), asc(pdfResourcesTable.id));
-    res.json({ resources });
+
+    const hasMasterCatalog = resources.some(
+      (resource) => resource.url === masterRollerWheelResource.url,
+    );
+
+    res.json({
+      resources: hasMasterCatalog
+        ? resources
+        : [masterRollerWheelResource, ...resources],
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
