@@ -1,0 +1,61 @@
+name: Add Roller Wheel PDF Resource
+
+on:
+  push:
+    paths:
+      - ".github/workflows/add-roller-wheel-resource.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-resource:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add master roller and wheel catalog
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          path = Path("artifacts/awdp-site/src/pages/resources.tsx")
+          text = path.read_text(encoding="utf-8")
+          marker = '''  {
+            id: "oldach-patio-door-catalog",
+            title: "Oldach Parts — Patio Door Hardware Catalog",
+          '''
+          addition = '''  {
+            id: "master-roller-wheel-catalog-2023-2024",
+            title: "Master Roller and Wheel Parts Guide — 2023–2024",
+            brand: "All Brands",
+            category: "Patio Doors",
+            type: "Product Catalog",
+            url: "https://allwindowdoorparts.com/wp-content/uploads/2023/04/WindowDoorHardwareParts-PDF-Catalog.pdf",
+            description: "Free illustrated roller and wheel identification catalog covering patio and screen door assemblies from Marvin, Integrity, Guardian, Truth, Peachtree, Weather-Shield, Seal-Rite, Thermal-Guard, Wenco, Silverline, Traco, Lincoln, Eagle, Herculite, PPG, PGT, and other brands. Includes diagrams, measurements, pictures, schematics, and specifications for hard-to-find and obsolete parts.",
+          },
+'''
+
+          if "master-roller-wheel-catalog-2023-2024" in text:
+            raise SystemExit("Resource already exists")
+          if marker not in text:
+            raise SystemExit("Insertion point not found")
+
+          text = text.replace(marker, addition + marker, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          git diff --check
+
+      - name: Commit resource update
+        shell: bash
+        run: |
+          git config user.name "AWDP Site Maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add artifacts/awdp-site/src/pages/resources.tsx
+          git commit -m "feat: add master roller and wheel PDF guide"
+          git push
