@@ -1,0 +1,248 @@
+--- a/artifacts/api-server/src/routes/adminAuth.ts
++++ b/artifacts/api-server/src/routes/adminAuth.ts
+@@ -27,22 +27,34 @@
+ 
+ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res: Response) => {
+   const { password } = req.body as { password?: string };
+-  const adminPassword = process.env.ADMIN_PASSWORD;
++  const configuredPassword = process.env.ADMIN_PASSWORD;
+ 
+-  if (!adminPassword) {
++  if (!configuredPassword) {
+     return res.status(503).json({ error: "Admin password not configured. Set ADMIN_PASSWORD environment variable." });
+   }
+ 
+-  if (!password) {
++  if (typeof password !== "string" || password.length === 0) {
+     return res.status(401).json({ error: "Invalid password" });
+   }
+ 
+-  // Use timing-safe comparison to prevent timing attacks
+-  const passwordBuffer = Buffer.from(password, 'utf8');
+-  const adminPasswordBuffer = Buffer.from(adminPassword, 'utf8');
+-  
+-  if (passwordBuffer.length !== adminPasswordBuffer.length || 
+-      !crypto.timingSafeEqual(passwordBuffer, adminPasswordBuffer)) {
++  // Use timing-safe comparison to prevent timing attacks.
++  // Vercel/cPanel env values are sometimes pasted with a trailing newline/space;
++  // accept the exact value and a trimmed env value so an accidental newline does
++  // not permanently lock the admin out.
++  const candidates = Array.from(new Set([
++    configuredPassword,
++    configuredPassword.trim(),
++  ])).filter((candidate) => candidate.length > 0);
++
++  const isValid = candidates.some((candidate) => {
++    const passwordBuffer = Buffer.from(password, "utf8");
++    const adminPasswordBuffer = Buffer.from(candidate, "utf8");
++
++    return passwordBuffer.length === adminPasswordBuffer.length &&
++      crypto.timingSafeEqual(passwordBuffer, adminPasswordBuffer);
++  });
++
++  if (!isValid) {
+     return res.status(401).json({ error: "Invalid password" });
+   }
+ 
+--- a/artifacts/api-server/src/routes/products.ts
++++ b/artifacts/api-server/src/routes/products.ts
+@@ -149,7 +149,8 @@
+         variant_label AS "variantLabel",
+         price,
+         in_stock AS "inStock",
+-        image_url AS "imageUrl"
++        image_url AS "imageUrl",
++        attributes
+       FROM products
+       WHERE variant_group_id = ${product.variantGroupId}
+       ORDER BY
+@@ -163,7 +164,7 @@
+     `);
+ 
+     // Re-sort the deduplicated set numerically in JS for precision
+-    type VariantRow = { sku: string; name: string; variantLabel: string | null; price: string; inStock: boolean; imageUrl: string | null };
++    type VariantRow = { sku: string; name: string; variantLabel: string | null; price: string; inStock: boolean; imageUrl: string | null; attributes?: Record<string, unknown> | null };
+     const variants: VariantRow[] = (rows.rows as unknown as VariantRow[]).sort((a, b) => {
+       const aLabel = a.variantLabel ?? a.name;
+       const bLabel = b.variantLabel ?? b.name;
+--- a/artifacts/awdp-site/src/pages/admin-login.tsx
++++ b/artifacts/awdp-site/src/pages/admin-login.tsx
+@@ -18,7 +18,7 @@
+     mutationFn: async (pw: string) => {
+       let res: Response;
+       try {
+-        res = await fetch("/api/admin/login", { credentials: "include",
++        res = await fetch("/api/admin/login", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           credentials: "include",
+--- a/artifacts/awdp-site/src/components/layout.tsx
++++ b/artifacts/awdp-site/src/components/layout.tsx
+@@ -40,11 +40,31 @@
+   const [searchQuery, setSearchQuery] = useState("");
+   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
+   const shopDropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const shopDropdownRaf = useRef<number | null>(null);
++
++  const openShopDropdown = () => {
++    if (shopDropdownTimer.current) clearTimeout(shopDropdownTimer.current);
++    if (shopDropdownRaf.current) cancelAnimationFrame(shopDropdownRaf.current);
++    shopDropdownRaf.current = requestAnimationFrame(() => setShopDropdownOpen(true));
++  };
++
++  const closeShopDropdown = () => {
++    if (shopDropdownRaf.current) cancelAnimationFrame(shopDropdownRaf.current);
++    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 150);
++  };
+ 
+   // Nav search autocomplete
+   const [navSuggestions, setNavSuggestions]       = useState<string[]>([]);
+   const [navSuggestionsOpen, setNavSuggestionsOpen] = useState(false);
+   const navSuggDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
++
++  useEffect(() => {
++    return () => {
++      if (shopDropdownTimer.current) clearTimeout(shopDropdownTimer.current);
++      if (shopDropdownRaf.current) cancelAnimationFrame(shopDropdownRaf.current);
++      if (navSuggDebounce.current) clearTimeout(navSuggDebounce.current);
++    };
++  }, []);
+ 
+   const ORDER_MINIMUM = 50;
+   const belowMinimum = totalPrice < ORDER_MINIMUM && items.length > 0;
+@@ -107,13 +127,9 @@
+                 {/* Shop Parts with mega-menu dropdown */}
+                 <div
+                   className="relative"
+-                  onMouseEnter={() => {
+-                    if (shopDropdownTimer.current) clearTimeout(shopDropdownTimer.current);
+-                    setShopDropdownOpen(true);
+-                  }}
+-                  onMouseLeave={() => {
+-                    shopDropdownTimer.current = setTimeout(() => setShopDropdownOpen(false), 150);
+-                  }}
++                  onMouseEnter={openShopDropdown}
++                  onFocus={openShopDropdown}
++                  onMouseLeave={closeShopDropdown}
+                 >
+                   <Link
+                     href="/shop"
+@@ -125,8 +141,14 @@
+                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${shopDropdownOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                   </Link>
+ 
+-                  {shopDropdownOpen && (
+-                    <div role="menu" aria-label="Shop categories" className="absolute top-full left-0 mt-2 w-[680px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
++                  <div
++                    role="menu"
++                    aria-label="Shop categories"
++                    aria-hidden={!shopDropdownOpen}
++                    className={`absolute top-full left-0 mt-2 w-[680px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden transition-opacity duration-150 ${
++                      shopDropdownOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
++                    }`}
++                  >
+                       <div className="grid grid-cols-3 gap-0 divide-x divide-slate-100">
+ 
+                         {/* Column 1: By Category */}
+@@ -203,7 +225,7 @@
+                         </div>
+                       </div>
+                     </div>
+-                  )}
++                  </div>
+                 </div>
+ 
+                 <Link href="/resources" className="hover:text-accent transition-colors">Resources</Link>
+--- a/artifacts/awdp-site/src/components/product-image.tsx
++++ b/artifacts/awdp-site/src/components/product-image.tsx
+@@ -8,9 +8,10 @@
+   className?: string;
+   placeholderClassName?: string;
+   loading?: "lazy" | "eager";
++  sizes?: string;
+ }
+ 
+-export function ProductImage({ src, alt, className, placeholderClassName, loading = "lazy" }: ProductImageProps) {
++export function ProductImage({ src, alt, className, placeholderClassName, loading = "lazy", sizes = "(min-width: 1024px) 50vw, 100vw" }: ProductImageProps) {
+   const [failed, setFailed] = useState(false);
+ 
+   if (!src || failed) {
+@@ -27,11 +28,13 @@
+       <img
+         src={src}
+         alt={alt}
+-        width="400"
+-        height="400"
++        width="900"
++        height="900"
++        sizes={sizes}
+         className={className}
+         loading={loading}
+-        decoding="async"
++        decoding={loading === "eager" ? "sync" : "async"}
++        fetchPriority={loading === "eager" ? "high" : "auto"}
+         onError={() => setFailed(true)}
+       />
+       {/* Rainbow logo watermark — bottom-right corner */}
+--- a/artifacts/awdp-site/src/pages/product.tsx
++++ b/artifacts/awdp-site/src/pages/product.tsx
+@@ -16,8 +16,48 @@
+ import { AttributeConfigurator } from "@/components/attribute-configurator";
+ 
+ interface Variant {
+-  sku: string; name: string; variantLabel: string | null;
+-  price: string; inStock: boolean; imageUrl: string | null;
++  sku: string;
++  name: string;
++  variantLabel: string | null;
++  price: string;
++  inStock: boolean;
++  imageUrl: string | null;
++  attributes?: Record<string, unknown> | null;
++}
++
++const VARIANT_ATTRIBUTE_KEYS = [
++  "length",
++  "length_inches",
++  "weight_code",
++  "color",
++  "colors",
++  "hand",
++  "tip_color",
++  "terminal_color",
++  "diameter",
++  "arm_length_inches",
++  "wheel_diameter_inches",
++  "keyed",
++];
++
++function firstAttributeValue(attributes: Record<string, unknown> | null | undefined, key: string): string | null {
++  const raw = attributes?.[key];
++  if (Array.isArray(raw)) return raw.map(String).find(Boolean) ?? null;
++  if (raw === null || raw === undefined) return null;
++  const value = String(raw).trim();
++  return value || null;
++}
++
++function formatVariantOption(variant: Variant): string {
++  if (variant.variantLabel) return variant.variantLabel;
++
++  const attributeParts = VARIANT_ATTRIBUTE_KEYS
++    .map((key) => firstAttributeValue(variant.attributes, key))
++    .filter(Boolean) as string[];
++
++  if (attributeParts.length > 0) return attributeParts.slice(0, 3).join(" / ");
++
++  return variant.name;
+ }
+ 
+ export default function ProductDetail() {
+@@ -453,7 +493,7 @@
+                     <SelectContent>
+                       {variants.map((v) => (
+                         <SelectItem key={v.sku} value={v.sku}>
+-                          <span className="font-medium">{v.variantLabel ?? v.name}</span>
++                          <span className="font-medium">{formatVariantOption(v)}</span>
+                           {v.price && Number(v.price) > 0 && (
+                             <span className="ml-2 text-muted-foreground text-xs">
+                               ${Number(v.price).toFixed(2)}
