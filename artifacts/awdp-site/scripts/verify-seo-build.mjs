@@ -36,7 +36,7 @@ assert(
   Array.isArray(vercel.rewrites) && vercel.rewrites.some((rewrite) => rewrite.destination?.includes("/api/ssr")),
   "public routes use the SEO renderer",
 );
-assert(!vercel.routes, "legacy Vercel routes are not mixed with modern headers");
+assert(!Array.isArray(vercel.routes) || vercel.routes.length === 0, "legacy Vercel routes are not mixed with modern headers");
 
 const allHeaders = (vercel.headers || []).flatMap((entry) => entry.headers || []);
 const headerNames = new Set(allHeaders.map((header) => String(header.key).toLowerCase()));
