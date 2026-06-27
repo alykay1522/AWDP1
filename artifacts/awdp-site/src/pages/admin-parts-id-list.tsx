@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Wrench, RefreshCw, ChevronDown, ChevronUp, Mail, Phone, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Wrench, RefreshCw, ChevronDown, ChevronUp, Mail, Phone, Camera, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
@@ -12,10 +12,10 @@ interface PartsIdRequest {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:     { label: "Pending",     color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  pending:       { label: "Pending",     color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
   "in-progress": { label: "In Progress", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  resolved:    { label: "Resolved",    color: "bg-green-100 text-green-800 border-green-200" },
-  closed:      { label: "Closed",      color: "bg-gray-100 text-gray-600 border-gray-200" },
+  resolved:      { label: "Resolved",    color: "bg-green-100 text-green-800 border-green-200" },
+  closed:        { label: "Closed",      color: "bg-gray-100 text-gray-600 border-gray-200" },
 };
 
 function fmtDate(iso: string) {
@@ -29,12 +29,21 @@ function isSingleEmail(value: string): boolean {
 
 function safeMailtoHref(email: string, params: Record<string, string> = {}): string | undefined {
   if (!isSingleEmail(email)) return undefined;
-  // Encode the entire address then restore @ so mailto: clients parse it correctly
   const encodedEmail = encodeURIComponent(email).replace(/%40/gi, "@");
   const qs = Object.entries(params)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&");
   return `mailto:${encodedEmail}${qs ? `?${qs}` : ""}`;
+}
+
+function isImageUrl(value?: string): value is string {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
 }
 
 export default function AdminPartsIdList() {
@@ -53,7 +62,8 @@ export default function AdminPartsIdList() {
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch(`/api/admin/parts-id/${id}/status`, { credentials: "include",
+      const res = await fetch(`/api/admin/parts-id/${id}/status`, {
+        credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -82,7 +92,6 @@ export default function AdminPartsIdList() {
       </div>
 
       <div className="p-6 max-w-4xl space-y-4">
-        {/* Filter */}
         <div className="flex gap-2 flex-wrap">
           {["all", "pending", "in-progress", "resolved", "closed"].map((s) => (
             <button key={s} onClick={() => setFilterStatus(s)}
@@ -107,6 +116,8 @@ export default function AdminPartsIdList() {
             {filtered.map((req) => {
               const isExp = expandedId === req.id;
               const cfg = STATUS_CONFIG[req.status] ?? { label: req.status, color: "bg-gray-100 text-gray-600 border-gray-200" };
+              const photoUrl = isImageUrl(req.imageFileName) ? req.imageFileName : undefined;
+
               return (
                 <div key={req.id} className="bg-white rounded-xl border shadow-sm overflow-hidden">
                   <button className="w-full text-left px-5 py-4 hover:bg-slate-50 transition-colors"
@@ -116,6 +127,11 @@ export default function AdminPartsIdList() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono text-xs text-muted-foreground">{req.ticketId}</span>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
+                          {req.imageFileName && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold bg-violet-50 text-violet-700 border-violet-200">
+                              <Camera className="w-3 h-3" /> Photo
+                            </span>
+                          )}
                         </div>
                         <p className="font-semibold text-slate-900 mt-0.5">{req.name} — <span className="font-normal text-muted-foreground">{req.email}</span></p>
                         <p className="text-sm text-slate-600 mt-0.5 line-clamp-1">{req.description}</p>
@@ -140,9 +156,26 @@ export default function AdminPartsIdList() {
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Window / Door Info</h4>
                           {req.windowDoorBrand && <p><span className="text-muted-foreground">Brand:</span> {req.windowDoorBrand}</p>}
                           {req.windowDoorAge && <p><span className="text-muted-foreground">Age:</span> {req.windowDoorAge}</p>}
-                          {req.imageFileName && <p><span className="text-muted-foreground">Image:</span> {req.imageFileName}</p>}
+                          {req.imageFileName && !photoUrl && <p><span className="text-muted-foreground">Image attachment:</span> {req.imageFileName}</p>}
                         </div>
                       </div>
+
+                      {photoUrl && (
+                        <div>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Customer Photo</h4>
+                          <a href={photoUrl} target="_blank" rel="noopener noreferrer" className="group block max-w-xl">
+                            <img
+                              src={photoUrl}
+                              alt={`Uploaded part for ${req.ticketId}`}
+                              loading="lazy"
+                              className="w-full max-h-96 object-contain rounded-lg border bg-white"
+                            />
+                            <span className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 group-hover:underline">
+                              Open full-size image <ExternalLink className="w-3.5 h-3.5" />
+                            </span>
+                          </a>
+                        </div>
+                      )}
 
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Description</h4>
