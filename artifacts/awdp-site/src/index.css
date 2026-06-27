@@ -206,10 +206,12 @@
   }
 }
 
-/* Header artwork should span the viewport at its natural aspect ratio. */
+/* Full-width header artwork with a compact responsive height. */
 img[alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"] {
   display: block;
   width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
+  height: clamp(72px, 10vw, 132px) !important;
+  max-height: 132px !important;
+  object-fit: cover !important;
+  object-position: center;
 }
