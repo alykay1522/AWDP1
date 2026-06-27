@@ -1,0 +1,277 @@
+name: Apply catalog deduplication and option support
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/apply-catalog-dedup-options.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch catalog import, checkout, and normalization wiring
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text()
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f"{path}: expected {count} occurrence(s), found {actual}: {old[:100]!r}")
+              p.write_text(text.replace(old, new, count))
+
+          # Never invent numeric SKU suffixes. The exact supplier SKU is preserved,
+          # normalized to uppercase by existing behavior, with one AWDP- prefix.
+          replace(
+              "artifacts/api-server/src/routes/adminProducts.ts",
+              '''async function generateUniqueSku(originalSku: string): Promise<string> {
+            const base = buildSku(originalSku);
+
+            const [existing] = await db
+              .select({ sku: productsTable.sku })
+              .from(productsTable)
+              .where(eq(productsTable.sku, base))
+              .limit(1);
+
+            if (!existing) return base;
+
+            // Collision: append numeric suffix until we find a free slot
+            for (let i = 2; i <= 99; i++) {
+              const candidate = `${base}-${i}`;
+              const [ex2] = await db
+                .select({ sku: productsTable.sku })
+                .from(productsTable)
+                .where(eq(productsTable.sku, candidate))
+                .limit(1);
+              if (!ex2) return candidate;
+            }
+
+            throw new Error(`Cannot generate a unique SKU for original part number "${originalSku}"`);
+          }'''.replace("            ", ""),
+              '''async function generateUniqueSku(originalSku: string): Promise<string> {
+            // Imports are idempotent: an existing supplier SKU is updated rather than
+            // copied to an artificial -2 / -3 SKU.
+            return buildSku(originalSku);
+          }'''.replace("            ", ""),
+          )
+
+          # Store structured options in product.attributes, not specifications.
+          replace(
+              "artifacts/api-server/src/routes/adminProducts.ts",
+              '''    specifications: pick("specifications", "specs", "attributes", "attrs"),
+          };'''.replace("          ", ""),
+              '''    specifications: pick("specifications", "specs"),
+            attributes:     pick("attributes", "attrs", "options", "productoptions"),
+            soldAs:        pick("soldas", "soldby", "unit", "unittype", "packaging"),
+          };'''.replace("          ", ""),
+          )
+          replace(
+              "artifacts/api-server/src/routes/adminProducts.ts",
+              '''  let specifications: Record<string, string> = {};
+            if (row.specifications) {
+              try { specifications = JSON.parse(row.specifications); } catch {}
+            }
+
+            const productName'''.replace("            ", ""),
+              '''  let specifications: Record<string, string> = {};
+            if (row.specifications) {
+              try { specifications = JSON.parse(row.specifications); } catch {}
+            }
+
+            let attributes: Record<string, string[]> | null = null;
+            if (row.attributes) {
+              try {
+                const parsed = JSON.parse(row.attributes);
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                  attributes = Object.fromEntries(
+                    Object.entries(parsed).map(([key, value]) => [
+                      key,
+                      Array.isArray(value) ? value.map(String) : [String(value)],
+                    ]),
+                  );
+                }
+              } catch {}
+            }
+
+            const productName'''.replace("            ", ""),
+          )
+          replace(
+              "artifacts/api-server/src/routes/adminProducts.ts",
+              '''    specifications: row.specifications || !isUpdate ? specifications : undefined,
+            };'''.replace("            ", ""),
+              '''    specifications: row.specifications || !isUpdate ? specifications : undefined,
+              attributes: row.attributes || !isUpdate ? attributes : undefined,
+              soldAs: row.soldAs || !isUpdate ? (row.soldAs || null) : undefined,
+            };'''.replace("            ", ""),
+          )
+
+          # Run the one-time, transactional cleanup before serving API traffic.
+          replace(
+              "artifacts/api-server/src/serverless.ts",
+              'import { pool } from "@workspace/db";\n',
+              'import { pool } from "@workspace/db";\nimport { ensureCatalogNormalized } from "./lib/catalogNormalization";\n',
+          )
+          replace(
+              "artifacts/api-server/src/serverless.ts",
+              '        logger.info("serverless admin_sessions table verified");\n',
+              '        logger.info("serverless admin_sessions table verified");\n        const catalogSummary = await ensureCatalogNormalized();\n        logger.info({ catalogSummary }, "catalog normalization verified");\n',
+          )
+
+          # Avoid rewriting every unaffected row during the one-time cleanup.
+          replace(
+              "artifacts/api-server/src/lib/catalogNormalization.ts",
+              '''      const oldSkus = rows.map((row) => row.sku);
+
+                if (duplicateIds.length) {'''.replace("                ", ""),
+              '''      const oldSkus = rows.map((row) => row.sku);
+              const hasOptionHint = Boolean(CATALOG_OPTION_HINTS[targetSku.toUpperCase()]);
+
+              if (!duplicateIds.length && keeper.sku === targetSku && !hasOptionHint) {
+                continue;
+              }
+
+              if (duplicateIds.length) {'''.replace("              ", ""),
+          )
+
+          # Product page: capture selected dropdown values and put them on the cart line.
+          replace(
+              "artifacts/awdp-site/src/pages/product.tsx",
+              '  const [quantity, setQuantity] = useState(1);\n',
+              '  const [quantity, setQuantity] = useState(1);\n  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});\n',
+          )
+          replace(
+              "artifacts/awdp-site/src/pages/product.tsx",
+              '''                  notes={attrNotes.length > 0 ? attrNotes : undefined}
+                />'''.replace("                ", ""),
+              '''                  notes={attrNotes.length > 0 ? attrNotes : undefined}
+                    onSelectionChange={setSelectedAttributes}
+                  />'''.replace("                  ", ""),
+          )
+          replace(
+              "artifacts/awdp-site/src/pages/product.tsx",
+              '                      onClick={() => addToCart(product, quantity)}',
+              '                      onClick={() => addToCart({ ...product, selectedAttributes }, quantity)}',
+          )
+
+          # Cart drawer: options create distinct lines and remain visible.
+          p = Path("artifacts/awdp-site/src/components/layout.tsx")
+          text = p.read_text()
+          text = text.replace("updateQuantity(item.id,", "updateQuantity(item.cartLineKey,")
+          text = text.replace("removeFromCart(item.id)", "removeFromCart(item.cartLineKey)")
+          sku_line = '                              <p className="text-xs text-muted-foreground mt-1">SKU: {item.sku}</p>\n'
+          option_line = sku_line + '''                              {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
+                                <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                                  {Object.entries(item.selectedAttributes)
+                                    .map(([key, value]) => `${key.replace(/_/g, " ")}: ${value}`)
+                                    .join(" · ")}
+                                </p>
+                              )}
+'''
+          if text.count(sku_line) != 1:
+              raise SystemExit("layout.tsx: cart SKU line not found exactly once")
+          p.write_text(text.replace(sku_line, option_line, 1))
+
+          # Checkout: preserve cart-line identity, show options, and submit them.
+          replace(
+              "artifacts/awdp-site/src/pages/checkout.tsx",
+              '<div key={item.sku} className="flex justify-between items-start border-b pb-3">',
+              '<div key={item.cartLineKey} className="flex justify-between items-start border-b pb-3">',
+          )
+          replace(
+              "artifacts/awdp-site/src/pages/checkout.tsx",
+              '                    <div className="text-sm text-slate-500">SKU: {item.sku}</div>\n',
+              '''                    <div className="text-sm text-slate-500">SKU: {item.sku}</div>
+                    {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
+                      <div className="text-xs text-slate-500 mt-1">
+                        {Object.entries(item.selectedAttributes)
+                          .map(([key, value]) => `${key.replace(/_/g, " ")}: ${value}`)
+                          .join(" · ")}
+                      </div>
+                    )}
+''',
+          )
+          replace(
+              "artifacts/awdp-site/src/pages/checkout.tsx",
+              'onClick={() => removeFromCart(item.id)}',
+              'onClick={() => removeFromCart(item.cartLineKey)}',
+          )
+          replace(
+              "artifacts/awdp-site/src/pages/checkout.tsx",
+              'items: items.map(i => ({ sku: i.sku, quantity: i.quantity }))',
+              'items: items.map(i => ({ sku: i.sku, quantity: i.quantity, selectedAttributes: i.selectedAttributes }))',
+          )
+
+          # PayPal/order records: server still prices by SKU, but retains chosen options.
+          replace(
+              "artifacts/api-server/src/routes/paypal.ts",
+              '  imageUrl: z.string().optional(),\n',
+              '  imageUrl: z.string().optional(),\n  selectedAttributes: z.record(z.string()).optional(),\n',
+          )
+          replace(
+              "artifacts/api-server/src/routes/paypal.ts",
+              '''  rawItems: Array<{ sku: string; quantity: number; imageUrl?: string }>,
+            ): Promise<Array<{ sku: string; name: string; price: number; quantity: number; imageUrl?: string }>> {'''.replace("            ", ""),
+              '''  rawItems: Array<{ sku: string; quantity: number; imageUrl?: string; selectedAttributes?: Record<string, string> }>,
+            ): Promise<Array<{ sku: string; name: string; price: number; quantity: number; imageUrl?: string; selectedAttributes?: Record<string, string> }>> {'''.replace("            ", ""),
+          )
+          replace(
+              "artifacts/api-server/src/routes/paypal.ts",
+              '''    return {
+                  sku: p.sku,
+                  name: p.name,
+                  price,
+                  quantity: item.quantity,
+                  imageUrl: p.imageUrl ?? undefined,
+                };'''.replace("                ", ""),
+              '''    const selectedAttributes = item.selectedAttributes ?? {};
+                const optionSummary = Object.entries(selectedAttributes)
+                  .map(([key, value]) => `${key.replace(/_/g, " ")}: ${value}`)
+                  .join(", ");
+                return {
+                  sku: p.sku,
+                  name: optionSummary ? `${p.name} (${optionSummary})` : p.name,
+                  price,
+                  quantity: item.quantity,
+                  imageUrl: p.imageUrl ?? undefined,
+                  selectedAttributes,
+                };'''.replace("                ", ""),
+          )
+
+          # Type historical order line items to include options.
+          replace(
+              "lib/db/src/schema/products.ts",
+              '''    sku: string; name: string; price: number; quantity: number; imageUrl?: string;
+              }>>().notNull(),'''.replace("              ", ""),
+              '''    sku: string; name: string; price: number; quantity: number; imageUrl?: string;
+                selectedAttributes?: Record<string, string>;
+              }>>().notNull(),'''.replace("              ", ""),
+          )
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            artifacts/api-server/src/routes/adminProducts.ts \
+            artifacts/api-server/src/serverless.ts \
+            artifacts/api-server/src/lib/catalogNormalization.ts \
+            artifacts/api-server/src/routes/paypal.ts \
+            artifacts/awdp-site/src/pages/product.tsx \
+            artifacts/awdp-site/src/components/layout.tsx \
+            artifacts/awdp-site/src/pages/checkout.tsx \
+            lib/db/src/schema/products.ts
+          git commit -m "feat: deduplicate catalog and preserve selected options"
+          git push origin HEAD:main
