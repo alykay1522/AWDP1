@@ -1,13 +1,21 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "node vercel-install.cjs",
   "buildCommand": "node vercel-build.cjs",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "rewrites": [
-    { "source": "/api/:path*",  "destination": "/api/:path*" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
-    { "source": "/:path*",      "destination": "/index.html" }
+    { "source": "/api", "destination": "/api/proxy" },
+    { "source": "/api/:path*", "destination": "/api/proxy?__awdp_path=:path*" },
+    { "source": "/sitemap.xml", "destination": "/api/proxy?__awdp_root=sitemap.xml" },
+    { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [
