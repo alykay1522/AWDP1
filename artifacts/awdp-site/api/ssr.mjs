@@ -1,430 +1,332 @@
-/**
- * SSR Vercel Function: api/ssr.mjs
- * Catch-all handler that detects crawlers and serves SSR HTML with proper metadata
- * For browsers: serves the normal SPA bundle (index.html)
- *
- * Deployed as a catch-all route that intercepts all non-API, non-asset requests
- */
-
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BASE_URL = "https://www.allwindowdoorparts.com";
+const DEFAULT_IMAGE = `${BASE_URL}/opengraph.jpg`;
 
-// In production (Vercel), static files are in .vercel/output/static
-// In development, they're in dist/public
-const publicDir = path.join(__dirname, "../dist/public");
+const templateCandidates = [
+  path.join(__dirname, "../dist/public/index.html"),
+  path.join(process.cwd(), "dist/public/index.html"),
+  path.join(process.cwd(), "artifacts/awdp-site/dist/public/index.html"),
+];
 
-/**
- * Check if User-Agent is a bot/crawler
- */
-function isBotUserAgent(userAgent) {
-  if (!userAgent) return false;
+const STATIC_PAGES = {
+  "/": {
+    title: "Window & Door Replacement Parts — 40+ Years Experience | All Window Door Parts",
+    description: "Veteran-owned supplier with 40+ years of experience. Shop 35,000+ window and door replacement parts, including balances, operators, rollers, locks, and weatherstripping.",
+    heading: "Replacement Window & Door Parts",
+    intro: "Find the exact replacement hardware for windows and doors, including obsolete and discontinued parts. Our experts can identify an unknown part from photos at no charge.",
+    links: [["Shop Window & Door Parts", "/shop"], ["Free Parts Identification", "/parts-identification"], ["Browse Repair Guides", "/guides"]],
+  },
+  "/shop": {
+    title: "Shop Window & Door Parts | 35,000+ Replacement Hardware",
+    description: "Browse 35,000+ replacement window and door parts, including casement operators, sash balances, patio door rollers, locks, weatherstripping, and screen hardware.",
+    heading: "Shop Replacement Window & Door Parts",
+    intro: "Search by SKU, brand, category, or part description. Product listings include measurements, compatibility details, stock status, and available variants when applicable.",
+    links: [["Browse by Category", "/categories"], ["Free Parts Identification", "/parts-identification"], ["Window & Door Repair Guides", "/guides"]],
+    schemaType: "CollectionPage",
+  },
+  "/categories": {
+    title: "Browse Window & Door Parts by Category | All Window Door Parts",
+    description: "Shop window balances, window operators, sash hardware, door hardware, weatherstripping, glazing supplies, screen parts, and specialty replacement hardware.",
+    heading: "Browse Parts by Category",
+    intro: "Choose the hardware category that matches your repair. You can also search by brand, SKU, dimensions, or the problem you are trying to fix.",
+    links: [["Window Balances", "/shop?category=Window+Balances"], ["Window Hardware", "/shop?category=Window+Hardware"], ["Door Hardware", "/shop?category=Door+Hardware"], ["Weatherstrip & Glazing", "/shop?category=Window+Glazing+and+Weatherstrip"]],
+    schemaType: "CollectionPage",
+  },
+  "/parts-identification": {
+    title: "Free Window & Door Parts Identification | All Window Door Parts",
+    description: "Upload photos and measurements for free expert identification of window and door replacement parts, including obsolete and discontinued hardware.",
+    heading: "Free Parts Identification",
+    intro: "Send clear photos and measurements of the part you need. Our experienced team will identify it and direct you to the correct replacement whenever possible.",
+    links: [["Start Free Parts ID", "/parts-identification"], ["Browse All Parts", "/shop"], ["Identification Guides", "/guides"]],
+    schemaType: "Service",
+  },
+  "/identify-balance": {
+    title: "Identify Your Window Balance | Free Balance Identification",
+    description: "Use the guided window-balance identification tool to match channel, spiral, and constant-force balances by type, length, stamp, and terminal style.",
+    heading: "Identify Your Window Balance",
+    intro: "Follow the guided steps to determine the balance type and measurements needed to order a compatible replacement.",
+    links: [["Shop Window Balances", "/shop?category=Window+Balances"], ["Window Balance Guide", "/guides/window-balance"], ["Free Expert Parts ID", "/parts-identification"]],
+    schemaType: "HowTo",
+  },
+  "/guides": {
+    title: "Window & Door Repair Guides | All Window Door Parts",
+    description: "Free expert guides for identifying, measuring, and replacing window balances, operators, patio door rollers, locks, weatherstripping, and glazing bead.",
+    heading: "Window & Door Repair Guides",
+    intro: "Use detailed identification and measurement instructions to select the correct replacement hardware before ordering.",
+    links: [["Window Balance Guide", "/guides/window-balance"], ["Window Operator Guide", "/guides/window-operator"], ["Patio Door Roller Guide", "/guides/patio-door-roller"], ["Weatherstripping Guide", "/guides/weatherstripping"]],
+    schemaType: "CollectionPage",
+  },
+  "/resources": {
+    title: "Window & Door Repair Resources | PDFs, Guides & Catalogs",
+    description: "Download window and door measurement guides, product catalogs, installation references, and technical documents from All Window Door Parts.",
+    heading: "Window & Door Repair Resources",
+    intro: "Access measurement instructions, product references, technical PDFs, and other resources that help you identify and install replacement hardware.",
+    links: [["Expert Guides", "/guides"], ["Shop Parts", "/shop"], ["Free Parts Identification", "/parts-identification"]],
+    schemaType: "CollectionPage",
+  },
+  "/about": {
+    title: "About All Window Door Parts | Veteran Owned, 40+ Years",
+    description: "Learn about All Window Door Parts, a veteran-owned supplier with more than 40 years of hands-on window and door hardware experience.",
+    heading: "About All Window Door Parts",
+    intro: "We help homeowners, contractors, and property managers locate current, obsolete, and hard-to-find window and door replacement parts.",
+    links: [["Shop Parts", "/shop"], ["Contact Us", "/contact"], ["Free Parts Identification", "/parts-identification"]],
+    schemaType: "AboutPage",
+  },
+  "/contact": {
+    title: "Contact All Window Door Parts | Product & Order Support",
+    description: "Contact All Window Door Parts for product identification, order support, and replacement hardware questions. Call 785-533-0244 Monday through Friday.",
+    heading: "Contact All Window Door Parts",
+    intro: "Call 785-533-0244 or send a message for help with product identification, measurements, compatibility, existing orders, and general questions.",
+    links: [["Free Parts Identification", "/parts-identification"], ["Shop Parts", "/shop"], ["Repair Resources", "/resources"]],
+    schemaType: "ContactPage",
+  },
+  "/policies": {
+    title: "Store Policies | All Window Door Parts",
+    description: "Review All Window Door Parts shipping, returns, privacy, payment, and customer service policies before placing an order.",
+    heading: "Store Policies",
+    intro: "Review shipping, return, privacy, payment, and customer service information for purchases made through All Window Door Parts.",
+    links: [["Shop Parts", "/shop"], ["Contact Customer Support", "/contact"]],
+    schemaType: "WebPage",
+  },
+};
 
-  const botPatterns = [
-    /googlebot/i,
-    /bingbot/i,
-    /slurp/i,
-    /duckduckbot/i,
-    /baiduspider/i,
-    /yandexbot/i,
-    /facebookexternalhit/i,
-    /twitterbot/i,
-    /linkedinbot/i,
-    /whatsapp/i,
-    /pinterestbot/i,
-    /applebot/i,
-    /msnbot/i,
-    /rogerbot/i,
-    /curl/i,
-    /wget/i,
-    /ahrefs/i,
-    /semrush/i,
-    /screaming.frog/i,
-    /mediapartners-google/i,
-  ];
+const GUIDE_PAGES = {
+  "window-balance": ["How to Identify and Replace a Window Balance", "Identify channel, spiral, and constant-force balances using the correct length, stamp, tube diameter, and terminal style."],
+  "window-operator": ["How to Identify a Window Operator", "Match single-arm, dual-arm, dyad, and scissor operators using handing, arm geometry, mounting holes, and manufacturer markings."],
+  "patio-door-roller": ["How to Identify a Patio Door Roller", "Measure wheel diameter, housing dimensions, wheel material, and mounting style to select the correct patio door roller assembly."],
+  "weatherstripping": ["How to Identify Window and Door Weatherstripping", "Match kerf, bulb, fin-seal, pile, foam, and OEM weatherstripping profiles by cross-section and dimensions."],
+  "door-lock": ["How to Identify Door Lock and Mortise Hardware", "Measure the faceplate, backset, handle spacing, latch style, and handing before ordering replacement lock hardware."],
+  "glazing-bead": ["How to Identify Window Glazing Bead", "Match snap-in, kerf-in, and OEM glazing bead by profile shape, face width, leg depth, and window manufacturer."],
+};
 
-  return botPatterns.some((pattern) => pattern.test(userAgent));
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text) {
-  const map = {
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#039;",
-  };
-  return String(text).replace(/[&<>"']/g, (char) => map[char] || char);
+  })[character]);
 }
 
-/**
- * Normalize pathname
- */
-function normalizePath(pathname) {
-  return (pathname || "/").replace(/\/$/, "") || "/";
+function normalizePath(value) {
+  const withoutQuery = String(value || "/").split("?")[0];
+  const normalized = withoutQuery.startsWith("/") ? withoutQuery : `/${withoutQuery}`;
+  return normalized.replace(/\/+$/, "") || "/";
 }
 
-/**
- * Fetch metadata from the backend API
- */
-async function fetchMetadata(pathname) {
-  const apiBase =
-    process.env.VITE_API_BASE_URL ||
-    process.env.API_SERVER_URL ||
-    process.env.EXPRESS_API_ORIGIN ||
-    "http://localhost:3000/api";
+function readTemplate() {
+  const templatePath = templateCandidates.find((candidate) => fs.existsSync(candidate));
+  return templatePath ? fs.readFileSync(templatePath, "utf8") : null;
+}
 
-  const route = normalizePath(pathname);
-
-  try {
-    // Product detail: /product/:sku
-    if (route.startsWith("/product/")) {
-      const sku = route.replace("/product/", "");
-      if (sku && sku.length > 0) {
-        try {
-          const res = await fetch(`${apiBase}/products/${sku}`, {
-            method: "GET",
-            headers: { "Accept": "application/json" },
-            timeout: 5000,
-          });
-          if (res.ok) {
-            const product = await res.json();
-            return {
-              title: `${product.name || sku} | All Window Door Parts`,
-              description: (product.description || `${product.name || sku} - window and door hardware`)
-                .substring(0, 160)
-                .trim(),
-              keywords: `${product.name || ""}, ${product.category || ""}, window parts`,
-              canonicalPath: `/product/${sku}`,
-              image: product.image_url || "https://www.allwindowdoorparts.com/opengraph.jpg",
-              imageAlt: product.name || sku,
-            };
-          }
-        } catch (e) {
-          console.error(`Error fetching product ${sku}:`, e);
-        }
-        // Fallback for product not found
-        return {
-          title: `Product ${sku} | All Window Door Parts`,
-          description: "Find replacement window and door parts at All Window Door Parts.",
-          canonicalPath: `/product/${sku}`,
-        };
-      }
-    }
-  } catch (error) {
-    console.error("Error in fetchMetadata:", error);
-  }
-
-  // Return metadata for non-product routes based on path
-  const metadataMap = {
-    "/": {
-      title: "All Window Door Parts — Window & Door Hardware",
-      description:
-        "Veteran-owned supplier with 40+ years experience. Shop 35,000+ window & door replacement parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID.",
-      keywords: "window parts, door parts, replacement hardware, veteran owned",
-      canonicalPath: "/",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "All Window Door Parts",
-    },
-    "/shop": {
-      title: "Shop Window & Door Parts | 35,000+ Replacement Hardware",
-      description:
-        "Browse 35,000+ replacement window and door parts. Casement operators, sash balances, patio door rollers, locks, weatherstripping, and more. Fast shipping.",
-      keywords: "window parts, door parts, replacement hardware, casement operators",
-      canonicalPath: "/shop",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Shop All Window and Door Parts",
-    },
-    "/categories": {
-      title: "Browse by Category | Window Balances, Hardware, Locks",
-      description:
-        "Shop window and door parts by category. Window balances, operators, sash hardware, door hardware, weatherstripping, and more.",
-      keywords: "window balances, window hardware, door hardware, weatherstripping",
-      canonicalPath: "/categories",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Browse Window and Door Parts by Category",
-    },
-    "/guides": {
-      title: "Expert Window & Door Repair Guides | Free How-To Articles",
-      description:
-        "Learn how to replace window balances, operators, weatherstripping, door rollers, and more. Free expert guides.",
-      keywords: "window repair, door repair, how-to guides, replacement guides",
-      canonicalPath: "/guides",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Window & Door Repair Guides",
-    },
-    "/about": {
-      title: "About All Window Door Parts | Veteran Owned, 40+ Years",
-      description:
-        "Veteran-owned window and door parts supplier with 40+ years of industry experience.",
-      keywords: "veteran owned, window parts supplier, door hardware",
-      canonicalPath: "/about",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "All Window Door Parts",
-    },
-    "/parts-identification": {
-      title: "Free Parts Identification | All Window Door Parts",
-      description:
-        "Can't identify your part? Use our free Parts ID service. Send a photo or description, and our experts will identify your window and door hardware.",
-      keywords: "parts identification, identify parts, free",
-      canonicalPath: "/parts-identification",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Free Parts Identification Service",
-    },
-    "/identify-balance": {
-      title: "Free Parts Identification | All Window Door Parts",
-      description:
-        "Can't identify your part? Use our free Parts ID service. Send a photo or description, and our experts will identify your hardware.",
-      keywords: "parts identification, identify parts, free",
-      canonicalPath: "/identify-balance",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Free Parts Identification Service",
-    },
-    "/resources": {
-      title: "Window & Door Repair Resources | PDFs, Guides & Tools",
-      description:
-        "Access free resources including measurement guides, installation instructions, and PDF catalogs.",
-      keywords: "resources, measurement guides, installation guides",
-      canonicalPath: "/resources",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Resources",
-    },
-    "/contact": {
-      title: "Contact All Window Door Parts | Support & Questions",
-      description:
-        "Get in touch with All Window Door Parts. Call 785-533-0244 or use our contact form.",
-      keywords: "contact, support, customer service",
-      canonicalPath: "/contact",
-      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
-      imageAlt: "Contact Us",
-    },
-  };
-
-  // Check for exact match
-  if (metadataMap[route]) {
-    return metadataMap[route];
-  }
-
-  // Check for guide paths /guides/:slug
-  if (route.startsWith("/guides/")) {
-    const slug = route.replace("/guides/", "");
-    const guides = {
-      "window-balance": {
-        title: "How to Replace a Window Balance | Step-by-Step Guide",
-        description: "Learn how to identify and replace window balance hardware.",
-      },
-      "window-operator": {
-        title: "How to Replace a Casement Window Operator | Expert Guide",
-        description: "Replace your casement window operator.",
-      },
-      "patio-door-roller": {
-        title: "How to Replace Patio Door Rollers | Easy Step-by-Step",
-        description: "Repair your sliding patio door.",
-      },
-      weatherstripping: {
-        title: "How to Replace Weatherstripping | Window & Door Seals",
-        description: "Stop drafts and improve energy efficiency.",
-      },
-      "door-lock": {
-        title: "How to Replace a Window or Door Lock",
-        description: "Replace broken window and door locks.",
-      },
-      "glazing-bead": {
-        title: "How to Replace Glazing Beads | Glass Setting Guide",
-        description: "Learn how to remove and install glazing beads.",
-      },
-    };
-    if (guides[slug]) {
+function staticMetadata(pathname) {
+  if (STATIC_PAGES[pathname]) return { ...STATIC_PAGES[pathname], canonicalPath: pathname };
+  if (pathname.startsWith("/guides/")) {
+    const slug = pathname.slice("/guides/".length);
+    const guide = GUIDE_PAGES[slug];
+    if (guide) {
       return {
-        ...guides[slug],
-        canonicalPath: `/guides/${slug}`,
-        image: "https://www.allwindowdoorparts.com/opengraph.jpg",
+        title: `${guide[0]} | All Window Door Parts`,
+        description: guide[1],
+        heading: guide[0],
+        intro: guide[1],
+        canonicalPath: pathname,
+        schemaType: "Article",
+        links: [["All Repair Guides", "/guides"], ["Shop Replacement Parts", "/shop"], ["Free Parts Identification", "/parts-identification"]],
       };
     }
   }
-
   return null;
 }
 
-/**
- * Generate meta tags HTML from metadata object
- */
-function generateMetaTags(metadata) {
-  if (!metadata) return "";
+async function productMetadata(pathname, origin) {
+  if (!pathname.startsWith("/product/")) return null;
+  const sku = decodeURIComponent(pathname.slice("/product/".length));
+  if (!sku) return null;
 
-  const tags = [];
-  const baseUrl = "https://www.allwindowdoorparts.com";
-  const canonicalUrl = baseUrl + metadata.canonicalPath;
-
-  // Canonical
-  tags.push(`<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`);
-
-  // Primary meta
-  if (metadata.description) {
-    tags.push(
-      `<meta name="description" content="${escapeHtml(metadata.description)}" />`
-    );
-  }
-  if (metadata.keywords) {
-    tags.push(
-      `<meta name="keywords" content="${escapeHtml(metadata.keywords)}" />`
-    );
-  }
-
-  // Robots
-  tags.push(
-    `<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />`
-  );
-
-  // Open Graph
-  const ogTitle = metadata.title;
-  const ogDescription = metadata.description || "";
-  const ogImage = metadata.image || baseUrl + "/opengraph.jpg";
-
-  tags.push(`<meta property="og:type" content="website" />`);
-  tags.push(`<meta property="og:site_name" content="All Window Door Parts" />`);
-  tags.push(`<meta property="og:title" content="${escapeHtml(ogTitle)}" />`);
-  tags.push(
-    `<meta property="og:description" content="${escapeHtml(ogDescription)}" />`
-  );
-  tags.push(`<meta property="og:url" content="${escapeHtml(canonicalUrl)}" />`);
-  tags.push(`<meta property="og:image" content="${escapeHtml(ogImage)}" />`);
-  tags.push(`<meta property="og:image:width" content="1200" />`);
-  tags.push(`<meta property="og:image:height" content="630" />`);
-  tags.push(
-    `<meta property="og:image:alt" content="${escapeHtml(metadata.imageAlt || ogTitle)}" />`
-  );
-  tags.push(`<meta property="og:locale" content="en_US" />`);
-
-  // Twitter Card
-  tags.push(`<meta name="twitter:card" content="summary_large_image" />`);
-  tags.push(`<meta name="twitter:title" content="${escapeHtml(ogTitle)}" />`);
-  tags.push(
-    `<meta name="twitter:description" content="${escapeHtml(ogDescription)}" />`
-  );
-  tags.push(`<meta name="twitter:image" content="${escapeHtml(ogImage)}" />`);
-
-  return tags.join("\n  ");
-}
-
-/**
- * Read index.html template
- */
-function readTemplate() {
   try {
-    const templatePath = path.join(publicDir, "index.html");
-    const content = fs.readFileSync(templatePath, "utf-8");
-    return content;
+    const response = await fetch(`${origin}/api/products/${encodeURIComponent(sku)}`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) throw new Error(`Product API returned ${response.status}`);
+    const product = await response.json();
+    const name = product.name || product.title || sku;
+    const description = String(product.description || `${name} replacement window and door hardware.`).replace(/\s+/g, " ").trim().slice(0, 160);
+    const image = product.imageUrl || product.image_url || product.image || DEFAULT_IMAGE;
+    const price = product.price == null ? null : Number(product.price);
+    const inStock = product.inStock ?? product.in_stock ?? Number(product.stock || 0) > 0;
+
+    return {
+      title: `${name} | All Window Door Parts`,
+      description,
+      heading: name,
+      intro: description,
+      canonicalPath: pathname,
+      image,
+      imageAlt: `${name} — SKU ${sku}`,
+      schemaType: "Product",
+      product,
+      sku,
+      links: [["Browse Related Parts", `/shop?search=${encodeURIComponent(name)}`], ["Free Parts Identification", "/parts-identification"], ["Shop All Parts", "/shop"]],
+      structuredData: {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Product",
+            name,
+            description,
+            image: [image],
+            sku: product.sku || sku,
+            brand: { "@type": "Brand", name: product.brand || product.manufacturer || "All Window Door Parts" },
+            ...(Number.isFinite(price) && price > 0 ? {
+              offers: {
+                "@type": "Offer",
+                url: `${BASE_URL}${pathname}`,
+                priceCurrency: "USD",
+                price: price.toFixed(2),
+                availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                itemCondition: "https://schema.org/NewCondition",
+              },
+            } : {}),
+          },
+          {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+              { "@type": "ListItem", position: 2, name: "Shop", item: `${BASE_URL}/shop` },
+              { "@type": "ListItem", position: 3, name, item: `${BASE_URL}${pathname}` },
+            ],
+          },
+        ],
+      },
+    };
   } catch (error) {
-    console.error("Error reading template:", error);
-    return null;
+    console.error(`[seo-render] Unable to load product ${sku}:`, error);
+    return {
+      title: `Replacement Part ${sku} | All Window Door Parts`,
+      description: `Find replacement window and door hardware for SKU ${sku}. Contact our experts for free parts identification and compatibility help.`,
+      heading: `Replacement Part ${sku}`,
+      intro: "Product details are temporarily unavailable. Search the catalog or send photos to our experts for free identification help.",
+      canonicalPath: pathname,
+      sku,
+      links: [["Search the Catalog", `/shop?search=${encodeURIComponent(sku)}`], ["Free Parts Identification", "/parts-identification"]],
+    };
   }
 }
 
-/**
- * Inject metadata into HTML template
- */
-function injectMetadataIntoHtml(html, metadata) {
-  if (!html || !metadata) return html;
-
-  const metaTags = generateMetaTags(metadata);
-  const title = metadata.title;
-
-  // Replace title tag
-  html = html.replace(/<title>.*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
-
-  // Inject meta tags before </head>
-  html = html.replace("</head>", `\n  ${metaTags}\n</head>`);
-
-  return html;
+function pageStructuredData(metadata) {
+  if (metadata.structuredData) return metadata.structuredData;
+  return {
+    "@context": "https://schema.org",
+    "@type": metadata.schemaType || "WebPage",
+    name: metadata.heading,
+    description: metadata.description,
+    url: `${BASE_URL}${metadata.canonicalPath}`,
+    isPartOf: { "@type": "WebSite", name: "All Window Door Parts", url: BASE_URL },
+  };
 }
 
-/**
- * Main handler: Vercel Function
- */
+function managedHead(metadata) {
+  const canonical = `${BASE_URL}${metadata.canonicalPath}`;
+  const image = metadata.image || DEFAULT_IMAGE;
+  const imageAlt = metadata.imageAlt || metadata.heading;
+  const schema = JSON.stringify(pageStructuredData(metadata)).replace(/</g, "\\u003c");
+  return `
+    <title>${escapeHtml(metadata.title)}</title>
+    <meta name="description" content="${escapeHtml(metadata.description)}" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="${escapeHtml(canonical)}" />
+    <meta property="og:type" content="${metadata.schemaType === "Product" ? "product" : "website"}" />
+    <meta property="og:site_name" content="All Window Door Parts" />
+    <meta property="og:title" content="${escapeHtml(metadata.title)}" />
+    <meta property="og:description" content="${escapeHtml(metadata.description)}" />
+    <meta property="og:url" content="${escapeHtml(canonical)}" />
+    <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image:alt" content="${escapeHtml(imageAlt)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(metadata.title)}" />
+    <meta name="twitter:description" content="${escapeHtml(metadata.description)}" />
+    <meta name="twitter:image" content="${escapeHtml(image)}" />
+    <script id="awdp-page-schema" type="application/ld+json">${schema}</script>`;
+}
+
+function stripManagedHead(html) {
+  return html
+    .replace(/<title>[\s\S]*?<\/title>/i, "")
+    .replace(/<meta\s+name=["'](?:description|robots|keywords)["'][^>]*>/gi, "")
+    .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "")
+    .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "")
+    .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "")
+    .replace(/<script\s+id=["']awdp-page-schema["'][\s\S]*?<\/script>/gi, "");
+}
+
+function renderBody(metadata) {
+  const image = metadata.image && metadata.image !== DEFAULT_IMAGE
+    ? `<img src="${escapeHtml(metadata.image)}" alt="${escapeHtml(metadata.imageAlt || metadata.heading)}" width="640" height="640" loading="eager" style="display:block;max-width:520px;width:100%;height:auto;object-fit:contain;margin:24px auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px" />`
+    : "";
+  const links = (metadata.links || []).map(([label, href]) => `<a href="${escapeHtml(href)}" style="display:inline-block;margin:6px 8px 6px 0;padding:12px 18px;border-radius:8px;background:#1e3a5f;color:#fff;text-decoration:none;font-weight:700">${escapeHtml(label)}</a>`).join("");
+  const sku = metadata.sku ? `<p style="font-size:14px;color:#64748b">SKU: ${escapeHtml(metadata.sku)}</p>` : "";
+
+  return `<main id="main-content" style="font-family:Inter,system-ui,sans-serif;max-width:1120px;margin:0 auto;padding:48px 24px;color:#0f172a">
+    <nav aria-label="Breadcrumb" style="font-size:14px;margin-bottom:24px"><a href="/" style="color:#1d4ed8">Home</a> <span aria-hidden="true">/</span> <span>${escapeHtml(metadata.heading)}</span></nav>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem);line-height:1.1;margin:0 0 18px">${escapeHtml(metadata.heading)}</h1>
+    ${sku}
+    <p style="font-size:18px;line-height:1.75;color:#475569;max-width:820px">${escapeHtml(metadata.intro || metadata.description)}</p>
+    ${image}
+    <div style="margin-top:28px">${links}</div>
+    <section style="margin-top:48px;padding-top:28px;border-top:1px solid #e2e8f0">
+      <h2 style="font-size:24px;margin-bottom:10px">Expert help finding the correct part</h2>
+      <p style="line-height:1.7;color:#475569">All Window Door Parts is veteran owned and has more than 40 years of window and door hardware experience. Call <a href="tel:7855330244">785-533-0244</a> Monday through Friday, 8 a.m. to 5 p.m. Central Time.</p>
+    </section>
+  </main>`;
+}
+
+function injectPage(html, metadata) {
+  let output = stripManagedHead(html);
+  output = output.replace("</head>", `${managedHead(metadata)}\n  </head>`);
+
+  const rootStart = output.indexOf('<div id="root">');
+  const scriptStart = output.indexOf('<script type="module"', rootStart);
+  if (rootStart !== -1 && scriptStart !== -1) {
+    const rootOpenEnd = rootStart + '<div id="root">'.length;
+    const rootClose = output.lastIndexOf("</div>", scriptStart);
+    if (rootClose > rootOpenEnd) {
+      output = `${output.slice(0, rootOpenEnd)}\n${renderBody(metadata)}\n${output.slice(rootClose)}`;
+    }
+  }
+  return output;
+}
+
 export default async function handler(req, res) {
-  // Enable CORS for local development
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const userAgent = req.headers["user-agent"] || "";
-  const pathname = req.query.path || "/";
-  const isBot = isBotUserAgent(userAgent);
-
-  console.log(
-    `[SSR] ${isBot ? "BOT" : "USER"} - ${pathname} - UA: ${userAgent.substring(0, 60)}`
-  );
-
-  // List of public routes that should be SSR'd for crawlers
-  const publicRoutes = [
-    "/",
-    "/shop",
-    "/categories",
-    "/product/",
-    "/guides",
-    "/about",
-    "/parts-identification",
-    "/identify-balance",
-    "/resources",
-    "/contact",
-  ];
-
-  const shouldSSR =
-    isBot &&
-    publicRoutes.some(
-      (route) => normalizePath(pathname) === normalizePath(route) || pathname.startsWith(route)
-    );
-
   const template = readTemplate();
-  if (!template) {
-    console.error("Template not found");
-    return res.status(500).json({ error: "Template not found" });
-  }
+  if (!template) return res.status(500).send("Unable to load storefront template");
 
-  if (!shouldSSR) {
-    // Serve normal SPA (index.html) for browsers
-    return res
-      .status(200)
-      .setHeader("Content-Type", "text/html; charset=utf-8")
-      .send(template);
-  }
-
-  // Fetch metadata for the route (bot only)
-  const metadata = await fetchMetadata(pathname);
+  const pathname = normalizePath(req.query.path || req.url || "/");
+  const host = req.headers["x-forwarded-host"] || req.headers.host || "www.allwindowdoorparts.com";
+  const protocol = req.headers["x-forwarded-proto"] || "https";
+  const origin = process.env.SITE_URL || `${protocol}://${host}`;
+  const metadata = (await productMetadata(pathname, origin)) || staticMetadata(pathname);
 
   if (!metadata) {
-    // Route not found or not SSR eligible, serve SPA
-    console.log(`[SSR] No metadata for ${pathname}, serving SPA`);
-    return res
-      .status(200)
-      .setHeader("Content-Type", "text/html; charset=utf-8")
-      .send(template);
+    return res.status(200).setHeader("Content-Type", "text/html; charset=utf-8").send(template);
   }
 
-  // Inject metadata into template for crawler
-  const html = injectMetadataIntoHtml(template, metadata);
-
-  // Return SSR HTML to crawler
-  return res
-    .status(200)
-    .setHeader("Content-Type", "text/html; charset=utf-8")
-    .setHeader(
-      "Cache-Control",
-      "public, s-maxage=3600, stale-while-revalidate=86400"
-    )
-    .send(html);
+  const html = injectPage(template, metadata);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", pathname.startsWith("/product/")
+    ? "public, s-maxage=300, stale-while-revalidate=86400"
+    : "public, s-maxage=3600, stale-while-revalidate=86400");
+  res.setHeader("X-Robots-Tag", "index, follow, max-image-preview:large");
+  return req.method === "HEAD" ? res.status(200).end() : res.status(200).send(html);
 }
