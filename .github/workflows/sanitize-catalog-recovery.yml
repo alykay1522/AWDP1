@@ -48,3 +48,5 @@ jobs:
           fi
           git commit -m "security: purge recovery files and local environment values"
           git push origin HEAD:main
+
+# Triggered after the catalog restoration completed.
