@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Wrench, RefreshCw, ChevronDown, ChevronUp, Mail, Phone, Camera, ExternalLink } from "lucide-react";
+import { Wrench, RefreshCw, ChevronDown, ChevronUp, Mail, Phone, Camera, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
 interface PartsIdRequest {
   id: number; ticketId: string; name: string; email: string;
   phone?: string; description: string; windowDoorBrand?: string;
-  windowDoorAge?: string; imageFileName?: string;
-  status: string; createdAt: string;
+  windowDoorAge?: string; imageFileName?: string; imageUrl?: string;
+  hasImage?: boolean; status: string; createdAt: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -34,16 +34,6 @@ function safeMailtoHref(email: string, params: Record<string, string> = {}): str
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&");
   return `mailto:${encodedEmail}${qs ? `?${qs}` : ""}`;
-}
-
-function isImageUrl(value?: string): value is string {
-  if (!value) return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:";
-  } catch {
-    return false;
-  }
 }
 
 export default function AdminPartsIdList() {
@@ -116,7 +106,7 @@ export default function AdminPartsIdList() {
             {filtered.map((req) => {
               const isExp = expandedId === req.id;
               const cfg = STATUS_CONFIG[req.status] ?? { label: req.status, color: "bg-gray-100 text-gray-600 border-gray-200" };
-              const photoUrl = isImageUrl(req.imageFileName) ? req.imageFileName : undefined;
+              const photoUrl = req.imageUrl;
 
               return (
                 <div key={req.id} className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -127,7 +117,7 @@ export default function AdminPartsIdList() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono text-xs text-muted-foreground">{req.ticketId}</span>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
-                          {req.imageFileName && (
+                          {(req.hasImage || req.imageFileName) && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold bg-violet-50 text-violet-700 border-violet-200">
                               <Camera className="w-3 h-3" /> Photo
                             </span>
@@ -156,24 +146,29 @@ export default function AdminPartsIdList() {
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Window / Door Info</h4>
                           {req.windowDoorBrand && <p><span className="text-muted-foreground">Brand:</span> {req.windowDoorBrand}</p>}
                           {req.windowDoorAge && <p><span className="text-muted-foreground">Age:</span> {req.windowDoorAge}</p>}
-                          {req.imageFileName && !photoUrl && <p><span className="text-muted-foreground">Image attachment:</span> {req.imageFileName}</p>}
+                          {req.imageFileName && !photoUrl && <p><span className="text-muted-foreground">Image attachment:</span> {req.imageFileName} (file unavailable for older request)</p>}
                         </div>
                       </div>
 
                       {photoUrl && (
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Customer Photo</h4>
-                          <a href={photoUrl} target="_blank" rel="noopener noreferrer" className="group block max-w-xl">
-                            <img
-                              src={photoUrl}
-                              alt={`Uploaded part for ${req.ticketId}`}
-                              loading="lazy"
-                              className="w-full max-h-96 object-contain rounded-lg border bg-white"
-                            />
-                            <span className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 group-hover:underline">
-                              Open full-size image <ExternalLink className="w-3.5 h-3.5" />
-                            </span>
-                          </a>
+                          <img
+                            src={photoUrl}
+                            alt={`Uploaded part for ${req.ticketId}`}
+                            loading="lazy"
+                            className="w-full max-w-xl max-h-96 object-contain rounded-lg border bg-white"
+                          />
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <a href={photoUrl} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-md border bg-white px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50">
+                              Open full-size <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                            <a href={`${photoUrl}?download=1`}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90">
+                              Download photo <Download className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
                       )}
 
