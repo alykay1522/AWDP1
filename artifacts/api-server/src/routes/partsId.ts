@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { forwardPartsIdEmail } from "../lib/email.js";
 import { put } from "@vercel/blob";
 import { logger } from "../lib/logger";
+import { serializeStoredPartsIdImage } from "../lib/partsIdImage.js";
 
 const router: IRouter = Router();
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -67,9 +68,11 @@ async function handlePartsId(req: Request, res: Response) {
     let uploadedFileName: string | null = null;
     let imageBuffer: Buffer | null = null;
     let imageContentType: string | null = null;
+    let storedImageReference: string | null = null;
 
     if (typeof imageBase64 === "string" && imageBase64.trim()) {
-      const match = DATA_URL_PATTERN.exec(imageBase64.trim());
+      const normalizedImageData = imageBase64.trim();
+      const match = DATA_URL_PATTERN.exec(normalizedImageData);
       if (!match) {
         return res.status(400).json({ error: "Invalid image data. Please upload a JPEG, PNG, WebP, GIF, HEIC, or HEIF image." });
       }
@@ -92,16 +95,21 @@ async function handlePartsId(req: Request, res: Response) {
           });
           imageUrl = blob.url;
         } catch (uploadError) {
-          // The email attachment below still preserves the customer's image if blob storage is temporarily unavailable.
-          logger.error({ err: uploadError, ticketId }, "Parts ID blob upload failed; continuing with email attachment");
+          logger.error({ err: uploadError, ticketId }, "Parts ID blob upload failed; storing the validated photo in the database instead");
         }
       } else {
-        logger.warn({ ticketId }, "BLOB_READ_WRITE_TOKEN is not configured; Parts ID image will be delivered by email attachment only");
+        logger.warn({ ticketId }, "BLOB_READ_WRITE_TOKEN is not configured; storing the validated Parts ID image in the database");
       }
+
+      // Prefer Vercel Blob, but retain a durable inline fallback so an uploaded photo is
+      // never lost when storage or email delivery is temporarily unavailable.
+      storedImageReference = serializeStoredPartsIdImage({
+        source: imageUrl ?? normalizedImageData,
+        name: uploadedFileName,
+        contentType: imageContentType,
+      });
     }
 
-    // The existing database column is named imageFileName. Store the permanent URL when available;
-    // otherwise retain the original filename so staff can confirm that an image was attached to the email.
     await db.insert(partsIdRequestsTable).values({
       ticketId,
       name: cleanName,
@@ -110,10 +118,11 @@ async function handlePartsId(req: Request, res: Response) {
       description: cleanDescription,
       windowDoorBrand: cleanOptionalText(windowDoorBrand, 150),
       windowDoorAge: cleanOptionalText(windowDoorAge, 80),
-      imageFileName: imageUrl ?? uploadedFileName,
+      imageFileName: storedImageReference,
       status: "pending",
     });
 
+    let notificationDelivered = false;
     try {
       await forwardPartsIdEmail({
         ticketId,
@@ -130,16 +139,21 @@ async function handlePartsId(req: Request, res: Response) {
         submissionId,
         submittedAt: new Date(),
       });
+      notificationDelivered = true;
     } catch (emailError) {
-      // The request is already safely stored. Do not tell the customer the form failed because SMTP had a temporary issue.
-      logger.error({ err: emailError, ticketId }, "Parts ID notification email failed after request was saved");
+      // The request and photo are already safely stored. A mail outage must not discard
+      // the customer's submission or make the form appear to have failed.
+      logger.error({ err: emailError, ticketId }, "Parts ID notification email failed after request and image were saved");
     }
 
     return res.status(201).json({
       success: true,
       ticketId,
-      imageUrl,
-      message: "Parts identification request submitted successfully.",
+      imageStored: Boolean(storedImageReference),
+      notificationDelivered,
+      message: notificationDelivered
+        ? "Parts identification request submitted successfully."
+        : "Your request and uploaded photo were saved successfully. Email notification is temporarily delayed.",
     });
   } catch (err) {
     logger.error({ err }, "Parts ID request failed");
