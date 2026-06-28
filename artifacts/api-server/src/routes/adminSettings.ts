@@ -2,8 +2,10 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { siteSettingsTable, categoriesTable, partsIdRequestsTable, contactSubmissionsTable } from "@workspace/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { decodeInlineImage, parseStoredPartsIdImage } from "../lib/partsIdImage.js";
 
 const router = Router();
+const MAX_ADMIN_IMAGE_BYTES = 6 * 1024 * 1024;
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   // Business info
@@ -118,7 +120,6 @@ router.put("/admin/settings", async (req, res) => {
 
 // ── Categories ────────────────────────────────────────────────────────────────
 
-// GET /api/admin/categories
 router.get("/admin/categories", async (_req, res) => {
   try {
     const categories = await db.select().from(categoriesTable).orderBy(categoriesTable.name);
@@ -128,7 +129,6 @@ router.get("/admin/categories", async (_req, res) => {
   }
 });
 
-// POST /api/admin/categories
 router.post("/admin/categories", async (req, res) => {
   try {
     const { name, slug, description, imageUrl } = req.body as {
@@ -147,7 +147,6 @@ router.post("/admin/categories", async (req, res) => {
   }
 });
 
-// PATCH /api/admin/categories/:id
 router.patch("/admin/categories/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -168,7 +167,6 @@ router.patch("/admin/categories/:id", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/categories/:id
 router.delete("/admin/categories/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -184,11 +182,74 @@ router.delete("/admin/categories/:id", async (req, res) => {
 
 router.get("/admin/parts-id", async (_req, res) => {
   try {
-    const requests = await db
+    const rows = await db
       .select()
       .from(partsIdRequestsTable)
       .orderBy(desc(partsIdRequestsTable.createdAt));
+
+    const requests = rows.map((row) => {
+      const image = parseStoredPartsIdImage(row.imageFileName);
+      return {
+        ...row,
+        imageFileName: image?.name ?? null,
+        hasImage: Boolean(image),
+        imageUrl: image?.available ? `/api/admin/parts-id/${row.id}/image` : null,
+      };
+    });
+
     res.json({ requests });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/admin/parts-id/:id/image", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Invalid request ID" });
+
+    const [row] = await db
+      .select({ imageFileName: partsIdRequestsTable.imageFileName })
+      .from(partsIdRequestsTable)
+      .where(eq(partsIdRequestsTable.id, id))
+      .limit(1);
+
+    const image = parseStoredPartsIdImage(row?.imageFileName);
+    if (!image?.available || !image.source) return res.status(404).json({ error: "Image is not available" });
+
+    let buffer: Buffer;
+    let contentType = image.contentType || "application/octet-stream";
+    const inlineImage = decodeInlineImage(image.source);
+
+    if (inlineImage) {
+      buffer = inlineImage.buffer;
+      contentType = inlineImage.contentType;
+    } else {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      try {
+        const response = await fetch(image.source, { signal: controller.signal });
+        if (!response.ok) return res.status(502).json({ error: "Stored image could not be retrieved" });
+        const declaredLength = Number(response.headers.get("content-length") || 0);
+        if (declaredLength > MAX_ADMIN_IMAGE_BYTES) return res.status(413).json({ error: "Stored image is too large" });
+        buffer = Buffer.from(await response.arrayBuffer());
+        contentType = response.headers.get("content-type") || contentType;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    if (!buffer.length || buffer.length > MAX_ADMIN_IMAGE_BYTES) {
+      return res.status(413).json({ error: "Stored image is too large" });
+    }
+
+    const disposition = req.query.download === "1" ? "attachment" : "inline";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Length", String(buffer.length));
+    res.setHeader("Content-Disposition", `${disposition}; filename="${image.name.replace(/\"/g, "")}"`);
+    res.setHeader("Cache-Control", "private, max-age=300");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    return res.send(buffer);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -198,6 +259,9 @@ router.patch("/admin/parts-id/:id/status", async (req, res) => {
   try {
     const id = Number(req.params.id);
     const { status } = req.body as { status: string };
+    const allowedStatuses = new Set(["pending", "in-progress", "resolved", "closed"]);
+    if (!allowedStatuses.has(status)) return res.status(400).json({ error: "Invalid status" });
+
     const [updated] = await db
       .update(partsIdRequestsTable)
       .set({ status })
