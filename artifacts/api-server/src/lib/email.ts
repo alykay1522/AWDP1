@@ -25,13 +25,27 @@ export interface PartsIdSubmission {
   submittedAt: string | Date;
 }
 
+interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
+interface OutboundMessage {
+  to: string;
+  replyTo?: string;
+  subject: string;
+  html: string;
+  attachments?: MailAttachment[];
+}
+
 function esc(value?: string | null): string {
   if (!value) return "";
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
 
@@ -43,18 +57,82 @@ function formatSubmittedAt(date: string | Date): string {
   }
 }
 
+const smtpTimeoutMs = Math.max(3000, Number(process.env.SMTP_TIMEOUT_MS || 7000));
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 465),
   secure: Number(process.env.SMTP_PORT || 465) === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
+  auth: process.env.SMTP_USER && process.env.SMTP_PASS
+    ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    : undefined,
+  connectionTimeout: smtpTimeoutMs,
+  greetingTimeout: smtpTimeoutMs,
+  socketTimeout: smtpTimeoutMs,
 });
 
 function senderAddress(): string {
-  return process.env.SMTP_FROM || process.env.SMTP_USER || "info@allwindowdoorparts.com";
+  return process.env.SMTP_FROM || process.env.RESEND_FROM || process.env.SMTP_USER || "info@allwindowdoorparts.com";
+}
+
+function normalizeRecipients(value: string): string[] {
+  return value
+    .split(",")
+    .map((recipient) => recipient.trim())
+    .filter(Boolean);
+}
+
+async function sendWithResend(message: OutboundMessage) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), smtpTimeoutMs);
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        from: `All Window Door Parts <${senderAddress()}>`,
+        to: normalizeRecipients(message.to),
+        reply_to: message.replyTo,
+        subject: message.subject,
+        html: message.html,
+        attachments: message.attachments?.map((attachment) => ({
+          filename: attachment.filename,
+          content: attachment.content.toString("base64"),
+          content_type: attachment.contentType,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      const details = await response.text().catch(() => "");
+      throw new Error(`Resend returned ${response.status}${details ? `: ${details.slice(0, 300)}` : ""}`);
+    }
+    return response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sendMessage(message: OutboundMessage) {
+  if (process.env.RESEND_API_KEY) {
+    return sendWithResend(message);
+  }
+
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error("Email delivery is not configured. Set RESEND_API_KEY or SMTP_HOST/SMTP_USER/SMTP_PASS.");
+  }
+
+  return transporter.sendMail({
+    from: `"All Window Door Parts" <${senderAddress()}>`,
+    to: message.to,
+    replyTo: message.replyTo,
+    subject: message.subject,
+    html: message.html,
+    attachments: message.attachments,
+  });
 }
 
 export async function forwardContactEmail(submission: ContactSubmission) {
@@ -68,16 +146,12 @@ export async function forwardContactEmail(submission: ContactSubmission) {
   `;
 
   const recipient = process.env.CONTACT_RECIPIENTS || senderAddress();
-  const mailOptions = {
-    from: `"All Window Door Parts" <${senderAddress()}>`,
+  return sendMessage({
     to: recipient,
     replyTo: submission.email,
     subject: "New Contact Form Submission",
     html,
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-  return info;
+  });
 }
 
 export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
@@ -111,29 +185,31 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
       }]
     : undefined;
 
-  const internalInfo = await transporter.sendMail({
-    from: `"All Window Door Parts" <${senderAddress()}>`,
+  const internalMessage: OutboundMessage = {
     to: recipient,
     replyTo: submission.email,
     subject: `New Parts ID Request — ${submission.ticketId}`,
     html,
     attachments,
-  });
+  };
 
-  // Send the customer a confirmation so they know the request and photo were received.
-  await transporter.sendMail({
-    from: `"All Window Door Parts" <${senderAddress()}>`,
+  const confirmationMessage: OutboundMessage = {
     to: submission.email,
     subject: `We received your Parts ID request — ${submission.ticketId}`,
     html: `
       <h2>We received your Parts ID request</h2>
       <p>Hi ${esc(submission.name)},</p>
       <p>Your request has been received under ticket <strong>${esc(submission.ticketId)}</strong>.</p>
-      <p>${submission.imageFileName ? "Your uploaded photo was included with the request." : "No photo was attached. You can reply to this email with photos if needed."}</p>
+      <p>${submission.imageFileName ? "Your uploaded photo was saved with the request." : "No photo was attached. You can reply to this email with photos if needed."}</p>
       <p>Our team will review the information and contact you with the best available match.</p>
       <p>All Window Door Parts<br>785-533-0244</p>
     `,
-  });
+  };
+
+  const [internalInfo] = await Promise.all([
+    sendMessage(internalMessage),
+    sendMessage(confirmationMessage),
+  ]);
 
   return internalInfo;
 }
