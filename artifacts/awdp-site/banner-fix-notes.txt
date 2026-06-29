@@ -1,0 +1,1 @@
+Uses the original approved CopilotHEADER asset at /assets/header_bg.png, removes the incorrect /assets/header_bg.jpg binary, and redirects the old JPG URL to the approved banner with cache-busting.
