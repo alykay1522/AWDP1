@@ -1,4 +1,4 @@
-name: Deep historical PDF recovery
+name: Fast unresolved PDF recovery
 
 on:
   pull_request:
@@ -11,25 +11,24 @@ jobs:
   recover:
     if: github.head_ref == 'chatgpt/pdf-scrape-20260629'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install --disable-pip-version-check requests beautifulsoup4
-      - name: Try every distinct historical capture
-        run: python tools/recover_unresolved_historical.py
-      - name: Upload historical recovery supplement
+      - name: Run bounded historical recovery
+        run: python tools/recover_unresolved_fast.py
+      - name: Upload recovery supplement
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allbrand-pdfs-historical-supplement
+          name: allbrand-pdfs-fast-supplement
           path: |
-            allbrandwindowdoorparts_pdfs_supplement.zip
-            historical_recovery_output/historical_recovery_index.csv
-            historical_recovery_output/historical_recovery_index.json
-            historical_recovery_output/historical_recovery_summary.json
-            historical_recovery_output/README.txt
+            allbrandwindowdoorparts_pdfs_fast_supplement.zip
+            fast_recovery_output/fast_recovery_index.csv
+            fast_recovery_output/fast_recovery_index.json
+            fast_recovery_output/summary.json
           compression-level: 0
           retention-days: 7
