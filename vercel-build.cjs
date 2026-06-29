@@ -1,5 +1,6 @@
 /**
- * Vercel build hook — builds the API server and storefront from the monorepo root.
+ * Vercel build hook — restores the approved header artwork, then builds the API
+ * server and storefront from the monorepo root.
  */
 const path = require("path");
 const { execSync } = require("child_process");
@@ -16,10 +17,13 @@ function run(command, cwd) {
   });
 }
 
-console.log("\n[vercel-build] Step 1: build API server...");
+console.log("\n[vercel-build] Step 1: install approved header artwork...");
+require("./restore-header.cjs");
+
+console.log("\n[vercel-build] Step 2: build API server...");
 run("node ./build.mjs", path.join(repoRoot, "artifacts", "api-server"));
 
-console.log("\n[vercel-build] Step 2: build storefront...");
+console.log("\n[vercel-build] Step 3: build storefront...");
 run("npx vite build", path.join(repoRoot, "artifacts", "awdp-site"));
 
 console.log("\n[vercel-build] Done.");
