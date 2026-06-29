@@ -1,0 +1,44 @@
+name: One-time AllBrand PDF scrape
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    if: github.head_ref == 'chatgpt/pdf-scrape-20260629'
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - name: Check out scraper branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install scraper dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4
+
+      - name: Scrape and archive PDF directory
+        run: python tools/scrape_allbrand_pdfs.py
+        env:
+          PDF_SCRAPE_WORKERS: '8'
+
+      - name: Upload PDF archive and indexes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allbrandwindowdoorparts-pdf-scrape
+          path: |
+            allbrandwindowdoorparts_pdfs.zip
+            pdf_scrape_output/pdf_index.csv
+            pdf_scrape_output/pdf_index.json
+            pdf_scrape_output/README.txt
+          if-no-files-found: warn
+          compression-level: 0
+          retention-days: 7
