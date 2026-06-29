@@ -1,4 +1,4 @@
-name: One-time AllBrand bulk PDF recovery
+name: Wayback replay diagnostic
 
 on:
   pull_request:
@@ -8,38 +8,23 @@ permissions:
   contents: read
 
 jobs:
-  scrape:
+  diagnose:
     if: github.head_ref == 'chatgpt/pdf-scrape-20260629'
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 15
     steps:
-      - name: Check out recovery branch
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install recovery dependencies
-        run: python -m pip install --disable-pip-version-check requests beautifulsoup4
-
-      - name: Recover PDFs using bulk Wayback indexes
-        run: python tools/bulk_wayback_recovery.py
-        env:
-          PDF_SCRAPE_WORKERS: '6'
-
-      - name: Upload recovered PDF archive and indexes
+      - run: python -m pip install --disable-pip-version-check requests
+      - name: Inspect Wayback replay responses
+        run: python tools/diagnose_wayback.py
+      - name: Upload diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allbrandwindowdoorparts-pdf-bulk-recovery
-          path: |
-            allbrandwindowdoorparts_pdfs.zip
-            pdf_scrape_output/pdf_index.csv
-            pdf_scrape_output/pdf_index.json
-            pdf_scrape_output/cdx_query_report.json
-            pdf_scrape_output/README.txt
+          name: wayback-replay-diagnostic
+          path: wayback_diagnostic/
           if-no-files-found: warn
-          compression-level: 0
           retention-days: 7
