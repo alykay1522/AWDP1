@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Pencil, Trash2, FileText, ExternalLink, Loader2,
   Eye, EyeOff, GripVertical, Check, X, AlertCircle,
+  Download, CheckSquare2, Square,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,42 @@ const TYPE_COLORS: Record<string, string> = {
   "How-To Guide":      "bg-teal-100 text-teal-700",
   "Reference":         "bg-slate-100 text-slate-600",
 };
+
+function suggestedFileName(resource: PdfResource): string {
+  const slug = resource.title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
+
+  return `${slug || `pdf-resource-${resource.id}`}.pdf`;
+}
+
+function triggerPdfDownload(resource: PdfResource): boolean {
+  try {
+    const resolvedUrl = new URL(resource.url, window.location.href);
+    const link = document.createElement("a");
+    link.href = resolvedUrl.href;
+    link.download = suggestedFileName(resource);
+    link.rel = "noopener noreferrer";
+    link.referrerPolicy = "no-referrer";
+
+    // Browsers honor the download attribute for same-origin files. External PDF
+    // hosts may ignore it, so open those in a new tab instead of navigating the
+    // admin panel away from the current page.
+    if (resolvedUrl.origin !== window.location.origin) {
+      link.target = "_blank";
+    }
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // ── Form Dialog ───────────────────────────────────────────────────────────────
 
@@ -154,6 +191,8 @@ export default function AdminResourcesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<PdfResource | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
+  const [isBulkDownloading, setIsBulkDownloading] = useState(false);
 
   const { data, isLoading } = useQuery<{ resources: PdfResource[] }>({
     queryKey: ["admin-resources"],
@@ -199,7 +238,16 @@ export default function AdminResourcesPage() {
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
       return res.json();
     },
-    onSuccess: () => { invalidate(); setConfirmDelete(null); toast({ title: "Resource deleted" }); },
+    onSuccess: (_data, id) => {
+      invalidate();
+      setConfirmDelete(null);
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
+      toast({ title: "Resource deleted" });
+    },
     onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
@@ -209,6 +257,54 @@ export default function AdminResourcesPage() {
   const resources = data?.resources ?? [];
   const active = resources.filter((r) => r.isActive);
   const hidden = resources.filter((r) => !r.isActive);
+  const selectedResources = resources.filter((resource) => selectedIds.has(resource.id));
+  const allSelected = resources.length > 0 && selectedResources.length === resources.length;
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(allSelected ? new Set() : new Set(resources.map((resource) => resource.id)));
+  };
+
+  const downloadSelected = () => {
+    if (selectedResources.length === 0 || isBulkDownloading) return;
+
+    if (
+      selectedResources.length > 20 &&
+      !window.confirm(
+        `This will start ${selectedResources.length} PDF downloads. Your browser may ask you to allow multiple downloads. Continue?`,
+      )
+    ) {
+      return;
+    }
+
+    setIsBulkDownloading(true);
+    let queued = 0;
+    let invalid = 0;
+
+    for (const resource of selectedResources) {
+      if (triggerPdfDownload(resource)) queued += 1;
+      else invalid += 1;
+    }
+
+    setSelectedIds(new Set());
+    window.setTimeout(() => setIsBulkDownloading(false), 500);
+
+    toast({
+      title: queued === 1 ? "PDF download started" : `${queued} PDF downloads started`,
+      description: invalid
+        ? `${invalid} resource URL${invalid === 1 ? " was" : "s were"} invalid. Your browser may ask permission to allow multiple downloads.`
+        : "Your browser may ask permission to allow multiple downloads. External PDFs may open in new tabs.",
+      variant: invalid && queued === 0 ? "destructive" : "default",
+    });
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
@@ -247,61 +343,133 @@ export default function AdminResourcesPage() {
             <Button onClick={() => setShowForm(true)}><Plus className="w-4 h-4 mr-2" /> Add First Resource</Button>
           </div>
         ) : (
-          <div className="space-y-2">
-            {resources.map((r) => (
-              <div
-                key={r.id}
-                className={`bg-white border rounded-xl p-4 flex items-start gap-4 transition-opacity ${!r.isActive ? "opacity-60" : ""}`}
-              >
-                <GripVertical className="w-4 h-4 text-slate-300 mt-1 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 mb-1">
-                    <p className="font-semibold text-slate-800 text-sm leading-snug flex-1">{r.title}</p>
-                    <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${TYPE_COLORS[r.type] ?? "bg-slate-100 text-slate-600"}`}>
-                      {r.type}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="bg-slate-100 px-2 py-0.5 rounded-full">{r.category}</span>
-                    {r.brand && <span>{r.brand}</span>}
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-primary hover:underline truncate max-w-xs"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      {r.url.length > 50 ? r.url.slice(0, 50) + "…" : r.url}
-                    </a>
-                  </div>
-                  {r.description && (
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-1">{r.description}</p>
+          <>
+            <div className="mb-4 flex flex-col gap-3 rounded-xl border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                  aria-pressed={allSelected}
+                >
+                  {allSelected ? (
+                    <CheckSquare2 className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Square className="h-4 w-4" />
                   )}
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => toggleActive(r)}
-                    className={`p-1.5 rounded-lg transition-colors ${r.isActive ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
-                    title={r.isActive ? "Hide from public" : "Show to public"}
-                  >
-                    {r.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={() => { setEditing(r); setShowForm(true); }}
-                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(r.id)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                  {allSelected ? "Clear all" : "Select all"}
+                </button>
+                <span className="text-sm text-slate-400">
+                  {selectedResources.length} selected
+                </span>
               </div>
-            ))}
-          </div>
+              <Button
+                type="button"
+                onClick={downloadSelected}
+                disabled={selectedResources.length === 0 || isBulkDownloading}
+                className="gap-2"
+              >
+                {isBulkDownloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Download selected
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {resources.map((r) => {
+                const isSelected = selectedIds.has(r.id);
+                return (
+                  <div
+                    key={r.id}
+                    className={`bg-white border rounded-xl p-4 flex items-start gap-3 transition-all ${
+                      !r.isActive ? "opacity-60" : ""
+                    } ${isSelected ? "border-primary/50 ring-1 ring-primary/20" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleSelected(r.id)}
+                      className="mt-0.5 shrink-0 rounded text-slate-400 transition-colors hover:text-primary"
+                      aria-label={`${isSelected ? "Deselect" : "Select"} ${r.title}`}
+                      aria-pressed={isSelected}
+                    >
+                      {isSelected ? (
+                        <CheckSquare2 className="h-5 w-5 text-primary" />
+                      ) : (
+                        <Square className="h-5 w-5" />
+                      )}
+                    </button>
+                    <GripVertical className="w-4 h-4 text-slate-300 mt-1 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 mb-1">
+                        <p className="font-semibold text-slate-800 text-sm leading-snug flex-1">{r.title}</p>
+                        <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${TYPE_COLORS[r.type] ?? "bg-slate-100 text-slate-600"}`}>
+                          {r.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="bg-slate-100 px-2 py-0.5 rounded-full">{r.category}</span>
+                        {r.brand && <span>{r.brand}</span>}
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline truncate max-w-xs"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          {r.url.length > 50 ? r.url.slice(0, 50) + "…" : r.url}
+                        </a>
+                      </div>
+                      {r.description && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-1">{r.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const started = triggerPdfDownload(r);
+                          toast({
+                            title: started ? "PDF download started" : "Invalid PDF URL",
+                            description: started && new URL(r.url, window.location.href).origin !== window.location.origin
+                              ? "External PDFs may open in a new tab."
+                              : undefined,
+                            variant: started ? "default" : "destructive",
+                          });
+                        }}
+                        className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+                        title="Download PDF"
+                        aria-label={`Download ${r.title}`}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => toggleActive(r)}
+                        className={`p-1.5 rounded-lg transition-colors ${r.isActive ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
+                        title={r.isActive ? "Hide from public" : "Show to public"}
+                      >
+                        {r.isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => { setEditing(r); setShowForm(true); }}
+                        className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(r.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
