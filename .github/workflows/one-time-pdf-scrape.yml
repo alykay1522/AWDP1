@@ -1,4 +1,4 @@
-name: One-time AllBrand PDF recovery
+name: One-time AllBrand PDF recovery test
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ jobs:
   scrape:
     if: github.head_ref == 'chatgpt/pdf-scrape-20260629'
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 30
     steps:
       - name: Check out recovery branch
         uses: actions/checkout@v4
@@ -24,16 +24,17 @@ jobs:
       - name: Install recovery dependencies
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4
 
-      - name: Recover PDFs from archived snapshots
+      - name: Test archived PDF recovery
         run: python tools/recover_archive_only.py
         env:
-          PDF_SCRAPE_WORKERS: '8'
+          PDF_SCRAPE_WORKERS: '3'
+          PDF_LINK_LIMIT: '3'
 
-      - name: Upload recovered PDF archive and indexes
+      - name: Upload test output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allbrandwindowdoorparts-pdf-recovery-v2
+          name: allbrandwindowdoorparts-pdf-recovery-test
           path: |
             allbrandwindowdoorparts_pdfs.zip
             pdf_scrape_output/pdf_index.csv
