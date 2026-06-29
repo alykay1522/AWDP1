@@ -32,12 +32,17 @@ interface MailAttachment {
 }
 
 interface OutboundMessage {
-  to: string;
+  to: string | string[];
   replyTo?: string;
   subject: string;
   html: string;
   attachments?: MailAttachment[];
 }
+
+const REQUIRED_PARTS_ID_RECIPIENTS = [
+  "thepolak@wefixitusa.com",
+  "alyshameade.1522@gmail.com",
+] as const;
 
 function esc(value?: string | null): string {
   if (!value) return "";
@@ -57,28 +62,41 @@ function formatSubmittedAt(date: string | Date): string {
   }
 }
 
-const smtpTimeoutMs = Math.max(3000, Number(process.env.SMTP_TIMEOUT_MS || 7000));
+const smtpTimeoutMs = Math.max(3000, Number(process.env.SMTP_TIMEOUT_MS || 10000));
+const smtpPort = Number(process.env.SMTP_PORT || 465);
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 465),
-  secure: Number(process.env.SMTP_PORT || 465) === 465,
+  port: smtpPort,
+  secure: smtpPort === 465,
   auth: process.env.SMTP_USER && process.env.SMTP_PASS
     ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
     : undefined,
   connectionTimeout: smtpTimeoutMs,
   greetingTimeout: smtpTimeoutMs,
   socketTimeout: smtpTimeoutMs,
+  pool: false,
 });
 
 function senderAddress(): string {
   return process.env.SMTP_FROM || process.env.RESEND_FROM || process.env.SMTP_USER || "info@allwindowdoorparts.com";
 }
 
-function normalizeRecipients(value: string): string[] {
-  return value
-    .split(",")
+function normalizeRecipients(value: string | string[]): string[] {
+  const values = Array.isArray(value) ? value : value.split(/[;,]/);
+  return values
     .map((recipient) => recipient.trim())
-    .filter(Boolean);
+    .filter((recipient) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient));
+}
+
+function partsIdRecipients(): string[] {
+  const configured = [
+    process.env.PARTSID_RECIPIENTS,
+    process.env.CONTACT_RECIPIENTS,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .flatMap((value) => normalizeRecipients(value));
+
+  return [...new Set([...REQUIRED_PARTS_ID_RECIPIENTS, ...configured])];
 }
 
 async function sendWithResend(message: OutboundMessage) {
@@ -117,8 +135,11 @@ async function sendWithResend(message: OutboundMessage) {
 }
 
 async function sendMessage(message: OutboundMessage) {
+  const recipients = normalizeRecipients(message.to);
+  if (recipients.length === 0) throw new Error("Email has no valid recipients.");
+
   if (process.env.RESEND_API_KEY) {
-    return sendWithResend(message);
+    return sendWithResend({ ...message, to: recipients });
   }
 
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -127,7 +148,7 @@ async function sendMessage(message: OutboundMessage) {
 
   return transporter.sendMail({
     from: `"All Window Door Parts" <${senderAddress()}>`,
-    to: message.to,
+    to: recipients,
     replyTo: message.replyTo,
     subject: message.subject,
     html: message.html,
@@ -176,7 +197,6 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
     <p><strong>Submitted At:</strong> ${formatSubmittedAt(submission.submittedAt)}</p>
   `;
 
-  const recipient = process.env.PARTSID_RECIPIENTS || process.env.CONTACT_RECIPIENTS || senderAddress();
   const attachments = submission.imageBuffer && submission.imageFileName
     ? [{
         filename: submission.imageFileName,
@@ -185,31 +205,35 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
       }]
     : undefined;
 
-  const internalMessage: OutboundMessage = {
-    to: recipient,
+  // These two addresses are mandatory business recipients. Configured addresses
+  // are additive, not replacements, so Parts ID submissions cannot silently go
+  // only to the SMTP login address.
+  const internalInfo = await sendMessage({
+    to: partsIdRecipients(),
     replyTo: submission.email,
     subject: `New Parts ID Request — ${submission.ticketId}`,
     html,
     attachments,
-  };
+  });
 
-  const confirmationMessage: OutboundMessage = {
-    to: submission.email,
-    subject: `We received your Parts ID request — ${submission.ticketId}`,
-    html: `
-      <h2>We received your Parts ID request</h2>
-      <p>Hi ${esc(submission.name)},</p>
-      <p>Your request has been received under ticket <strong>${esc(submission.ticketId)}</strong>.</p>
-      <p>${submission.imageFileName ? "Your uploaded photo was saved with the request." : "No photo was attached. You can reply to this email with photos if needed."}</p>
-      <p>Our team will review the information and contact you with the best available match.</p>
-      <p>All Window Door Parts<br>785-533-0244</p>
-    `,
-  };
-
-  const [internalInfo] = await Promise.all([
-    sendMessage(internalMessage),
-    sendMessage(confirmationMessage),
-  ]);
+  // Customer confirmation is useful but must never prevent the internal
+  // forwarding result from succeeding.
+  try {
+    await sendMessage({
+      to: submission.email,
+      subject: `We received your Parts ID request — ${submission.ticketId}`,
+      html: `
+        <h2>We received your Parts ID request</h2>
+        <p>Hi ${esc(submission.name)},</p>
+        <p>Your request has been received under ticket <strong>${esc(submission.ticketId)}</strong>.</p>
+        <p>${submission.imageFileName ? "Your uploaded photo was saved with the request." : "No photo was attached. You can reply to this email with photos if needed."}</p>
+        <p>Our team will review the information and contact you with the best available match.</p>
+        <p>All Window Door Parts<br>785-533-0244</p>
+      `,
+    });
+  } catch (confirmationError) {
+    console.error("Parts ID customer confirmation failed", confirmationError);
+  }
 
   return internalInfo;
 }
