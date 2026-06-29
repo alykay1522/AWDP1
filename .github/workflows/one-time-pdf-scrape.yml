@@ -24,16 +24,16 @@ jobs:
       - name: Install recovery dependencies
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4
 
-      - name: Recover live and archived PDFs
-        run: python tools/recover_allbrand_pdfs.py
+      - name: Recover PDFs from archived snapshots
+        run: python tools/recover_archive_only.py
         env:
-          PDF_SCRAPE_WORKERS: '5'
+          PDF_SCRAPE_WORKERS: '8'
 
       - name: Upload recovered PDF archive and indexes
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allbrandwindowdoorparts-pdf-recovery
+          name: allbrandwindowdoorparts-pdf-recovery-v2
           path: |
             allbrandwindowdoorparts_pdfs.zip
             pdf_scrape_output/pdf_index.csv
