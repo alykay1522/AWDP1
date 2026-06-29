@@ -14,8 +14,8 @@ export const heroBgWebp = "/assets/hero_hardware_bg.webp";
 export const ctaBg      = "/assets/cta_hardware_bg.png";
 export const ctaBgWebp  = "/assets/cta_hardware_bg.webp";
 
-/** Full-width header banner artwork. Versioned to bypass stale browser/CDN copies. */
-export const headerBg    = "/assets/header_bg.jpg?v=approved-20260629-2";
+/** Approved full-width flag banner. Versioned to bypass stale browser/CDN copies. */
+export const headerBg    = "/assets/header_bg.png?v=approved-20260629-2";
 
 /** Logo used in footer / mobile nav */
 export const logo        = "/assets/logo-banner.png";
