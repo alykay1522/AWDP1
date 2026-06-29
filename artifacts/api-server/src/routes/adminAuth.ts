@@ -38,11 +38,13 @@ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res:
   }
 
   // Use timing-safe comparison to prevent timing attacks
-  const passwordBuffer = Buffer.from(password, 'utf8');
-  const adminPasswordBuffer = Buffer.from(adminPassword, 'utf8');
-  
-  if (passwordBuffer.length !== adminPasswordBuffer.length || 
-      !crypto.timingSafeEqual(passwordBuffer, adminPasswordBuffer)) {
+  const passwordBuffer = Buffer.from(password, "utf8");
+  const adminPasswordBuffer = Buffer.from(adminPassword, "utf8");
+
+  if (
+    passwordBuffer.length !== adminPasswordBuffer.length ||
+    !crypto.timingSafeEqual(passwordBuffer, adminPasswordBuffer)
+  ) {
     return res.status(401).json({ error: "Invalid password" });
   }
 
@@ -78,6 +80,11 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
     SMTP_HOST: !!process.env.SMTP_HOST,
     SMTP_USER: !!process.env.SMTP_USER,
     SMTP_PASS: !!process.env.SMTP_PASS,
+    SMTP_FROM: !!process.env.SMTP_FROM,
+    RESEND_API_KEY: !!process.env.RESEND_API_KEY,
+    PARTSID_RECIPIENTS: !!process.env.PARTSID_RECIPIENTS,
+    CONTACT_RECIPIENTS: !!process.env.CONTACT_RECIPIENTS,
+    BLOB_READ_WRITE_TOKEN: !!process.env.BLOB_READ_WRITE_TOKEN,
     VERCEL: !!process.env.VERCEL,
     NODE_ENV: process.env.NODE_ENV || "unset",
   });
