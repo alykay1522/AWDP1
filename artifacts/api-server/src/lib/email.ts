@@ -62,7 +62,7 @@ export async function forwardContactEmail(submission: ContactSubmission) {
     html,
   };
 
-  console.log("📨 Sending contact email:", mailOptions);
+  console.log("📨 Sending contact email to:", process.env.CONTACT_RECIPIENTS);
 
   const info = await transporter.sendMail(mailOptions);
 
