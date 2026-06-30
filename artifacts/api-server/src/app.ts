@@ -217,7 +217,7 @@ app.use(
       const isVercel = !!process.env.VERCEL;
       const isProduction = process.env.NODE_ENV === "production" || isVercel;
       const sameSite = process.env.SESSION_COOKIE_SAME_SITE === "none" ? "none" : "lax";
-      const secure = isProduction; // always secure on Vercel/production
+      const secure = isProduction || sameSite === "none"; // SameSite=None requires Secure
       return {
         httpOnly: true,
         secure,
