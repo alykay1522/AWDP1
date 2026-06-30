@@ -94,7 +94,7 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
     html,
   };
 
-  console.log("📨 Sending Parts ID email:", mailOptions);
+  console.log("📨 Sending Parts ID email");
 
   const info = await transporter.sendMail(mailOptions);
 
