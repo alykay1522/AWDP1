@@ -13,7 +13,7 @@ function isValidSingleEmail(value: unknown): value is string {
   return /^[a-zA-Z0-9.+_~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
 }
 
-router.post("/parts-id", async (req, res) => {
+router.post(["/parts-id", "/parts-identification"], async (req, res) => {
   try {
     const {
       name,
