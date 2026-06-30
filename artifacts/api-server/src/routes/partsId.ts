@@ -29,10 +29,11 @@ function safeFileName(value: unknown, contentType: string): string {
   if (typeof value !== "string" || !value.trim()) return fallback;
 
   const sanitized = value
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
+      .trim()
+      .slice(0, 120)
+      .replace(/[^a-zA-Z0-9._-]+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "");
 
   return sanitized || fallback;
 }
