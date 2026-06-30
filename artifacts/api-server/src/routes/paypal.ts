@@ -178,7 +178,7 @@ router.post("/paypal/capture-order", async (req, res) => {
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total as string); // total already includes shipping
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
+      if (capturedAmount === null || Math.round(capturedAmount * 100) !== Math.round(localTotal * 100)) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"
