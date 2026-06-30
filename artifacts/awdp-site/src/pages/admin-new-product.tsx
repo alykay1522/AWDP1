@@ -141,7 +141,7 @@ export default function AdminNewProduct() {
         specifications: specs,
       };
 
-      const res = await fetch("/api/admin/products", {
+      const res = await fetch("/api/admin/products", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

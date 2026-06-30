@@ -1,9 +1,9 @@
-import { useCart } from "@/lib/cart";
+import { useCart } from "../lib/cart.jsx";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
 import { ShoppingCart, PackageCheck, Layers } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ProductImage } from "@/components/product-image";
+import { Button } from "./ui/button.jsx";
+import { ProductImage } from "./product-image.jsx";
 
 const CATEGORY_SNIPPETS: Record<string, string> = {
   "Window Balances":                   "Replacement sash balance for smooth, reliable window operation.",

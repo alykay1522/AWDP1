@@ -24,21 +24,29 @@ import sitemapRouter from "./routes/sitemap";
 import { pool } from "@workspace/db";
 import { isPayPalCheckoutOnly } from "./lib/checkoutMode.js";
 
-// Validate critical environment variables
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-production") {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET environment variable must be set to a secure random value in production");
-  } else {
-    logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
-  }
+function hasSecureSessionSecret() {
+  return !!process.env.SESSION_SECRET && process.env.SESSION_SECRET !== "change-me-in-production";
+}
+
+function isProductionRuntime() {
+  return process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+}
+
+function shouldBlockAdminSessionRoutes() {
+  return isProductionRuntime() && !hasSecureSessionSecret();
+}
+
+// Validate SESSION_SECRET
+if (!hasSecureSessionSecret()) {
+  logger.warn("SESSION_SECRET is using default value. Set a secure random value in production.");
 }
 
 const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
-// Trust Replit's reverse proxy so secure cookies work over HTTPS
-app.set("trust proxy", 1);
+// Trust reverse proxy — works for both Replit and Vercel
+app.set("trust proxy", true);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
 // CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
@@ -157,6 +165,28 @@ app.use(
     return callback(new Error(`Not allowed by CORS: ${originHeader}`));
   }),
 );
+
+// Disable HTTP caching on all API responses so browsers never serve stale data
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
+app.use("/api/admin", (req, res, next) => {
+  if (!shouldBlockAdminSessionRoutes()) {
+    return next();
+  }
+
+  if (req.path === "/env-check" || req.path.startsWith("/images/serve/")) {
+    return next();
+  }
+
+  return res.status(503).json({
+    error: "Admin session secret is not configured.",
+    detail: "Set SESSION_SECRET to a secure random value before using admin authentication.",
+  });
+});
+
 // Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
 const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT ?? "32mb";
 app.use(express.json({ limit: jsonBodyLimit }));
@@ -181,25 +211,23 @@ app.use(
       return Date.now().toString();
     },
     cookie: (() => {
+      // On Vercel (and any HTTPS deployment), use secure cookies.
+      // sameSite "lax" works for same-origin requests on Vercel.
+      // Use SESSION_COOKIE_SAME_SITE=none only if the API is on a different domain from the frontend.
+      const isVercel = !!process.env.VERCEL;
+      const isProduction = process.env.NODE_ENV === "production" || isVercel;
       const sameSite = process.env.SESSION_COOKIE_SAME_SITE === "none" ? "none" : "lax";
-      const secure = sameSite === "none" ? true : process.env.NODE_ENV === "production";
+      const secure = isProduction; // always secure on Vercel/production
       return {
         httpOnly: true,
         secure,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        // Lax is correct for the same-origin Vercel serverless backend.
-        // Use SESSION_COOKIE_SAME_SITE=none only for an intentional cross-site API deployment.
         sameSite,
+        path: "/",
       };
     })(),
   })
 );
-
-// Disable HTTP caching on all API responses so browsers never serve stale data
-app.use("/api", (_req, res, next) => {
-  res.setHeader("Cache-Control", "no-store");
-  next();
-});
 
 // Public routes
 app.use("/api", router);

@@ -1,20 +1,23 @@
 import { useCart } from "@/lib/cart";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function Checkout() {
-  const { items, total, clearCart, removeItem } = useCart();
+  const { items, totalPrice, clearCart, removeFromCart } = useCart();
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState<{ cost: number; label: string } | null>(null);
 
-  // Store both IDs returned from create-order
-  const [orderData, setOrderData] = useState<{ paypalOrderId: string; orderId: string } | null>(null);
+  // useRef avoids the stale-closure bug: PayPal SDK captures onApprove at render time,
+  // so reading orderData from state may return the pre-setOrderData null. A ref is
+  // always current regardless of when PayPal calls the callback.
+  const orderDataRef = useRef<{ paypalOrderId: string; orderId: string } | null>(null);
 
   if (items.length === 0) {
     return (
@@ -56,7 +59,7 @@ export default function Checkout() {
                   <div className="text-right">
                     <div>${(item.price * item.quantity).toFixed(2)}</div>
                     <button 
-                      onClick={() => removeItem(item.sku)}
+                      onClick={() => removeFromCart(item.id)}
                       className="text-xs text-red-500 hover:underline mt-1"
                     >
                       Remove
@@ -64,9 +67,21 @@ export default function Checkout() {
                   </div>
                 </div>
               ))}
-              <div className="pt-4 flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="pt-4 space-y-2 border-t">
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>Subtotal</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
+                {shippingInfo && (
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>Shipping (UPS/FedEx Ground)</span>
+                    <span>${shippingInfo.cost.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>{shippingInfo ? "Total" : "Subtotal"}</span>
+                  <span>${shippingInfo ? (totalPrice + shippingInfo.cost).toFixed(2) : totalPrice.toFixed(2)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -83,9 +98,9 @@ export default function Checkout() {
                   createOrder={async () => {
                     setLoading(true);
                     setError(null);
-                    setOrderData(null);
+                    orderDataRef.current = null;
                     try {
-                      const res = await fetch("/api/checkout/create-order", {
+                      const res = await fetch("/api/paypal/create-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -99,7 +114,8 @@ export default function Checkout() {
                       }
 
                       const data = await res.json();
-                      setOrderData({ paypalOrderId: data.paypalOrderId, orderId: data.orderId });
+                      // Write to ref immediately — always readable in onApprove regardless of render timing
+                      orderDataRef.current = { paypalOrderId: data.paypalOrderId, orderId: data.orderId };
                       return data.paypalOrderId;
                     } catch (err: any) {
                       const msg = err.message || "Could not start payment. Please try again.";
@@ -110,6 +126,7 @@ export default function Checkout() {
                     }
                   }}
                   onApprove={async (data: any) => {
+                    const orderData = orderDataRef.current;
                     if (!orderData?.orderId) {
                       setError("Order information missing. Please try again.");
                       setProcessingPayment(false);
@@ -119,7 +136,7 @@ export default function Checkout() {
 
                     setProcessingPayment(true);
                     try {
-                      const res = await fetch("/api/checkout/capture-order", {
+                      const res = await fetch("/api/paypal/capture-order", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

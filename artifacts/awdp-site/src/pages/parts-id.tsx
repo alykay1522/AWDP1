@@ -109,16 +109,7 @@ export default function PartsIdentification() {
     analytics.track("Parts ID Wizard Submitted", { partType, hasImage: !!selectedImage });
 
     try {
-      // 1. Save via existing system
       await submitMutation.mutateAsync({ data });
-
-      // 2. Send email via /api/parts-id
-      await fetch("/api/parts-id", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
       analytics.track("Parts ID Submission Success");
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -131,14 +122,14 @@ export default function PartsIdentification() {
   if (isSubmitted) {
     return (
       <ErrorBoundary>
-        <PageSeo title="Parts ID Request Submitted | Free Identification Service" description="Your free parts identification request has been submitted. Our experts will identify your window or door part within 1 business day." />
+        <PageSeo title="Parts ID Request Submitted | Free Identification Service" description="Your free parts identification request has been submitted. Our experts will identify your window or door part as soon as possible." />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center py-16 px-4">
           <div className="max-w-lg w-full text-center bg-white rounded-2xl shadow-lg p-10 border">
             <div className="w-20 h-20 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
               <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
             <h1 className="text-2xl font-serif font-bold text-slate-900 mb-3">You're all set!</h1>
-            <p className="text-slate-600 mb-2">We received your request and will identify your part — usually within 1 business day.</p>
+            <p className="text-slate-600 mb-2">We received your request and will identify your part as soon as possible.</p>
             <p className="text-slate-500 text-sm mb-8">Check your inbox for a confirmation email. If you have photos to add, reply to that email.</p>
             <div className="bg-slate-50 rounded-xl p-4 text-left text-sm text-slate-600 mb-8 border">
               <p className="font-semibold text-slate-800 mb-1">In the meantime, you can also reach us at:</p>
@@ -165,7 +156,7 @@ export default function PartsIdentification() {
     <ErrorBoundary>
       <PageSeo
         title="Free Parts Identification Service | Identify Window & Door Parts"
-        description="Can't identify your window or door part? Upload a photo for free expert identification. Usually within 1 business day. Veteran-owned, 40+ years experience. No obligation."
+        description="Can't identify your window or door part? Upload a photo for free expert identification. We respond as soon as possible. Veteran-owned, 40+ years experience. No obligation."
         structuredData={{
           "@context": "https://schema.org",
           "@type": "Service",
@@ -177,7 +168,7 @@ export default function PartsIdentification() {
             "email": "Info@allwindowdoorparts.com",
             "url": "https://www.allwindowdoorparts.com"
           },
-          "description": "Send us a photo of your window or door hardware and our experts will identify the correct replacement part — free of charge, usually within 1 business day.",
+          "description": "Send us a photo of your window or door hardware and our experts will identify the correct replacement part — free of charge. We respond as soon as possible.",
           "serviceType": "Parts Identification",
           "areaServed": "USA",
           "offers": {
@@ -199,7 +190,7 @@ export default function PartsIdentification() {
         </div>
         <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">Find My Part — Free</h1>
         <p className="text-primary-foreground/80 max-w-xl mx-auto text-lg">
-          Answer 3 quick questions and we'll identify your exact part — usually within 1 business day.
+          Answer 3 quick questions and we'll identify your exact part — we respond as soon as possible.
         </p>
       </div>
 
@@ -359,20 +350,36 @@ export default function PartsIdentification() {
                     </p>
                   </div>
                 ) : (
-                  <div
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
-                      ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
-                    onClick={() => document.getElementById("photo-upload")?.click()}
-                   >
-                     <div className="flex flex-col items-center gap-3">
-                       <UploadCloud className="w-8 h-8 text-slate-400" />
-                       <p className="font-medium text-slate-700">Drag and drop your photo here</p>
-                       <p className="text-sm text-slate-500">or click to browse</p>
-                     </div>
-                   </div>
+                  <div>
+                    {/* Hidden file input — required for click-to-browse to work */}
+                    <input
+                      id="photo-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) processFile(file);
+                        // Reset so same file can be re-selected
+                        e.target.value = "";
+                      }}
+                    />
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={handleDrop}
+                      className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
+                        ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
+                      onClick={() => document.getElementById("photo-upload")?.click()}
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <UploadCloud className="w-8 h-8 text-slate-400" />
+                        <p className="font-medium text-slate-700">Drag and drop your photo here</p>
+                        <p className="text-sm text-slate-500">or click to browse</p>
+                        <p className="text-xs text-slate-400">JPEG, PNG, WebP up to 5MB</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Photo Examples Section - Collapsible */}
@@ -586,7 +593,7 @@ export default function PartsIdentification() {
                   )}
                   </Button>
                 <p className="text-center text-xs text-slate-400 mt-3">
-                  Free service. No obligation. We respond within 1 business day.
+                  Free service. No obligation. We respond to parts ID requests as soon as possible. Please don't send multiple requests unless you're inquiring about more than one item.
                 </p>
               </form>
             </div>
@@ -618,7 +625,7 @@ export default function PartsIdentification() {
         <div className="max-w-2xl mx-auto grid grid-cols-3 gap-6 text-center text-sm text-slate-500">
           <div><Shield className="w-6 h-6 mx-auto text-primary mb-1" /><p className="font-semibold text-slate-700">Always Free</p><p>No charge, ever</p></div>
           <div><CheckCircle2 className="w-6 h-6 mx-auto text-emerald-500 mb-1" /><p className="font-semibold text-slate-700">Expert ID</p><p>40+ years experience</p></div>
-          <div><Camera className="w-6 h-6 mx-auto text-amber-500 mb-1" /><p className="font-semibold text-slate-700">Fast Response</p><p>Usually 1 business day</p></div>
+          <div><Camera className="w-6 h-6 mx-auto text-amber-500 mb-1" /><p className="font-semibold text-slate-700">Fast Response</p><p>We respond as soon as possible</p></div>
         </div>
       </div>
     </ErrorBoundary>

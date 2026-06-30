@@ -18,7 +18,7 @@ export default function AdminLogin() {
     mutationFn: async (pw: string) => {
       let res: Response;
       try {
-        res = await fetch("/api/admin/login", {
+        res = await fetch("/api/admin/login", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

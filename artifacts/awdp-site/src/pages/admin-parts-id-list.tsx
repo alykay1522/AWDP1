@@ -45,7 +45,7 @@ export default function AdminPartsIdList() {
   const { data, isLoading, refetch } = useQuery<{ requests: PartsIdRequest[] }>({
     queryKey: ["admin-parts-id"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/parts-id");
+      const res = await fetch("/api/admin/parts-id", { credentials: "include" });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -53,7 +53,7 @@ export default function AdminPartsIdList() {
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch(`/api/admin/parts-id/${id}/status`, {
+      const res = await fetch(`/api/admin/parts-id/${id}/status`, { credentials: "include",
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),

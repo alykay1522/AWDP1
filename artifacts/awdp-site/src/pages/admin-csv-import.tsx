@@ -57,7 +57,7 @@ export default function AdminCsvImport() {
     fd.append("file", file);
 
     try {
-      const res = await fetch(`/api/admin/csv-import?mode=${mode}`, {
+      const res = await fetch(`/api/admin/csv-import?mode=${mode}`, { credentials: "include",
         method: "POST",
         body: fd,
         credentials: "include",

@@ -524,9 +524,7 @@ export default function ProductDetail() {
                 </div>
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
-                  <div className="flex items-center gap-3 text-emerald-700 font-semibold">
-                    <PackageCheck className="w-5 h-5 text-emerald-600 shrink-0" /> Usually ships within 1–3 business days
-                  </div>
+                  
                   <div className="flex items-center gap-3">
                     <Truck className="w-5 h-5 text-primary shrink-0" /> Shipping calculated at checkout
                   </div>

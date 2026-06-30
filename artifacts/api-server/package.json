@@ -13,12 +13,16 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
-    "@paypal/paypal-js": "^9.5.0",
+    "@paypal/paypal-js": "^10.0.0",
     "@types/adm-zip": "^0.5.8",
     "@types/multer": "^2.1.0",
+    "@vercel/blob": "^0.27.3",
+    "@vercel/blob": "^0.27.3",
     "@types/nodemailer": "^8.0.0",
     "@types/sharp": "^0.32.0",
     "@workspace/api-zod": "workspace:*",
+    "date-fns": "^4.1.0",
+    "date-fns": "^4.1.0",
     "@workspace/db": "workspace:*",
     "adm-zip": "^0.5.17",
     "compression": "^1.8.1",
@@ -33,13 +37,14 @@
     "express-slow-down": "^3.1.0",
     "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
+    "multer": "^2.2.0",
     "multer": "^2.1.1",
-    "nodemailer": "^8.0.10",
+    "nodemailer": "^9.0.1",
     "openai": "^6.33.0",
     "pino": "^9",
     "pino-http": "^11",
     "sharp": "^0.34.5",
-    "stripe": "^22.1.0",
+    "stripe": "^22.2.2",
     "stripe-replit-sync": "^1.0.0",
     "zod": "catalog:"
   },
@@ -51,9 +56,10 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/node": "catalog:",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "esbuild-plugin-pino": "^2.3.3",
     "pino-pretty": "^13",
-    "thread-stream": "4.2.0"
+    "thread-stream": "4.2.0",
+    "vitest": "^4.1.8"
   }
 }

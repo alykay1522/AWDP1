@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 8 * * *"   # 3 AM CST (08:00 UTC)
 
+permissions:
+  contents: write
+
 jobs:
   build-awdp:
     runs-on: ubuntu-latest

@@ -158,7 +158,7 @@ export default function AdminResourcesPage() {
   const { data, isLoading } = useQuery<{ resources: PdfResource[] }>({
     queryKey: ["admin-resources"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/resources");
+      const res = await fetch("/api/admin/resources", { credentials: "include" });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -171,7 +171,7 @@ export default function AdminResourcesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (body: FormData) => {
-      const res = await fetch("/api/admin/resources", {
+      const res = await fetch("/api/admin/resources", { credentials: "include",
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
@@ -183,7 +183,7 @@ export default function AdminResourcesPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, body }: { id: number; body: Partial<FormData> }) => {
-      const res = await fetch(`/api/admin/resources/${id}`, {
+      const res = await fetch(`/api/admin/resources/${id}`, { credentials: "include",
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
@@ -195,7 +195,7 @@ export default function AdminResourcesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/resources/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/resources/${id}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
       return res.json();
     },

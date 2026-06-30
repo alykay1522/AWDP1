@@ -90,6 +90,7 @@ export function isBalanceProductName(name: string): boolean {
     || n.includes(" bal @")
     || n.includes(" bal.")
     || n.includes(" bal ")
+    || n.endsWith(" bal")
     || n.startsWith("inverted tilt b")
   );
 }

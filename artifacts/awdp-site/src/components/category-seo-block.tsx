@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { PackageSearch, CheckCircle2, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button.jsx";
 
 interface CategorySeoContent {
   heading: string;

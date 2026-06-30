@@ -8,10 +8,7 @@ import { analytics } from "@/lib/analytics";
 import { useGetFeaturedProducts, getGetFeaturedProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import heroBg from "@assets/hero_hardware_bg.png";
-import heroBgWebp from "@assets/hero_hardware_bg.webp";
-import ctaBg from "@assets/cta_hardware_bg.png";
-import ctaBgWebp from "@assets/cta_hardware_bg.webp";
+import { heroBg, heroBgWebp, ctaBg, ctaBgWebp } from "@/lib/assetUrls";
 import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
 const BASE_URL = "https://www.allwindowdoorparts.com";

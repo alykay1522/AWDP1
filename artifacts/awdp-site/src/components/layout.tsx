@@ -1,18 +1,16 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState, useRef, useEffect } from "react";
-import { useCart } from "@/lib/cart";
+import { useCart } from "../lib/cart.jsx";
 import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import logo from "@assets/logo-banner_1775621995520.png";
-import logoBanner from "@assets/logo_banner_trimmed.png";
-import paypalImg from "@assets/paypal_1775073666311.png";
-import { ProductImage } from "@/components/product-image";
-import { toast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { PayPalCheckoutButton } from "@/components/PayPalCheckoutButton";
-import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
+import { Button } from "./ui/button.jsx";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet.jsx";
+import { ScrollArea } from "./ui/scroll-area.jsx";
+import { logo, logoBanner, paypalImg, headerBg } from "../lib/assetUrls.js";
+import { ProductImage } from "./product-image.jsx";
+import { toast } from "../hooks/use-toast.js";
+import { Input } from "./ui/input.jsx";
+import { PayPalCheckoutButton } from "./PayPalCheckoutButton.jsx";
+import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "../lib/siteContact.js";
 
 const SHOP_CATEGORIES = [
   ["Window Balances",               "Window+Balances"],
@@ -86,29 +84,15 @@ setNavSuggestionsOpen(data.length > 0);
         Skip to main content
       </a>
 
-      {/* CLASSIC FLAG BANNER - Restored exactly as requested */}
-      <div className="w-full bg-[#0f172a] text-white py-9 border-b border-white/10">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-block bg-white/10 text-white text-xs font-bold tracking-[4px] px-5 py-1.5 rounded mb-4">
-            VETERAN OWNED & OPERATED
-          </div>
-
-          <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-1">
-            All Window Door Parts
-          </h1>
-          <p className="text-2xl text-white/80 mb-4">info@AllWindowDoorParts.com</p>
-
-          <div className="text-red-400 font-semibold tracking-wide mb-1">Veteran Owned and Operated</div>
-          <div className="font-bold text-xl mb-5">AllWindowDoorPartsGroup</div>
-
-          <div className="flex justify-center gap-x-6 gap-y-1 text-sm font-bold flex-wrap">
-            <span>PayPal</span>
-            <span className="text-blue-400">VISA</span>
-            <span className="text-red-400">MC</span>
-            <span className="text-blue-500">AMEX</span>
-            <span className="text-orange-400">DISCOVER</span>
-          </div>
-        </div>
+      {/* CLASSIC FLAG BANNER — image contains all text, no HTML overlay needed */}
+      <div className="w-full">
+        <img
+          src={headerBg}
+          alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"
+          className="w-full h-auto max-h-24 sm:max-h-32 md:max-h-44 object-contain mx-auto block"
+          fetchpriority="high"
+          loading="eager"
+        />
       </div>
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-50 bg-primary shadow-md border-b border-primary/20">
@@ -353,6 +337,26 @@ setNavSuggestionsOpen(data.length > 0);
                         <span>Subtotal</span>
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
+                      {!belowMinimum && (() => {
+                        // Mirror server-side shipping tiers so customer sees the charge before PayPal opens
+                        let ship = 22.40;
+                        if (totalPrice >= 500)      ship = 74.95;
+                        else if (totalPrice >= 300) ship = 52.45;
+                        else if (totalPrice >= 150) ship = 37.40;
+                        else if (totalPrice >= 75)  ship = 29.90;
+                        return (
+                          <>
+                            <div className="flex justify-between items-center text-sm text-slate-600">
+                              <span>Shipping (UPS/FedEx Ground)</span>
+                              <span>${ship.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-bold text-base border-t pt-2">
+                              <span>Est. Total</span>
+                              <span>${(totalPrice + ship).toFixed(2)}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                       {belowMinimum ? (
                         <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 space-y-1.5">
                           <p className="text-xs font-semibold text-amber-800">$50.00 order minimum required</p>

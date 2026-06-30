@@ -3,17 +3,16 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {
-    "noEmit": true,
+    "noEmit": false,
     "jsx": "preserve",
     "lib": ["esnext", "dom", "dom.iterable"],
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*", "./artifacts/awdp-site/src/*"]
     }
   },
   "references": [

@@ -67,6 +67,22 @@ router.get("/admin/auth-check", requireAdmin, (_req: Request, res: Response) => 
   res.json({ authenticated: true });
 });
 
+// Diagnostic: check which critical env vars are set (values never exposed)
+router.get("/admin/env-check", (_req: Request, res: Response) => {
+  res.json({
+    DATABASE_URL: !!process.env.DATABASE_URL,
+    SESSION_SECRET: !!process.env.SESSION_SECRET && process.env.SESSION_SECRET !== "change-me-in-production",
+    ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD,
+    PAYPAL_CLIENT_ID: !!process.env.PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET: !!process.env.PAYPAL_CLIENT_SECRET,
+    SMTP_HOST: !!process.env.SMTP_HOST,
+    SMTP_USER: !!process.env.SMTP_USER,
+    SMTP_PASS: !!process.env.SMTP_PASS,
+    VERCEL: !!process.env.VERCEL,
+    NODE_ENV: process.env.NODE_ENV || "unset",
+  });
+});
+
 router.get("/admin/session", (req: Request, res: Response) => {
   res.json({ authenticated: (req.session as any)?.adminAuthenticated === true });
 });

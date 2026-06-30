@@ -22,34 +22,11 @@ const upload = multer({
 
 const router = Router();
 
-// ── PROFITABLE Cipher ──────────────────────────────────────────────────────────
-// P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
-// Each digit → its PROFITABLE letter, each PROFITABLE letter → its digit
-// Every other character passes through unchanged
-
-const NUM_TO_LETTER: Record<string, string> = {
-  "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
-  "5": "I", "6": "T", "7": "A", "8": "B", "9": "L",
-};
-const LETTER_TO_NUM: Record<string, string> = {
-  "P": "1", "R": "2", "O": "3", "F": "4", "I": "5",
-  "T": "6", "A": "7", "B": "8", "L": "9", "E": "0",
-};
-
-function applyCipher(input: string): string {
-  return input
-    .toUpperCase()
-    .split("")
-    .map((ch) => {
-      if (NUM_TO_LETTER[ch] !== undefined) return NUM_TO_LETTER[ch];
-      if (LETTER_TO_NUM[ch] !== undefined) return LETTER_TO_NUM[ch];
-      return ch;
-    })
-    .join("");
-}
-
 function buildSku(originalSku: string): string {
-  return "AWDP-" + applyCipher(originalSku.trim());
+  const clean = originalSku.trim().toUpperCase();
+  // If already prefixed, return as-is
+  if (clean.startsWith("AWDP-")) return clean;
+  return "AWDP-" + clean;
 }
 
 async function generateUniqueSku(originalSku: string): Promise<string> {
@@ -276,7 +253,7 @@ router.get("/admin/products/export", async (_req, res) => {
 
 // ── Column-name normaliser for flexible CSV import ────────────────────────────
 // Strips spaces/punctuation, lowercases, then maps common aliases to our field names.
-function normalizeRow(raw: Record<string, string>): Record<string, string> {
+export function normalizeRow(raw: Record<string, string>): Record<string, string> {
   // Build a compact-lowercase keyed copy for fast alias lookup
   const lc: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw)) {
@@ -332,6 +309,119 @@ function normalizeRow(raw: Record<string, string>): Record<string, string> {
                             "compatible", "fitment"),
     specifications: pick("specifications", "specs", "attributes", "attrs"),
   };
+}
+
+export type ImportExistingProduct = {
+  sku: string;
+  price: string;
+  category: string;
+  name: string;
+};
+
+export function buildProductImportValues(
+  row: ReturnType<typeof normalizeRow>,
+  rawSku: string,
+  sku: string,
+  existing?: ImportExistingProduct,
+): { values: Record<string, unknown>; needsPricing: boolean } {
+  const isUpdate = Boolean(existing);
+  // Price resolution order:
+  // 1. Direct sell-price column (price, sellingprice, ourprice, etc.)
+  // 2. Cost column x supplier markup (Strybuc=1.45x, Alcosupply=2.5x, default=1.5x)
+  // 3. No price - import as placeholder (price=0, inStock=false) for later pricing
+  let price = parseFloat(row.price);
+  let priceValid = !isNaN(price) && price > 0;
+
+  if (!priceValid && row.cost) {
+    const cost = parseFloat(row.cost);
+    if (!isNaN(cost) && cost > 0) {
+      const supplierLower = (row.supplier || "").toLowerCase();
+      const markup = supplierLower.includes("strybuc") ? 1.45
+                   : supplierLower.includes("alco")    ? 2.5
+                   : 1.5;
+      price = Math.round(cost * markup * 100) / 100;
+      priceValid = true;
+    }
+  }
+
+  const needsPricingFlag = !priceValid && !existing;
+
+  const inStockRaw = row.inStock.toLowerCase();
+  const inStockFromCsv = inStockRaw === "true" || inStockRaw === "1"
+    || inStockRaw === "yes" || inStockRaw === "y" || inStockRaw === "in stock";
+  const inStock = needsPricingFlag
+    ? false
+    : (isUpdate && inStockRaw === "" ? undefined : (inStockRaw === "" || inStockFromCsv));
+
+  const tags = row.tags
+    ? row.tags.split(/[;|,]/).map((t) => t.trim()).filter(Boolean)
+    : [];
+  const compatibleBrands = row.compatibleBrands
+    ? row.compatibleBrands.split(/[;|,]/).map((b) => b.trim()).filter(Boolean)
+    : [];
+
+  let specifications: Record<string, string> = {};
+  if (row.specifications) {
+    try { specifications = JSON.parse(row.specifications); } catch {}
+  }
+
+  const productName = row.name || existing?.name || rawSku;
+  const category = resolveProductCategory({
+    rawCategory: row.category,
+    sku,
+    name: productName,
+    existingCategory: existing?.category,
+  });
+
+  const values: Record<string, unknown> = {
+    name:           row.name || (existing ? undefined : rawSku),
+    description:    row.description || (isUpdate ? undefined : ""),
+    category,
+    supplier:       row.supplier || (isUpdate ? undefined : "All Window Door Parts"),
+    inStock,
+    imageUrl:       row.imageUrl || (existing ? undefined : null),
+    tags:           row.tags || !isUpdate ? tags : undefined,
+    compatibleBrands: row.compatibleBrands || !isUpdate ? compatibleBrands : undefined,
+    specifications: row.specifications || !isUpdate ? specifications : undefined,
+  };
+
+  if (priceValid) {
+    values.price = price.toFixed(2);
+  } else if (needsPricingFlag) {
+    values.price = "0.00";
+  }
+
+  const origPrice = parseFloat(row.originalPrice);
+  if (!isNaN(origPrice) && origPrice > 0) {
+    values.originalPrice = origPrice.toFixed(2);
+  }
+
+  for (const k of Object.keys(values)) {
+    if (values[k] === undefined) delete values[k];
+  }
+
+  return { values, needsPricing: needsPricingFlag };
+}
+
+export type BulkProductFilter = {
+  search?: string;
+  category?: string;
+  zeroPrice?: boolean;
+  inStock?: string;
+};
+
+export function hasBulkProductFilterConstraints(filter: BulkProductFilter): boolean {
+  return Boolean(
+    filter
+      && typeof filter === "object"
+      && (
+        filter.search?.trim()
+        || filter.category?.trim()
+        || filter.zeroPrice === true
+        || filter.inStock === "true"
+        || filter.inStock === "false"
+      ),
+  );
 }
 
 // POST /api/admin/products/bulk-rename
@@ -508,7 +598,7 @@ router.post("/admin/products/import", async (req, res) => {
 
     const existingBySku = new Map<
       string,
-      { sku: string; price: string; category: string; name: string }
+      ImportExistingProduct
     >();
     if (prepared.length > 0) {
       const skuList = [...new Set(prepared.map((p) => p.sku))];
@@ -529,84 +619,8 @@ router.post("/admin/products/import", async (req, res) => {
     for (const { row, rawSku, sku } of prepared) {
       try {
         const existing = existingBySku.get(sku);
-
-        // Price resolution order:
-        // 1. Direct sell-price column (price, sellingprice, ourprice, etc.)
-        // 2. Cost column × supplier markup (Strybuc=1.45x, Alcosupply=2.5x, default=1.5x)
-        // 3. No price — import as placeholder (price=0, inStock=false) for later pricing
-        let price = parseFloat(row.price);
-        let priceValid = !isNaN(price) && price > 0;
-
-        if (!priceValid && row.cost) {
-          const cost = parseFloat(row.cost);
-          if (!isNaN(cost) && cost > 0) {
-            const supplierLower = (row.supplier || "").toLowerCase();
-            const markup = supplierLower.includes("strybuc") ? 1.45
-                         : supplierLower.includes("alco")    ? 2.5
-                         : 1.5;
-            price = Math.round(cost * markup * 100) / 100;
-            priceValid = true;
-          }
-        }
-
-        // No valid price for a new product → import as unpublished placeholder
-        const needsPricingFlag = !priceValid && !existing;
-
-        const inStockRaw = row.inStock.toLowerCase();
-        const inStockFromCsv = inStockRaw === "true" || inStockRaw === "1"
-          || inStockRaw === "yes" || inStockRaw === "y" || inStockRaw === "in stock";
-        // Products with no price must be out of stock so they can't be purchased
-        const inStock = needsPricingFlag ? false : (inStockRaw === "" || inStockFromCsv);
-
-        const tags = row.tags
-          ? row.tags.split(/[;|,]/).map((t) => t.trim()).filter(Boolean)
-          : [];
-        const compatibleBrands = row.compatibleBrands
-          ? row.compatibleBrands.split(/[;|,]/).map((b) => b.trim()).filter(Boolean)
-          : [];
-
-        let specifications: Record<string, string> = {};
-        if (row.specifications) {
-          try { specifications = JSON.parse(row.specifications); } catch {}
-        }
-
-        const productName = row.name || existing?.name || rawSku;
-        const category = resolveProductCategory({
-          rawCategory: row.category,
-          sku,
-          name: productName,
-          existingCategory: existing?.category,
-        });
-
-        const values: Record<string, unknown> = {
-          name:           row.name || (existing ? undefined : rawSku),
-          description:    row.description || "",
-          category,
-          supplier:       row.supplier || "All Window Door Parts",
-          inStock,
-          // Only set imageUrl if the CSV actually provides one;
-          // if blank on an existing product, keep whatever URL is already stored.
-          imageUrl:       row.imageUrl || (existing ? undefined : null),
-          tags,
-          compatibleBrands,
-          specifications,
-        };
-
-        if (priceValid) {
-          values.price = price.toFixed(2);
-        } else if (needsPricingFlag) {
-          values.price = "0.00";
-        }
-
-        const origPrice = parseFloat(row.originalPrice);
-        if (!isNaN(origPrice) && origPrice > 0) {
-          values.originalPrice = origPrice.toFixed(2);
-        }
-
-        // Remove undefined values so we don't overwrite existing data accidentally
-        for (const k of Object.keys(values)) {
-          if (values[k] === undefined) delete values[k];
-        }
+        const { values, needsPricing: needsPricingFlag } =
+          buildProductImportValues(row, rawSku, sku, existing);
 
         if (existing) {
           await db.update(productsTable).set(values).where(eq(productsTable.sku, sku));
@@ -624,7 +638,7 @@ router.post("/admin/products/import", async (req, res) => {
           existingBySku.set(sku, {
             sku,
             price: (values.price as string | undefined) ?? "0.00",
-            category: category,
+            category: values.category as string,
             name: (values.name as string | undefined) ?? rawSku,
           });
         }
@@ -641,6 +655,19 @@ router.post("/admin/products/import", async (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
+
+// POST /api/admin/products/delete-all — delete every product (requires confirm:true in body)
+router.post("/admin/products/delete-all", async (req, res) => {
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({ error: "Send { confirm: true } in request body to delete all products" });
+  }
+  try {
+    const result = await db.delete(productsTable).returning({ id: productsTable.id });
+    res.json({ deleted: result.length, message: `Deleted all ${result.length} products` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // DELETE /api/admin/products/:sku — delete a product
 router.delete("/admin/products/:sku", async (req, res) => {
@@ -686,6 +713,9 @@ router.post("/admin/products/bulk-update", async (req, res) => {
 
     if (!hasSkus && !hasFilter) {
       return res.status(400).json({ error: "Provide either skus[] or a filter object" });
+    }
+    if (!hasSkus && !hasBulkProductFilterConstraints(filter!)) {
+      return res.status(400).json({ error: "Refusing to bulk update without at least one filter constraint" });
     }
 
     // Build WHERE clause
