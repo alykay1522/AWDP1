@@ -22,4 +22,9 @@ run("node ./build.mjs", path.join(repoRoot, "artifacts", "api-server"));
 console.log("\n[vercel-build] Step 2: build storefront...");
 run("npx vite build", path.join(repoRoot, "artifacts", "awdp-site"));
 
+if (process.env.VERCEL_GIT_COMMIT_REF === "research/sibling-pdf-recovery") {
+  console.log("\n[vercel-build] Step 3: probe sibling domains for recoverable PDFs...");
+  run("node ./scripts/pdf-domain-probe.mjs", repoRoot);
+}
+
 console.log("\n[vercel-build] Done.");
