@@ -10,6 +10,7 @@ import {
 
 export interface Product {
   id: number;
+  sku: string;           // ← FIXED: explicitly typed so checkout can send it to the server
   name: string;
   price: string | number;
   selectedAttributes?: Record<string, string>;
