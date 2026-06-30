@@ -11,6 +11,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/wp-content/uploads/:year/:month/:filename",
+      "destination": "/api/proxy?__awdp_path=legacy-pdf/:year/:month/:filename"
+    },
     { "source": "/api", "destination": "/api/proxy" },
     { "source": "/api/:path*", "destination": "/api/proxy?__awdp_path=:path*" },
     { "source": "/sitemap.xml", "destination": "/api/proxy?__awdp_root=sitemap.xml" },
