@@ -1,6 +1,6 @@
 import { useCart } from "@/lib/cart";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,22 @@ export default function Checkout() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<{ cost: number; label: string } | null>(null);
 
+  // FIXED: Fetch the PayPal client ID from the server instead of relying on a
+  // build-time env var (VITE_PAYPAL_CLIENT_ID). The server's /api/paypal/client-id
+  // endpoint already returns the live client ID correctly.
+  const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
+  const [paypalError, setPaypalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/paypal/client-id")
+      .then((res) => {
+        if (!res.ok) throw new Error("PayPal not configured");
+        return res.json();
+      })
+      .then((data) => setPaypalClientId(data.clientId))
+      .catch(() => setPaypalError("PayPal is temporarily unavailable. Please call 785-533-0244 to place your order."));
+  }, []);
+
   const orderDataRef = useRef<{ paypalOrderId: string; orderId: string } | null>(null);
 
   if (items.length === 0) {
@@ -32,7 +48,23 @@ export default function Checkout() {
     );
   }
 
-  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
+  if (paypalError) {
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-center">
+        <h1 className="text-3xl font-bold mb-4">Checkout Unavailable</h1>
+        <p className="text-slate-600 mb-6">{paypalError}</p>
+        <Button onClick={() => navigate("/shop")}>Continue Shopping</Button>
+      </div>
+    );
+  }
+
+  if (!paypalClientId) {
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-center">
+        <p className="text-slate-500">Loading checkout…</p>
+      </div>
+    );
+  }
 
   return (
     <PayPalScriptProvider options={{ "client-id": paypalClientId, currency: "USD" }}>
@@ -55,7 +87,7 @@ export default function Checkout() {
                 <div key={item.cartLineKey} className="flex justify-between items-start border-b pb-3">
                   <div>
                     <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-slate-500">SKU: {String(item.sku)}</div>
+                    <div className="text-sm text-slate-500">SKU: {item.sku}</div>
                     {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
                       <div className="text-xs text-slate-500 mt-1 space-y-0.5">
                         {Object.entries(item.selectedAttributes).map(([key, value]) => (
@@ -85,14 +117,15 @@ export default function Checkout() {
                 </div>
                 {shippingInfo && (
                   <div className="flex justify-between text-sm text-slate-600">
-                    <span>Shipping (UPS/FedEx Ground)</span>
+                    <span>Shipping ({shippingInfo.label})</span>
                     <span>${shippingInfo.cost.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-semibold text-lg">
-                  <span>{shippingInfo ? "Total" : "Subtotal"}</span>
+                  <span>{shippingInfo ? "Total" : "Subtotal (shipping calculated next)"}</span>
                   <span>${shippingInfo ? (totalPrice + shippingInfo.cost).toFixed(2) : totalPrice.toFixed(2)}</span>
                 </div>
+                <p className="text-xs text-slate-400 mt-1">Minimum order $50. Shipping calculated when you click Pay with PayPal.</p>
               </div>
             </CardContent>
           </Card>
@@ -115,9 +148,9 @@ export default function Checkout() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                           items: items.map((item) => ({
-                            sku: item.sku,
+                            sku: item.sku,                                   // ← now explicitly typed, never undefined
                             quantity: item.quantity,
-                            selectedAttributes: item.selectedAttributes,
+                            selectedAttributes: item.selectedAttributes ?? {},
                           })),
                         }),
                       });
@@ -134,7 +167,7 @@ export default function Checkout() {
                       };
                       setShippingInfo({
                         cost: Number(data.shippingCost) || 0,
-                        label: data.shippingLabel || "Ground",
+                        label: data.shippingLabel || "UPS/FedEx Ground",
                       });
                       return data.paypalOrderId;
                     } catch (requestError: any) {
@@ -173,7 +206,7 @@ export default function Checkout() {
                       clearCart();
                       navigate("/checkout/success");
                     } catch (captureError: any) {
-                      const message = captureError.message || "Payment failed. Please contact support.";
+                      const message = captureError.message || "Payment failed. Please contact support at 785-533-0244.";
                       setError(message);
                       toast.error(message);
                     } finally {
@@ -192,8 +225,8 @@ export default function Checkout() {
                 {(loading || processingPayment) && (
                   <div className="mt-4 text-center text-sm text-slate-600">
                     {processingPayment
-                      ? "Processing your payment... Please do not close this window."
-                      : "Preparing your order..."}
+                      ? "Processing your payment… Please do not close this window."
+                      : "Preparing your order…"}
                   </div>
                 )}
 
