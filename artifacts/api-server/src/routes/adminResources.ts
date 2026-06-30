@@ -2,24 +2,23 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { pdfResourcesTable, type PdfResource } from "@workspace/db/schema";
 import { eq, asc } from "drizzle-orm";
+import { recoveredPdfResources } from "../data/recoveredPdfResources";
 
 const router = Router();
 
-const masterRollerWheelResource: PdfResource = {
-  id: -1,
-  title: "Master Roller and Wheel Parts Guide — 2023–2024",
-  brand: "All Brands",
-  category: "Patio Doors",
-  type: "Product Catalog",
-  url: "https://allwindowdoorparts.com/wp-content/uploads/2023/04/WindowDoorHardwareParts-PDF-Catalog.pdf",
-  description:
-    "Free illustrated roller and wheel identification catalog covering patio and screen door assemblies from Marvin, Integrity, Guardian, Truth, Peachtree, Weather-Shield, Seal-Rite, Thermal-Guard, Wenco, Silverline, Traco, Lincoln, Eagle, Herculite, PPG, PGT, and other brands. Includes diagrams, measurements, pictures, schematics, and specifications for hard-to-find and obsolete parts.",
-  sortOrder: 0,
-  isActive: true,
-  createdAt: null,
-};
+function mergeWithRecovered(resources: PdfResource[]): PdfResource[] {
+  const seenUrls = new Set(resources.map((resource) => resource.url));
+  const recovered = recoveredPdfResources.filter((resource) => !seenUrls.has(resource.url));
+  return [...resources, ...recovered];
+}
 
-// GET /api/resources — public, returns active resources sorted by category + sortOrder
+function validateMutableResourceId(id: number) {
+  if (!Number.isInteger(id)) return "Invalid resource id";
+  if (id < 0) return "Recovered archive resources are read-only";
+  return null;
+}
+
+// GET /api/resources — public, returns active database and recovered resources.
 router.get("/resources", async (_req, res) => {
   try {
     const resources = await db
@@ -28,34 +27,27 @@ router.get("/resources", async (_req, res) => {
       .where(eq(pdfResourcesTable.isActive, true))
       .orderBy(asc(pdfResourcesTable.sortOrder), asc(pdfResourcesTable.id));
 
-    const hasMasterCatalog = resources.some(
-      (resource) => resource.url === masterRollerWheelResource.url,
-    );
-
-    res.json({
-      resources: hasMasterCatalog
-        ? resources
-        : [masterRollerWheelResource, ...resources],
-    });
+    res.json({ resources: mergeWithRecovered(resources) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/admin/resources — admin, all resources including inactive
+// GET /api/admin/resources — admin, all database resources plus read-only recovered PDFs.
 router.get("/admin/resources", async (_req, res) => {
   try {
     const resources = await db
       .select()
       .from(pdfResourcesTable)
       .orderBy(asc(pdfResourcesTable.sortOrder), asc(pdfResourcesTable.id));
-    res.json({ resources });
+
+    res.json({ resources: mergeWithRecovered(resources) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/admin/resources — create
+// POST /api/admin/resources — create a normal editable database resource.
 router.post("/admin/resources", async (req, res) => {
   try {
     const { title, brand, category, type, url, description, sortOrder, isActive } = req.body as {
@@ -80,10 +72,13 @@ router.post("/admin/resources", async (req, res) => {
   }
 });
 
-// PATCH /api/admin/resources/:id — update
+// PATCH /api/admin/resources/:id — update database-backed resources only.
 router.patch("/admin/resources/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+    const invalidId = validateMutableResourceId(id);
+    if (invalidId) return res.status(400).json({ error: invalidId });
+
     const { title, brand, category, type, url, description, sortOrder, isActive } = req.body as Partial<{
       title: string; brand: string; category: string; type: string;
       url: string; description: string; sortOrder: number; isActive: boolean;
@@ -110,10 +105,13 @@ router.patch("/admin/resources/:id", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/resources/:id
+// DELETE /api/admin/resources/:id — database-backed resources only.
 router.delete("/admin/resources/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
+    const invalidId = validateMutableResourceId(id);
+    if (invalidId) return res.status(400).json({ error: invalidId });
+
     const [deleted] = await db
       .delete(pdfResourcesTable)
       .where(eq(pdfResourcesTable.id, id))
