@@ -90,7 +90,7 @@ async function fetchMetadata(pathname) {
           const res = await fetch(`${apiBase}/products/${sku}`, {
             method: "GET",
             headers: { "Accept": "application/json" },
-            timeout: 5000,
+            signal: AbortSignal.timeout(5000),
           });
           if (res.ok) {
             const product = await res.json();
