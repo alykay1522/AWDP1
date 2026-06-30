@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { legacyPdfRedirects } from "../data/legacyPdfRedirects";
+import { legacyPdfRedirectOverrides } from "../data/legacyPdfRedirectOverrides";
 
 const router = Router();
 
 router.get("/legacy-pdf/:year/:month/:filename", (req, res) => {
   const { year, month, filename } = req.params;
   const legacyPath = `${year}/${month}/${filename}`;
-  const recoveredUrl = legacyPdfRedirects[legacyPath];
+  const recoveredUrl = legacyPdfRedirectOverrides[legacyPath] || legacyPdfRedirects[legacyPath];
 
   if (recoveredUrl) {
     res.setHeader("Cache-Control", "public, max-age=3600");
