@@ -16,6 +16,13 @@ function mergeWithRecovered(resources: PdfResource[]): PdfResource[] {
   return [...resources, ...recovered];
 }
 
+function toPublicResource(resource: PdfResource): PdfResource {
+  return {
+    ...resource,
+    url: `/api/resources/${encodeURIComponent(String(resource.id))}/open`,
+  };
+}
+
 function validateMutableResourceId(id: number) {
   if (!Number.isInteger(id)) return "Invalid resource id";
   if (id < 0) return "Recovered archive resources are read-only";
@@ -23,6 +30,8 @@ function validateMutableResourceId(id: number) {
 }
 
 // GET /api/resources — public, returns active database and recovered resources.
+// The public URL remains same-origin so analytics does not run its delegated
+// outbound-link handler during the user's click interaction.
 router.get("/resources", async (_req, res) => {
   try {
     const resources = await db
@@ -31,16 +40,15 @@ router.get("/resources", async (_req, res) => {
       .where(eq(pdfResourcesTable.isActive, true))
       .orderBy(asc(pdfResourcesTable.sortOrder), asc(pdfResourcesTable.id));
 
-    res.json({ resources: mergeWithRecovered(resources) });
+    res.json({ resources: mergeWithRecovered(resources).map(toPublicResource) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // GET /api/resources/:id/open — same-origin link target for resource cards.
-// Keeping the clicked href on the storefront origin avoids expensive delegated
-// outbound-link handlers on the interaction. The browser follows this controlled
-// redirect in the new tab after the click has completed.
+// The destination is resolved exclusively from active stored resources, so this
+// cannot be used as an arbitrary open redirect.
 router.get("/resources/:id/open", async (req, res) => {
   try {
     const id = parsePublicResourceId(req.params.id);
