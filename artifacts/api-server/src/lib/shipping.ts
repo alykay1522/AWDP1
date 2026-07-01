@@ -14,6 +14,21 @@ export interface ShippingRate {
 }
 
 /**
+ * Parses the SHIPPING_FLAT_RATE override strictly: a plain non-negative number
+ * with at most 2 decimal places (e.g. "18.95", "0"). Anything else — including
+ * "Infinity", "NaN", trailing garbage like "12oops", or negative/whitespace
+ * values — returns null so calculateShipping falls back to the tiered rates.
+ * (parseFloat alone would accept all of those, which is the bug this closes.)
+ */
+export function parseShippingFlatRate(value: string | undefined): number | null {
+  if (value === undefined || value === "") return null;
+  if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(value)) return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+/**
  * Calculate the shipping charge for a given subtotal.
  * Uses a conservative (high) tiered rate so we never under-collect.
  *
@@ -22,16 +37,13 @@ export interface ShippingRate {
  */
 export function calculateShipping(subtotal: number): ShippingRate {
   // Allow admin override via env var for easy adjustment without code changes
-  const flatOverride = process.env.SHIPPING_FLAT_RATE;
-  if (flatOverride) {
-    const flat = parseFloat(flatOverride);
-    if (!isNaN(flat) && flat >= 0) {
-      return {
-        cost: flat,
-        label: flat === 0 ? "Free Shipping" : `Shipping & Handling — $${flat.toFixed(2)}`,
-        carrier: "UPS/FedEx/USPS",
-      };
-    }
+  const flat = parseShippingFlatRate(process.env.SHIPPING_FLAT_RATE);
+  if (flat !== null) {
+    return {
+      cost: flat,
+      label: flat === 0 ? "Free Shipping" : `Shipping & Handling — $${flat.toFixed(2)}`,
+      carrier: "UPS/FedEx/USPS",
+    };
   }
 
   // Tiered rates — highest standard UPS/FedEx ground estimate per order size
