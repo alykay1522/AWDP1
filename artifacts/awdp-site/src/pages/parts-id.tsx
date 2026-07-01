@@ -364,13 +364,22 @@ export default function PartsIdentification() {
                         e.target.value = "";
                       }}
                     />
-                    <div
+                    <button
+                      type="button"
                       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                       onDragLeave={() => setIsDragging(false)}
                       onDrop={handleDrop}
-                      className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
+                      className={`w-full border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                         ${isDragging ? "border-primary bg-primary/5" : "border-slate-300 hover:border-primary hover:bg-slate-50"}`}
                       onClick={() => document.getElementById("photo-upload")?.click()}
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <UploadCloud className="w-8 h-8 text-slate-400" />
+                        <p className="font-medium text-slate-700">Drag and drop your photo here</p>
+                        <p className="text-sm text-slate-500">or click to browse</p>
+                        <p className="text-xs text-slate-400">JPEG, PNG, WebP up to 5MB</p>
+                      </div>
+                    </button>
                     >
                       <div className="flex flex-col items-center gap-3">
                         <UploadCloud className="w-8 h-8 text-slate-400" />
