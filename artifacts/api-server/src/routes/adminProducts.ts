@@ -10,6 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { objectStorageClient } from "../lib/objectStorage";
 import { resolveProductCategory } from "../lib/resolveProductCategory";
+import { buildSku } from "../lib/skuCipher.js";
 
 // Multer: write uploads to OS temp dir, accept up to 2 GB
 const upload = multer({
@@ -21,13 +22,6 @@ const upload = multer({
 });
 
 const router = Router();
-
-function buildSku(originalSku: string): string {
-  const clean = originalSku.trim().toUpperCase();
-  // If already prefixed, return as-is
-  if (clean.startsWith("AWDP-")) return clean;
-  return "AWDP-" + clean;
-}
 
 async function generateUniqueSku(originalSku: string): Promise<string> {
   const base = buildSku(originalSku);

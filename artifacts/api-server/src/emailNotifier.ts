@@ -99,7 +99,11 @@ export async function sendOrderNotification(payload: OrderEmailPayload): Promise
 
   const staff = getContactForwardEmails();
   if (staff.length > 0) {
-    await transport.sendMail({ from: FROM_EMAIL, to: staff.join(", "), subject: `New Order ${payload.orderId} — $${payload.total}`, html: ownerHtml(payload) });
+    try {
+      await transport.sendMail({ from: FROM_EMAIL, to: staff.join(", "), subject: `New Order ${payload.orderId} — $${payload.total}`, html: ownerHtml(payload) });
+    } catch (error) {
+      console.error("[email] Failed to send owner order notification", error);
+    }
   }
   if (payload.customerEmail) {
     await transport.sendMail({ from: FROM_EMAIL, to: payload.customerEmail, replyTo: "info@allwindowdoorparts.com", subject: `Order Confirmation — ${payload.orderId}`, html: customerHtml(payload) });

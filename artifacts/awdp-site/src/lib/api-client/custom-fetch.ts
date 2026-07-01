@@ -87,6 +87,29 @@ function resolveUrl(input: RequestInfo | URL): string {
   return input.url;
 }
 
+function isTrustedAuthTarget(input: RequestInfo | URL): boolean {
+  const requestUrl = resolveUrl(input);
+  const browserOrigin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : null;
+  const trustedBase = _baseUrl || browserOrigin;
+
+  // Relative URLs are same-origin in browsers. In non-browser runtimes they are
+  // only usable when a base URL has been configured.
+  if (!/^[A-Za-z][A-Za-z\d+.-]*:/.test(requestUrl) && !requestUrl.startsWith("//")) {
+    return browserOrigin !== null || trustedBase !== null;
+  }
+
+  if (!trustedBase) return false;
+
+  try {
+    return new URL(requestUrl, trustedBase).origin === new URL(trustedBase).origin;
+  } catch {
+    return false;
+  }
+}
+
 function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
   const headers = new Headers();
 
@@ -361,7 +384,7 @@ export async function customFetch<T = unknown>(
 
   // Attach bearer token when an auth getter is configured and no
   // Authorization header has been explicitly provided.
-  if (_authTokenGetter && !headers.has("authorization")) {
+  if (_authTokenGetter && !headers.has("authorization") && isTrustedAuthTarget(input)) {
     const token = await _authTokenGetter();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);

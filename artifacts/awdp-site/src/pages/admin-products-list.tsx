@@ -199,7 +199,8 @@ export default function AdminProductsList() {
       if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
       const { deleted } = await res.json();
       toast({ title: "All products deleted", description: `${deleted} products removed.` });
-      qc.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
       setConfirmDeleteAll(false);
     } catch (e: any) {
       toast({ title: "Delete failed", description: e.message, variant: "destructive" });

@@ -114,6 +114,14 @@ export default function Checkout() {
                       }
 
                       const data = await res.json();
+                      const shippingCost = Number(data.shippingCost);
+                      if (!Number.isFinite(shippingCost) || shippingCost < 0) {
+                        throw new Error("Checkout returned an invalid shipping charge");
+                      }
+                      setShippingInfo({
+                        cost: shippingCost,
+                        label: data.shippingLabel || "Shipping & Handling",
+                      });
                       // Write to ref immediately — always readable in onApprove regardless of render timing
                       orderDataRef.current = { paypalOrderId: data.paypalOrderId, orderId: data.orderId };
                       return data.paypalOrderId;

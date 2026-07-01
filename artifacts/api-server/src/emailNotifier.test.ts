@@ -158,10 +158,12 @@ describe("sendOrderNotification", () => {
     expect(sendMailMock).toHaveBeenCalledTimes(2);
   });
 
-  it("propagates error when sendMail rejects", async () => {
+  it("still sends the customer confirmation when the staff notification fails", async () => {
     sendMailMock.mockRejectedValueOnce(new Error("SMTP connection refused"));
-    await expect(sendOrderNotification(SAMPLE_PAYLOAD)).rejects.toThrow(
-      "SMTP connection refused"
+    await expect(sendOrderNotification(SAMPLE_PAYLOAD)).resolves.not.toThrow();
+    expect(sendMailMock).toHaveBeenCalledTimes(2);
+    expect(sendMailMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ to: "jane@example.com" })
     );
   });
 });
