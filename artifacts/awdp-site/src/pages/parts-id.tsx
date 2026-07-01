@@ -380,16 +380,9 @@ export default function PartsIdentification() {
                         <p className="text-xs text-slate-400">JPEG, PNG, WebP up to 5MB</p>
                       </div>
                     </button>
-                    >
-                      <div className="flex flex-col items-center gap-3">
-                        <UploadCloud className="w-8 h-8 text-slate-400" />
-                        <p className="font-medium text-slate-700">Drag and drop your photo here</p>
-                        <p className="text-sm text-slate-500">or click to browse</p>
-                        <p className="text-xs text-slate-400">JPEG, PNG, WebP up to 5MB</p>
-                      </div>
-                    </div>
                   </div>
                 )}
+              </div>
 
                 {/* Photo Examples Section - Collapsible */}
                 <div className="mt-6">
@@ -551,7 +544,6 @@ export default function PartsIdentification() {
                     </div>
                   )}
                 </div>
-              </div>
             </div>
           )}
 
