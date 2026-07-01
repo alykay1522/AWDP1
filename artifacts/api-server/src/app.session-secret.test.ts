@@ -32,16 +32,20 @@ describe("production SESSION_SECRET guard", () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it("blocks admin session routes when production would otherwise use the default secret", async () => {
-    process.env.NODE_ENV = "production";
-    delete process.env.SESSION_SECRET;
+  it.each<[string | undefined]>([undefined, "change-me-in-production"])(
+    "blocks admin session routes when production uses %p",
+    async (secret) => {
+      process.env.NODE_ENV = "production";
+      if (secret === undefined) delete process.env.SESSION_SECRET;
+      else process.env.SESSION_SECRET = secret;
 
-    const app = await importFreshApp();
-    const response = await requestApp(app, "/api/admin/session");
+      const app = await importFreshApp();
+      const response = await requestApp(app, "/api/admin/session");
 
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toMatchObject({
-      error: "Admin session secret is not configured.",
-    });
-  });
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toMatchObject({
+        error: "Admin session secret is not configured.",
+      });
+    },
+  );
 });
