@@ -41,7 +41,7 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormValues) => {
     try {
-      // useSubmitContact calls POST /api/contact which saves to DB and sends the Resend email
+      // useSubmitContact calls POST /api/contact, which saves to DB and sends the notification email.
       await submitContactMutation.mutateAsync({ data });
       setIsSubmitted(true);
     } catch (error) {
