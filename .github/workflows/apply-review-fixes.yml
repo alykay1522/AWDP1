@@ -1,0 +1,57 @@
+name: Apply review fixes
+
+on:
+  push:
+    branches:
+      - fix/review-findings-20260701
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Apply reviewed fixes
+        run: python3 scripts/apply-review-fixes.py
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run focused regression tests
+        run: |
+          pnpm --filter @workspace/api-server test
+          pnpm --filter awdp-site test
+          node --test artifacts/awdp-site/tests/ssr-route.test.mjs
+
+      - name: Typecheck and build
+        run: |
+          pnpm --filter @workspace/api-server typecheck
+          pnpm --filter awdp-site typecheck
+          pnpm --filter @workspace/api-server build
+          pnpm --filter awdp-site build
+
+      - name: Commit fixes
+        run: |
+          rm -f pnpm-lock.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: resolve review findings"
+          git push origin HEAD
