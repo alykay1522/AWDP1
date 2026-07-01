@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 import { AdminQueryError } from "@/components/admin/admin-error";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProductImage {
   id: number; filename: string; objectName: string; url: string; uploadedAt: string;
@@ -43,6 +47,7 @@ export default function AdminImages() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const [zipUploading, setZipUploading] = useState(false);
   const [zipResult, setZipResult] = useState<ZipResult | null>(null);
@@ -69,12 +74,11 @@ export default function AdminImages() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      if (!confirm("Delete this image? This cannot be undone.")) throw new Error("cancelled");
       const res = await fetch(`/api/admin/images/${id}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-images"] }); toast({ title: "Image deleted" }); },
-    onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-images"] }); toast({ title: "Image deleted" }); setPendingDeleteId(null); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -441,7 +445,7 @@ export default function AdminImages() {
               <div key={img.id} className="group bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="aspect-square bg-slate-100 overflow-hidden relative">
                   <img src={img.url} alt={img.filename} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  <button onClick={() => deleteMutation.mutate(img.id)} className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                  <button onClick={() => setPendingDeleteId(img.id)} className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
@@ -456,6 +460,23 @@ export default function AdminImages() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this image?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => pendingDeleteId !== null && deleteMutation.mutate(pendingDeleteId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

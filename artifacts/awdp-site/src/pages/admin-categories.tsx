@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { AdminQueryWrapper } from "@/components/admin/admin-query-wrapper";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Category {
   id: number; name: string; slug: string;
@@ -18,6 +22,7 @@ function slugify(s: string) {
 export default function AdminCategories() {
   const qc = useQueryClient();
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
   const [editDesc, setEditDesc] = useState("");
@@ -74,12 +79,11 @@ export default function AdminCategories() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      if (!confirm("Delete this category?")) throw new Error("cancelled");
       const res = await fetch(`/api/admin/categories/${id}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Failed"); }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-categories"] }); toast({ title: "Category deleted" }); },
-    onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-categories"] }); toast({ title: "Category deleted" }); setPendingDeleteId(null); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const startEdit = (c: Category) => {
@@ -168,7 +172,7 @@ export default function AdminCategories() {
                             </div>
                             <div className="flex gap-1 shrink-0">
                               <button onClick={() => startEdit(cat)} className="p-1.5 rounded hover:bg-blue-100 text-blue-600"><Edit2 className="w-3.5 h-3.5" /></button>
-                              <button onClick={() => deleteMutation.mutate(cat.id)} className="p-1.5 rounded hover:bg-red-100 text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => setPendingDeleteId(cat.id)} className="p-1.5 rounded hover:bg-red-100 text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
                           </div>
                         )}
@@ -181,6 +185,23 @@ export default function AdminCategories() {
           }}
         </AdminQueryWrapper>
       </div>
+
+      <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this category?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => pendingDeleteId !== null && deleteMutation.mutate(pendingDeleteId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 import { AdminQueryError } from "@/components/admin/admin-error";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ── CSV parser ────────────────────────────────────────────────────────────────
 function parseCsv(text: string): Record<string, string>[] {
@@ -92,6 +96,7 @@ export default function AdminProductsList() {
   const [renaming, setRenaming]       = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [pendingDeleteSku, setPendingDeleteSku] = useState<string | null>(null);
   const fileInputRef      = useRef<HTMLInputElement>(null);
   const renameInputRef    = useRef<HTMLInputElement>(null);
 
@@ -172,7 +177,6 @@ export default function AdminProductsList() {
 
   const deleteMutation = useMutation({
     mutationFn: async (sku: string) => {
-      if (!confirm(`Delete ${sku}? This cannot be undone.`)) throw new Error("cancelled");
       const res = await fetch(`/api/admin/products/${sku}`, { credentials: "include", method: "DELETE" });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Delete failed"); }
       return res.json();
@@ -181,8 +185,9 @@ export default function AdminProductsList() {
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["/api/catalog/stats"] });
       toast({ title: "Product deleted" });
+      setPendingDeleteSku(null);
     },
-    onError: (e: Error) => { if (e.message !== "cancelled") toast({ title: "Error", description: e.message, variant: "destructive" }); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   // ── Export ────────────────────────────────────────────────────────────────
@@ -554,7 +559,7 @@ export default function AdminProductsList() {
                               <>
                                 <button onClick={() => startEdit(p)} className="p-1 rounded hover:bg-blue-100 text-blue-600"><Edit2 className="w-3.5 h-3.5" /></button>
                                 <a href={`/product/${p.sku}`} className="p-1 rounded hover:bg-slate-100 text-slate-500" target="_blank" rel="noreferrer"><ExternalLink className="w-3.5 h-3.5" /></a>
-                                <button onClick={() => deleteMutation.mutate(p.sku)} className="p-1 rounded hover:bg-red-100 text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => setPendingDeleteSku(p.sku)} className="p-1 rounded hover:bg-red-100 text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                               </>
                             )}
                           </div>
@@ -588,6 +593,23 @@ export default function AdminProductsList() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={pendingDeleteSku !== null} onOpenChange={(open) => !open && setPendingDeleteSku(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {pendingDeleteSku}?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => pendingDeleteSku && deleteMutation.mutate(pendingDeleteSku)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
