@@ -593,6 +593,7 @@ export default function AdminProductsList() {
           )}
         </div>
       </div>
+import { Button, buttonVariants } from "`@/components/ui/button`";
 
       <AlertDialog open={pendingDeleteSku !== null} onOpenChange={(open) => !open && setPendingDeleteSku(null)}>
         <AlertDialogContent>
@@ -603,6 +604,7 @@ export default function AdminProductsList() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
               onClick={() => pendingDeleteSku && deleteMutation.mutate(pendingDeleteSku)}
             >
               Delete
