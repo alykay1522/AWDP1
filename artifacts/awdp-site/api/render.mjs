@@ -67,18 +67,35 @@ function escapeHtml(text) {
  * Parse URL pathname to route
  */
 function parsePath(pathname) {
-  return (pathname || "/").replace(/\/$/, "") || "/";
+  const raw = String(pathname || "/");
+  const withLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
+  return withLeadingSlash.replace(/\/$/, "") || "/";
 }
 
 /**
  * Fetch metadata from the backend API
  */
-async function fetchMetadata(pathname) {
-  const apiBase =
-    process.env.VITE_API_BASE_URL ||
-    process.env.API_SERVER_URL ||
-    "http://localhost:3000/api";
+function resolveApiBase(req) {
+  const configured = process.env.VITE_API_BASE_URL || process.env.API_SERVER_URL;
+  if (configured) return configured.replace(/\/$/, "");
 
+  const host = String(req?.headers?.["x-forwarded-host"] || req?.headers?.host || "")
+    .split(",", 1)[0]
+    .trim();
+  if (host && /^[A-Za-z0-9.-]+(?::\d{1,5})?$/.test(host)) {
+    const forwardedProto = String(req?.headers?.["x-forwarded-proto"] || "https")
+      .split(",", 1)[0]
+      .trim();
+    const protocol = forwardedProto === "http" ? "http" : "https";
+    return `${protocol}://${host}/api`;
+  }
+
+  return process.env.NODE_ENV === "production"
+    ? "https://www.allwindowdoorparts.com/api"
+    : "http://localhost:3000/api";
+}
+
+async function fetchMetadata(pathname, apiBase = resolveApiBase()) {
   const route = parsePath(pathname);
 
   try {
@@ -114,7 +131,7 @@ async function fetchMetadata(pathname) {
     if (route.startsWith("/product/")) {
       const sku = route.replace("/product/", "");
       try {
-        const res = await fetch(`${apiBase}/products/${sku}`);
+        const res = await fetch(`${apiBase}/products/${encodeURIComponent(sku)}`);
         if (res.ok) {
           const product = await res.json();
           return {
@@ -380,7 +397,7 @@ export default async function handler(req, res) {
   }
 
   const userAgent = req.headers["user-agent"] || "";
-  const pathname = req.query.path || "/";
+  const pathname = parsePath(req.query.path || "/");
   const isBot = isBotUserAgent(userAgent);
 
   console.log(`[SSR] ${isBot ? "BOT" : "USER"} - ${pathname} - UA: ${userAgent.substring(0, 50)}`);
@@ -399,9 +416,12 @@ export default async function handler(req, res) {
     "/identify-balance",
   ];
 
-  const shouldSSR =
-    isBot &&
-    publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
+  const shouldSSR = isBot && publicRoutes.some((candidate) => {
+    const route = parsePath(candidate);
+    if (route === "/") return pathname === "/";
+    if (candidate.endsWith("/")) return pathname.startsWith(`${route}/`);
+    return pathname === route || pathname.startsWith(`${route}/`);
+  });
 
   if (!shouldSSR) {
     // Serve normal SPA or return 404 for bots on non-public routes
@@ -416,7 +436,7 @@ export default async function handler(req, res) {
   }
 
   // Fetch metadata for the route
-  const metadata = await fetchMetadata(pathname);
+  const metadata = await fetchMetadata(pathname, resolveApiBase(req));
 
   if (!metadata) {
     // Route not found

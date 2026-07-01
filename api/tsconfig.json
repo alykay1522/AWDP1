@@ -1,10 +1,9 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "esnext",
-    "target": "es2022",
-    "moduleResolution": "bundler",
-    "skipLibCheck": true,
     "allowJs": true,
-    "noEmit": true
-  }
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["./**/*"]
 }

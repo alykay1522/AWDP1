@@ -32,8 +32,9 @@ export function parsePath(pathname: string): {
   const parts = pathname.split("/").filter(Boolean);
   const params: Record<string, string> = {};
 
-  // Normalize trailing slashes
-  const normalized = pathname.replace(/\/$/, "") || "/";
+  // Normalize leading/trailing slashes
+  const withLeadingSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const normalized = withLeadingSlash.replace(/\/$/, "") || "/";
 
   return {
     route: normalized,
@@ -148,7 +149,10 @@ export function shouldSSRRoute(pathname: string): boolean {
     "/identify-balance",
   ];
 
-  return ssrRoutes.some((route) => pathname.startsWith(route) || pathname === route);
+  return ssrRoutes.some((candidate) => {
+    if (candidate === "/") return route === "/";
+    return route === candidate || route.startsWith(`${candidate}/`);
+  });
 }
 
 /**

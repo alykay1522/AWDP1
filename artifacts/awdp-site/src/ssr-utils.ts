@@ -30,8 +30,9 @@ export function generateMetaTags(metadata: PageMetadata): string {
 
   // Title (handled separately in HTML template)
   // Canonical
+  const canonicalUrl = `https://www.allwindowdoorparts.com${metadata.canonicalPath}`;
   tags.push(
-    `<link rel="canonical" href="https://www.allwindowdoorparts.com${metadata.canonicalPath}" />`
+    `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`
   );
 
   // Primary meta
@@ -74,7 +75,7 @@ export function generateMetaTags(metadata: PageMetadata): string {
   // Structured Data (JSON-LD)
   if (metadata.structuredData) {
     tags.push(
-      `<script type="application/ld+json">${JSON.stringify(metadata.structuredData)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(metadata.structuredData)}</script>`
     );
   }
 
@@ -86,6 +87,18 @@ export function generateMetaTags(metadata: PageMetadata): string {
  */
 export function generateTitle(metadata: PageMetadata): string {
   return metadata.title;
+}
+
+/**
+ * Serialize JSON-LD without allowing a value to terminate the script element.
+ */
+export function serializeJsonLd(value: object): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\u003c")
+    .replace(/>/g, "\u003e")
+    .replace(/&/g, "\u0026")
+    .replace(/\u2028/g, "\u2028")
+    .replace(/\u2029/g, "\u2029");
 }
 
 /**

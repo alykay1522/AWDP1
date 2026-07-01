@@ -84,11 +84,17 @@ export async function getCategoriesMetadata(): Promise<PageMetadata> {
         description:
           "Shop window and door parts organized by category for easy browsing",
         url: "https://www.allwindowdoorparts.com/categories",
-        itemListElement: categories.slice(0, 7).map((cat: any, idx: number) => ({
-          "@type": "Thing",
-          position: idx + 1,
-          name: cat.name || cat,
-        })),
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: categories.slice(0, 7).map((cat: any, idx: number) => ({
+            "@type": "ListItem",
+            position: idx + 1,
+            item: {
+              "@type": "Thing",
+              name: cat.name || cat,
+            },
+          })),
+        },
       },
     };
   } catch (error) {
@@ -107,7 +113,7 @@ export async function getCategoriesMetadata(): Promise<PageMetadata> {
  */
 export async function getProductMetadata(sku: string): Promise<PageMetadata> {
   try {
-    const res = await fetch(`${API_BASE}/products/${sku}`);
+    const res = await fetch(`${API_BASE}/products/${encodeURIComponent(sku)}`);
     if (!res.ok) {
       return getProductNotFoundMetadata(sku);
     }
@@ -143,7 +149,7 @@ export async function getProductMetadata(sku: string): Promise<PageMetadata> {
           "@type": "Brand",
           name: product.brand || "All Window Door Parts",
         },
-        ...(product.price && {
+        ...(product.price !== undefined && product.price !== null && {
           offers: {
             "@type": "Offer",
             url: `https://www.allwindowdoorparts.com/product/${sku}`,

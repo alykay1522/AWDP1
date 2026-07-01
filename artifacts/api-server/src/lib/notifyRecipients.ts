@@ -10,7 +10,7 @@ function isValidSingleForwardEmail(value: string): boolean {
 
 function parseForwardList(csv: string): string[] {
   return csv
-    .split(/[,;]+/)
+    .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
     .filter(isValidSingleForwardEmail);

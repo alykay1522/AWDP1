@@ -11,6 +11,7 @@ import { toast } from "../hooks/use-toast.js";
 import { Input } from "./ui/input.jsx";
 import { PayPalCheckoutButton } from "./PayPalCheckoutButton.jsx";
 import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "../lib/siteContact.js";
+import { estimateShipping } from "../lib/shipping-estimate.js";
 
 const SHOP_CATEGORIES = [
   ["Window Balances",               "Window+Balances"],
@@ -338,12 +339,8 @@ setNavSuggestionsOpen(data.length > 0);
                         <span>${totalPrice.toFixed(2)}</span>
                       </div>
                       {!belowMinimum && (() => {
-                        // Mirror server-side shipping tiers so customer sees the charge before PayPal opens
-                        let ship = 22.40;
-                        if (totalPrice >= 500)      ship = 74.95;
-                        else if (totalPrice >= 300) ship = 52.45;
-                        else if (totalPrice >= 150) ship = 37.40;
-                        else if (totalPrice >= 75)  ship = 29.90;
+                        // Mirror server-side tiers so the estimate is visible before PayPal opens.
+                        const ship = estimateShipping(totalPrice);
                         return (
                           <>
                             <div className="flex justify-between items-center text-sm text-slate-600">

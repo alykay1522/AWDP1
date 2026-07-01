@@ -9,6 +9,7 @@ import { sendOrderNotification } from "../emailNotifier";
 import { isPayPalCheckoutOnly } from "../lib/checkoutMode.js";
 import { calculateShipping } from "../lib/shipping.js";
 import { logger } from "../lib/logger";
+import { amountsMatch } from "../lib/paypalAmounts.js";
 
 const router = Router();
 
@@ -160,7 +161,7 @@ router.post("/checkout/capture-order", async (req, res) => {
       const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total as string);
-      if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
+      if (!amountsMatch(capturedAmount, localTotal)) {
         logger.error(
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch"

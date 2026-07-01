@@ -66,19 +66,40 @@ function escapeHtml(text) {
  * Normalize pathname
  */
 function normalizePath(pathname) {
-  return (pathname || "/").replace(/\/$/, "") || "/";
+  const raw = String(pathname || "/");
+  const withLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
+  return withLeadingSlash.replace(/\/$/, "") || "/";
 }
 
 /**
  * Fetch metadata from the backend API
  */
-async function fetchMetadata(pathname) {
-  const apiBase =
+function resolveApiBase(req) {
+  const configured =
     process.env.VITE_API_BASE_URL ||
     process.env.API_SERVER_URL ||
-    process.env.EXPRESS_API_ORIGIN ||
-    "http://localhost:3000/api";
+    process.env.EXPRESS_API_ORIGIN;
+  if (configured) return configured.replace(/\/$/, "");
 
+  const forwardedHost = String(req?.headers?.["x-forwarded-host"] || "")
+    .split(",", 1)[0]
+    .trim();
+  const host = forwardedHost || String(req?.headers?.host || "").trim();
+  if (host && /^[A-Za-z0-9.-]+(?::\d{1,5})?$/.test(host)) {
+    const forwardedProto = String(req?.headers?.["x-forwarded-proto"] || "https")
+      .split(",", 1)[0]
+      .trim();
+    const protocol = forwardedProto === "http" ? "http" : "https";
+    return `${protocol}://${host}/api`;
+  }
+
+  return process.env.NODE_ENV === "production"
+    ? "https://www.allwindowdoorparts.com/api"
+    : "http://localhost:3000/api";
+}
+
+async function fetchMetadata(pathname, apiBase = resolveApiBase(), options = {}) {
+  const fetchImpl = options.fetchImpl || fetch;
   const route = normalizePath(pathname);
 
   try {
@@ -87,7 +108,7 @@ async function fetchMetadata(pathname) {
       const sku = route.replace("/product/", "");
       if (sku && sku.length > 0) {
         try {
-          const res = await fetch(`${apiBase}/products/${sku}`, {
+          const res = await fetchImpl(`${apiBase}/products/${encodeURIComponent(sku)}`, {
             method: "GET",
             headers: { "Accept": "application/json" },
             signal: AbortSignal.timeout(5000),
@@ -315,9 +336,8 @@ function generateMetaTags(metadata) {
 /**
  * Read index.html template
  */
-function readTemplate() {
+function readTemplate(templatePath = path.join(publicDir, "index.html")) {
   try {
-    const templatePath = path.join(publicDir, "index.html");
     const content = fs.readFileSync(templatePath, "utf-8");
     return content;
   } catch (error) {
@@ -362,7 +382,7 @@ export default async function handler(req, res) {
   }
 
   const userAgent = req.headers["user-agent"] || "";
-  const pathname = req.query.path || "/";
+  const pathname = normalizePath(req.query.path || "/");
   const isBot = isBotUserAgent(userAgent);
 
   console.log(
@@ -383,11 +403,12 @@ export default async function handler(req, res) {
     "/contact",
   ];
 
-  const shouldSSR =
-    isBot &&
-    publicRoutes.some(
-      (route) => normalizePath(pathname) === normalizePath(route) || pathname.startsWith(route)
-    );
+  const shouldSSR = isBot && publicRoutes.some((candidate) => {
+    const route = normalizePath(candidate);
+    if (route === "/") return pathname === "/";
+    if (candidate.endsWith("/")) return pathname.startsWith(`${route}/`);
+    return pathname === route || pathname.startsWith(`${route}/`);
+  });
 
   const template = readTemplate();
   if (!template) {
@@ -404,7 +425,7 @@ export default async function handler(req, res) {
   }
 
   // Fetch metadata for the route (bot only)
-  const metadata = await fetchMetadata(pathname);
+  const metadata = await fetchMetadata(pathname, resolveApiBase(req));
 
   if (!metadata) {
     // Route not found or not SSR eligible, serve SPA
@@ -428,3 +449,5 @@ export default async function handler(req, res) {
     )
     .send(html);
 }
+
+export { fetchMetadata, injectMetadataIntoHtml, isBotUserAgent, normalizePath, readTemplate, resolveApiBase };

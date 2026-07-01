@@ -70,10 +70,18 @@ export async function createPayPalOrder(params: {
 }): Promise<{ id: string; status: string }> {
   const token = await getAccessToken();
 
+  if (!Number.isFinite(params.shippingCost) || params.shippingCost < 0) {
+    throw new TypeError("PayPal shippingCost must be a finite, non-negative number");
+  }
+
   const subtotal = params.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  if (!Number.isFinite(subtotal) || subtotal < 0) {
+    throw new TypeError("PayPal subtotal must be a finite, non-negative number");
+  }
+
   const total = subtotal + params.shippingCost;
 
   const body = {

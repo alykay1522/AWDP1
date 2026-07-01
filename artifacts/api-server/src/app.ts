@@ -45,8 +45,14 @@ const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
-// Trust reverse proxy — works for both Replit and Vercel
-app.set("trust proxy", true);
+// Trust a bounded number of reverse-proxy hops. This keeps req.ip useful on
+// Vercel/Replit without allowing arbitrary X-Forwarded-For values to win.
+const configuredProxyHops = Number(process.env.TRUST_PROXY_HOPS ?? "1");
+const trustedProxyHops =
+  Number.isInteger(configuredProxyHops) && configuredProxyHops >= 1 && configuredProxyHops <= 5
+    ? configuredProxyHops
+    : 1;
+app.set("trust proxy", trustedProxyHops);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
 // CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
