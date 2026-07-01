@@ -31,25 +31,43 @@ jobs:
           cache: pnpm
 
       - name: Apply reviewed fixes
+        id: apply
+        continue-on-error: true
         run: |
-          python3 scripts/apply-review-fixes.py
+          mkdir -p review-diagnostics
+          set +e
+          python3 scripts/apply-review-fixes.py 2>&1 | tee review-diagnostics/apply.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > review-diagnostics/apply.exit-code
           git checkout HEAD -- scripts/apply-review-fixes.py .github/workflows/apply-review-fixes.yml
+          exit "$status"
+
+      - name: Upload apply diagnostics
+        if: steps.apply.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-apply-diagnostics
+          path: review-diagnostics
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Install dependencies
+        if: steps.apply.outcome == 'success'
         run: pnpm install --no-frozen-lockfile
 
       - name: Archive exact fixed files
+        if: steps.apply.outcome == 'success'
         run: |
           rm -f pnpm-lock.yaml
           {
             git diff --name-only --diff-filter=ACM -z
             git ls-files --others --exclude-standard -z
           } > /tmp/review-fixed-files.list
-          mkdir -p review-diagnostics
           tar --null -T /tmp/review-fixed-files.list -czf review-diagnostics/fixed-files.tar.gz
           tr '\0' '\n' < /tmp/review-fixed-files.list > review-diagnostics/fixed-files.txt
 
       - name: Capture validation output
+        if: steps.apply.outcome == 'success'
         run: |
           set +e
           pnpm --filter @workspace/api-server test 2>&1 | tee review-diagnostics/api-tests.log
@@ -69,6 +87,7 @@ jobs:
           exit 0
 
       - name: Upload fixed files and diagnostics
+        if: steps.apply.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: review-fixed-files-and-diagnostics
