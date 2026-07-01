@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apply:
@@ -31,10 +31,7 @@ jobs:
           cache: pnpm
 
       - name: Apply reviewed fixes
-        id: apply
-        continue-on-error: true
         run: |
-          mkdir -p review-diagnostics
           python3 - <<'PY'
           from pathlib import Path
           script = Path("scripts/apply-review-fixes.py")
@@ -45,62 +42,40 @@ jobs:
               end = text.index("# Self-remove the one-shot automation files before committing.", start)
               script.write_text(text[:start] + text[end:], encoding="utf-8")
           PY
-          set +e
-          python3 scripts/apply-review-fixes.py 2>&1 | tee review-diagnostics/apply.log
-          status=${PIPESTATUS[0]}
-          echo "$status" > review-diagnostics/apply.exit-code
+          python3 scripts/apply-review-fixes.py
           git checkout HEAD -- scripts/apply-review-fixes.py .github/workflows/apply-review-fixes.yml
-          exit "$status"
-
-      - name: Upload apply diagnostics
-        if: steps.apply.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: review-apply-diagnostics
-          path: review-diagnostics
-          if-no-files-found: error
-          retention-days: 7
 
       - name: Install dependencies
-        if: steps.apply.outcome == 'success'
         run: pnpm install --no-frozen-lockfile
 
-      - name: Archive exact fixed files
-        if: steps.apply.outcome == 'success'
+      - name: Record exact source files
         run: |
           rm -f pnpm-lock.yaml
+          mkdir -p review-diagnostics
           {
             git diff --name-only --diff-filter=ACM -z
             git ls-files --others --exclude-standard -z
-          } > /tmp/review-fixed-files.list
-          tar --null -T /tmp/review-fixed-files.list -czf review-diagnostics/fixed-files.tar.gz
-          tr '\0' '\n' < /tmp/review-fixed-files.list > review-diagnostics/fixed-files.txt
+          } | grep -zv '^review-diagnostics/' | tr '\0' '\n' > review-diagnostics/fixed-files.txt
 
-      - name: Capture validation output
-        if: steps.apply.outcome == 'success'
+      - name: Run API tests
+        run: pnpm --filter @workspace/api-server test
+
+      - name: Run site tests
+        run: pnpm --filter awdp-site test
+
+      - name: Run SSR tests
+        run: node --test artifacts/awdp-site/tests/ssr-route.test.mjs
+
+      - name: Build API
+        run: pnpm --filter @workspace/api-server build
+
+      - name: Build site
+        run: pnpm --filter awdp-site build
+
+      - name: Commit verified source files
         run: |
-          set +e
-          pnpm --filter @workspace/api-server test 2>&1 | tee review-diagnostics/api-tests.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/api-tests.exit-code
-          pnpm --filter awdp-site test 2>&1 | tee review-diagnostics/site-tests.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/site-tests.exit-code
-          node --test artifacts/awdp-site/tests/ssr-route.test.mjs 2>&1 | tee review-diagnostics/ssr-tests.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/ssr-tests.exit-code
-          pnpm --filter @workspace/api-server typecheck 2>&1 | tee review-diagnostics/api-typecheck.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/api-typecheck.exit-code
-          pnpm --filter awdp-site typecheck 2>&1 | tee review-diagnostics/site-typecheck.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/site-typecheck.exit-code
-          pnpm --filter @workspace/api-server build 2>&1 | tee review-diagnostics/api-build.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/api-build.exit-code
-          pnpm --filter awdp-site build 2>&1 | tee review-diagnostics/site-build.log
-          echo "${PIPESTATUS[0]}" > review-diagnostics/site-build.exit-code
-          exit 0
-
-      - name: Upload fixed files and diagnostics
-        if: steps.apply.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: review-fixed-files-and-diagnostics
-          path: review-diagnostics
-          if-no-files-found: error
-          retention-days: 7
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --pathspec-from-file=review-diagnostics/fixed-files.txt
+          git commit -m "fix: resolve review findings [skip ci]"
+          git push origin HEAD
