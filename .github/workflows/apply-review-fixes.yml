@@ -36,18 +36,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Run focused regression tests
-        run: |
-          pnpm --filter @workspace/api-server test
-          pnpm --filter awdp-site test
-          node --test artifacts/awdp-site/tests/ssr-route.test.mjs
+      - name: Test API business logic
+        run: pnpm --filter @workspace/api-server test
 
-      - name: Typecheck and build
-        run: |
-          pnpm --filter @workspace/api-server typecheck
-          pnpm --filter awdp-site typecheck
-          pnpm --filter @workspace/api-server build
-          pnpm --filter awdp-site build
+      - name: Test site shipping logic
+        run: pnpm --filter awdp-site test
+
+      - name: Test SSR handler
+        run: node --test artifacts/awdp-site/tests/ssr-route.test.mjs
+
+      - name: Typecheck API
+        run: pnpm --filter @workspace/api-server typecheck
+
+      - name: Typecheck site
+        run: pnpm --filter awdp-site typecheck
+
+      - name: Build API
+        run: pnpm --filter @workspace/api-server build
+
+      - name: Build site
+        run: pnpm --filter awdp-site build
 
       - name: Commit fixes
         run: |
