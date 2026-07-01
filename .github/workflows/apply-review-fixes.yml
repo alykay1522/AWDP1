@@ -1,9 +1,10 @@
 name: Apply review fixes
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/review-findings-20260701
+      - fix/remove-pnpm-lockfile
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -12,9 +13,10 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out branch
+      - name: Check out fix branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Set up pnpm
