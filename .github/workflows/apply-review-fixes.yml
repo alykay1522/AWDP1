@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   apply:
@@ -38,18 +38,33 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Capture API test output
+      - name: Capture validation output
         run: |
+          mkdir -p review-diagnostics
           set +e
-          pnpm --filter @workspace/api-server test 2>&1 | tee artifacts/review-api-test.log
-          echo "${PIPESTATUS[0]}" > artifacts/review-api-test.exit-code
+          pnpm --filter @workspace/api-server test 2>&1 | tee review-diagnostics/api-tests.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/api-tests.exit-code
+          pnpm --filter awdp-site test 2>&1 | tee review-diagnostics/site-tests.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/site-tests.exit-code
+          node --test artifacts/awdp-site/tests/ssr-route.test.mjs 2>&1 | tee review-diagnostics/ssr-tests.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/ssr-tests.exit-code
+          pnpm --filter @workspace/api-server typecheck 2>&1 | tee review-diagnostics/api-typecheck.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/api-typecheck.exit-code
+          pnpm --filter awdp-site typecheck 2>&1 | tee review-diagnostics/site-typecheck.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/site-typecheck.exit-code
+          pnpm --filter @workspace/api-server build 2>&1 | tee review-diagnostics/api-build.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/api-build.exit-code
+          pnpm --filter awdp-site build 2>&1 | tee review-diagnostics/site-build.log
+          echo "${PIPESTATUS[0]}" > review-diagnostics/site-build.exit-code
+          rm -f pnpm-lock.yaml
+          git diff --binary > review-diagnostics/review-fixes.patch
+          git status --short > review-diagnostics/git-status.txt
           exit 0
 
-      - name: Commit applied patch and diagnostics
-        run: |
-          rm -f pnpm-lock.yaml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "chore: capture review fix diagnostics [skip ci]"
-          git push origin HEAD
+      - name: Upload patch and diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-fixes-and-diagnostics
+          path: review-diagnostics
+          if-no-files-found: error
+          retention-days: 7
