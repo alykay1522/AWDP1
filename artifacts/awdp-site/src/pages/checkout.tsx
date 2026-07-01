@@ -59,7 +59,11 @@ export default function Checkout() {
                   <div className="text-right">
                     <div>${(item.price * item.quantity).toFixed(2)}</div>
                     <button 
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => {
+                        removeFromCart(item.id);
+                        setShippingInfo(null);
+                        orderDataRef.current = null;
+                      }}
                       className="text-xs text-red-500 hover:underline mt-1"
                     >
                       Remove
