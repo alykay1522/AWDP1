@@ -11,7 +11,8 @@
     "dev": "pnpm --filter awdp-site run dev",
     "build": "pnpm --filter awdp-site run build",
     "preview": "pnpm --filter awdp-site run serve",
-    "vercel:set-api": "node scripts/vercel-set-api-origin.mjs"
+    "vercel:set-api": "node scripts/vercel-set-api-origin.mjs",
+    "test": "node --test tests/ssr.test.mjs"
   },
   "engines": {
     "node": ">=20.x"
