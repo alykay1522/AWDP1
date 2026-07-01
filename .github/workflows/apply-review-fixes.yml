@@ -38,9 +38,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Archive exact fixed files
+        run: |
+          rm -f pnpm-lock.yaml
+          {
+            git diff --name-only --diff-filter=ACM -z
+            git ls-files --others --exclude-standard -z
+          } > /tmp/review-fixed-files.list
+          mkdir -p review-diagnostics
+          tar --null -T /tmp/review-fixed-files.list -czf review-diagnostics/fixed-files.tar.gz
+          tr '\0' '\n' < /tmp/review-fixed-files.list > review-diagnostics/fixed-files.txt
+
       - name: Capture validation output
         run: |
-          mkdir -p review-diagnostics
           set +e
           pnpm --filter @workspace/api-server test 2>&1 | tee review-diagnostics/api-tests.log
           echo "${PIPESTATUS[0]}" > review-diagnostics/api-tests.exit-code
@@ -56,15 +66,12 @@ jobs:
           echo "${PIPESTATUS[0]}" > review-diagnostics/api-build.exit-code
           pnpm --filter awdp-site build 2>&1 | tee review-diagnostics/site-build.log
           echo "${PIPESTATUS[0]}" > review-diagnostics/site-build.exit-code
-          rm -f pnpm-lock.yaml
-          git diff --binary > review-diagnostics/review-fixes.patch
-          git status --short > review-diagnostics/git-status.txt
           exit 0
 
-      - name: Upload patch and diagnostics
+      - name: Upload fixed files and diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: review-fixes-and-diagnostics
+          name: review-fixed-files-and-diagnostics
           path: review-diagnostics
           if-no-files-found: error
           retention-days: 7
