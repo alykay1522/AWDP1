@@ -470,6 +470,7 @@ export default function AdminImages() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
               onClick={() => pendingDeleteId !== null && deleteMutation.mutate(pendingDeleteId)}
             >
               Delete
