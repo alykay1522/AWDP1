@@ -35,6 +35,16 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p review-diagnostics
+          python3 - <<'PY'
+          from pathlib import Path
+          script = Path("scripts/apply-review-fixes.py")
+          text = script.read_text(encoding="utf-8")
+          marker = "# Encode route params in the generated metadata fetcher too."
+          if marker in text:
+              start = text.index(marker)
+              end = text.index("# Self-remove the one-shot automation files before committing.", start)
+              script.write_text(text[:start] + text[end:], encoding="utf-8")
+          PY
           set +e
           python3 scripts/apply-review-fixes.py 2>&1 | tee review-diagnostics/apply.log
           status=${PIPESTATUS[0]}
