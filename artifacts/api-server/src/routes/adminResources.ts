@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { pdfResourcesTable, type PdfResource } from "@workspace/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { and, eq, asc } from "drizzle-orm";
 import { recoveredPdfResources } from "../data/recoveredPdfResources";
+import {
+  getSafeResourceRedirectUrl,
+  parsePublicResourceId,
+} from "../lib/resourceRedirect";
 
 const router = Router();
 
@@ -30,6 +34,51 @@ router.get("/resources", async (_req, res) => {
     res.json({ resources: mergeWithRecovered(resources) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/resources/:id/open — same-origin link target for resource cards.
+// Keeping the clicked href on the storefront origin avoids expensive delegated
+// outbound-link handlers on the interaction. The browser follows this controlled
+// redirect in the new tab after the click has completed.
+router.get("/resources/:id/open", async (req, res) => {
+  try {
+    const id = parsePublicResourceId(req.params.id);
+    if (id === null) {
+      return res.status(400).json({ error: "Invalid resource id" });
+    }
+
+    let resourceUrl: string | null = null;
+
+    if (id < 0) {
+      const recovered = recoveredPdfResources.find(
+        (resource) => resource.id === id && resource.isActive !== false,
+      );
+      resourceUrl = recovered?.url ?? null;
+    } else {
+      const [resource] = await db
+        .select({ url: pdfResourcesTable.url })
+        .from(pdfResourcesTable)
+        .where(
+          and(
+            eq(pdfResourcesTable.id, id),
+            eq(pdfResourcesTable.isActive, true),
+          ),
+        )
+        .limit(1);
+      resourceUrl = resource?.url ?? null;
+    }
+
+    const redirectUrl = getSafeResourceRedirectUrl(resourceUrl);
+    if (!redirectUrl) {
+      return res.status(404).json({ error: "Resource not found" });
+    }
+
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    return res.redirect(302, redirectUrl);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
   }
 });
 
