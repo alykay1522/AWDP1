@@ -18,8 +18,6 @@ export default function CheckoutSuccess() {
   }, [clearCart]);
 
   useEffect(() => {
-    // Stripe success URL includes session_id; PayPal returns without it — call fulfill whenever
-    // session_id is present so paid Stripe checkouts complete even if the site is now PayPal-only.
     if (sessionId && !fulfilled) {
       setFulfilled(true);
       fetch("/api/checkout/fulfill", {
@@ -43,7 +41,7 @@ export default function CheckoutSuccess() {
         <div>
           <h1 className="text-3xl font-bold font-serif text-foreground mb-2">Order Confirmed!</h1>
           <p className="text-muted-foreground text-lg">
-            Thank you for your order. You'll receive a confirmation email shortly.
+            Thank you for your order. We hope to get back to you in a timely manner.
           </p>
         </div>
 
