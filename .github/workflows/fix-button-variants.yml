@@ -50,3 +50,5 @@ jobs:
                   .github/workflows/fix-button-variants.yml
           git commit -m "fix: import buttonVariants on admin product pages"
           git push origin HEAD:main
+
+# Triggered after workflow creation so GitHub Actions sees the existing workflow.
