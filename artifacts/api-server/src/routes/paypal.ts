@@ -65,7 +65,7 @@ function optionLabel(key: string): string {
 
 /**
  * Re-prices every cart item against the live catalog.
- * Throws if any SKU is unknown or not available for online purchase.
+ * Throws if any SKU is unknown, out of stock, or not available for online purchase.
  */
 async function serverPriceItems(
   rawItems: Array<{
@@ -92,6 +92,7 @@ async function serverPriceItems(
       name: productsTable.name,
       price: productsTable.price,
       imageUrl: productsTable.imageUrl,
+      inStock: productsTable.inStock,
     })
     .from(productsTable)
     .where(inArray(productsTable.sku, skus));
@@ -105,6 +106,12 @@ async function serverPriceItems(
 
   return rawItems.map((item) => {
     const product = productMap.get(item.sku)!;
+    if (!product.inStock) {
+      throw new Error(
+        `Item "${product.name}" (${item.sku}) is currently unavailable. Please remove it from your cart or call 785-533-0244 for assistance.`,
+      );
+    }
+
     const price = parseFloat(product.price as string);
     if (price <= 0) {
       throw new Error(
