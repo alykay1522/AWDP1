@@ -78,6 +78,8 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
     SMTP_USER: !!process.env.SMTP_USER,
     SMTP_PASS: !!process.env.SMTP_PASS,
     SMTP_FROM: !!process.env.SMTP_FROM,
+    SMTP_PORT: Number(process.env.SMTP_PORT || 465),
+    SMTP_SECURE: process.env.SMTP_SECURE ?? "auto",
     RESEND_API_KEY: !!process.env.RESEND_API_KEY,
     PARTSID_RECIPIENTS: !!process.env.PARTSID_RECIPIENTS,
     CONTACT_RECIPIENTS: !!process.env.CONTACT_RECIPIENTS,
@@ -89,7 +91,11 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
 
 router.get("/admin/email-health", async (_req: Request, res: Response) => {
   const result = await verifyEmailTransport();
-  res.status(result.ok ? 200 : 503).json(result);
+  res.status(200).json({
+    ...result,
+    smtpPort: Number(process.env.SMTP_PORT || 465),
+    smtpSecure: process.env.SMTP_SECURE ?? "auto",
+  });
 });
 
 router.get("/admin/session", (req: Request, res: Response) => {
