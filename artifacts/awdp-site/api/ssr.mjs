@@ -155,11 +155,23 @@ async function productMetadata(pathname, origin) {
   }
   if (!sku) return null;
 
+  let response;
   try {
-    const response = await fetch(`${origin}/api/products/${encodeURIComponent(sku)}`, {
+    response = await fetch(`${origin}/api/products/${encodeURIComponent(sku)}`, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(5000),
     });
+  } catch (error) {
+    console.error(`[seo-render] Unable to reach product API for ${sku}:`, error);
+    return notFoundFallback(sku, pathname);
+  }
+
+  if (response.status === 404) {
+    // Confirmed not-found — let the caller return a real 404 instead of a 200 shell.
+    return null;
+  }
+
+  try {
     if (!response.ok) throw new Error(`Product API returned ${response.status}`);
     const product = await response.json();
     const name = product.name || product.title || sku;
@@ -214,16 +226,22 @@ async function productMetadata(pathname, origin) {
     };
   } catch (error) {
     console.error(`[seo-render] Unable to load product ${sku}:`, error);
-    return {
-      title: `Replacement Part ${sku} | All Window Door Parts`,
-      description: `Find replacement window and door hardware for SKU ${sku}. Contact our experts for free parts identification and compatibility help.`,
-      heading: `Replacement Part ${sku}`,
-      intro: "Product details are temporarily unavailable. Search the catalog or send photos to our experts for free identification help.",
-      canonicalPath: pathname,
-      sku,
-      links: [["Search the Catalog", `/shop?search=${encodeURIComponent(sku)}`], ["Free Parts Identification", "/parts-identification"]],
-    };
+    return notFoundFallback(sku, pathname);
   }
+}
+
+// Used only for transient failures (timeout, 5xx, network error) — a confirmed
+// 404 from the products API skips this and returns null so the real 404 shows.
+function notFoundFallback(sku, pathname) {
+  return {
+    title: `Replacement Part ${sku} | All Window Door Parts`,
+    description: `Find replacement window and door hardware for SKU ${sku}. Contact our experts for free parts identification and compatibility help.`,
+    heading: `Replacement Part ${sku}`,
+    intro: "Product details are temporarily unavailable. Search the catalog or send photos to our experts for free identification help.",
+    canonicalPath: pathname,
+    sku,
+    links: [["Search the Catalog", `/shop?search=${encodeURIComponent(sku)}`], ["Free Parts Identification", "/parts-identification"]],
+  };
 }
 
 function pageStructuredData(metadata) {
@@ -326,10 +344,15 @@ export default async function handler(req, res) {
 
   const pathname = normalizePath(req.query.path || req.url || "/");
   const origin = process.env.SITE_URL || BASE_URL;
-  const metadata = (await productMetadata(pathname, origin)) || staticMetadata(pathname);
+  const productResult = await productMetadata(pathname, origin);
+  const metadata = productResult || staticMetadata(pathname);
 
   if (!metadata) {
-    return res.status(200).setHeader("Content-Type", "text/html; charset=utf-8").send(template);
+    // pathname started with /product/ and the SKU was confirmed not to exist
+    // (productMetadata returned null, not a transient-failure fallback).
+    const status = pathname.startsWith("/product/") ? 404 : 200;
+    res.setHeader("X-Robots-Tag", "noindex, follow");
+    return res.status(status).setHeader("Content-Type", "text/html; charset=utf-8").send(template);
   }
 
   const html = injectPage(template, metadata);
