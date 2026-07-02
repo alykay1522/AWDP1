@@ -1,0 +1,52 @@
+name: Apply missing buttonVariants imports
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fix-button-variants.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Add missing imports
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path("artifacts/awdp-site/src/pages/admin-products-list.tsx"),
+              Path("artifacts/awdp-site/src/pages/admin-images.tsx"),
+          ]
+          old = 'import { Button } from "@/components/ui/button";'
+          new = 'import { Button, buttonVariants } from "@/components/ui/button";'
+
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              if new in text:
+                  continue
+              if old not in text:
+                  raise SystemExit(f"Expected import not found in {path}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Commit fix and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/fix-button-variants.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/awdp-site/src/pages/admin-products-list.tsx \
+                  artifacts/awdp-site/src/pages/admin-images.tsx \
+                  .github/workflows/fix-button-variants.yml
+          git commit -m "fix: import buttonVariants on admin product pages"
+          git push origin HEAD:main
