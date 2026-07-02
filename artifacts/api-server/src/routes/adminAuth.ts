@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { verifyEmailTransport } from "../lib/email.js";
+import { probeSmtpPort } from "../lib/smtpProbe.js";
 import crypto from "crypto";
 
 const router = Router();
@@ -96,6 +97,11 @@ router.get("/admin/email-health", async (_req: Request, res: Response) => {
     smtpPort: Number(process.env.SMTP_PORT || 465),
     smtpSecure: process.env.SMTP_SECURE ?? "auto",
   });
+});
+
+router.get("/admin/smtp-ports", async (_req: Request, res: Response) => {
+  const [port465, port587] = await Promise.all([probeSmtpPort(465), probeSmtpPort(587)]);
+  res.json({ port465, port587 });
 });
 
 router.get("/admin/session", (req: Request, res: Response) => {
