@@ -1,8 +1,8 @@
 name: Apply missing buttonVariants imports
 
 on:
-  pull_request:
-    types: [opened]
+  check_run:
+    types: [completed]
 
 permissions:
   contents: write
@@ -10,12 +10,12 @@ permissions:
 
 jobs:
   fix-imports:
-    if: github.event.pull_request.title == 'run: fix buttonVariants imports'
+    if: github.event.check_run.check_suite.head_branch == 'fix/button-variants-imports'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: fix/button-variants-imports
           fetch-depth: 0
 
       - name: Add missing imports
@@ -49,8 +49,6 @@ jobs:
 
       - name: Commit changes to pull request branch
         shell: bash
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           rm -f .github/fix-button-variants-trigger.txt
           rm -f .github/workflows/fix-button-variants.yml
@@ -61,4 +59,4 @@ jobs:
                   .github/fix-button-variants-trigger.txt \
                   .github/workflows/fix-button-variants.yml
           git commit -m "fix: import buttonVariants on admin product pages"
-          git push origin HEAD:"$HEAD_REF"
+          git push origin HEAD:fix/button-variants-imports
