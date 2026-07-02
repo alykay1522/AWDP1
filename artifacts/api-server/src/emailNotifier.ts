@@ -1,3 +1,4 @@
+import { waitUntil } from "@vercel/functions";
 import { getOrderRecipients, sendOutboundEmail } from "./lib/email.js";
 
 interface OrderItem { name: string; sku: string; price: number; quantity: number; }
@@ -77,7 +78,7 @@ function customerHtml(o: OrderEmailPayload): string {
 </body></html>`;
 }
 
-export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
+async function deliverOrderNotifications(payload: OrderEmailPayload): Promise<void> {
   await sendOutboundEmail({
     to: getOrderRecipients(),
     replyTo: payload.customerEmail || undefined,
@@ -97,4 +98,17 @@ export async function sendOrderNotification(payload: OrderEmailPayload): Promise
       console.error("[email] Customer order confirmation failed", error);
     }
   }
+}
+
+export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
+  const delivery = deliverOrderNotifications(payload);
+
+  if (process.env.VERCEL) {
+    waitUntil(delivery.catch((error) => {
+      console.error("[email] Staff order notification failed", error);
+    }));
+    return;
+  }
+
+  await delivery;
 }
