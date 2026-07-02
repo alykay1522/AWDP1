@@ -25,6 +25,15 @@ const loginRateLimiter = rateLimit({
   statusCode: 429,
 });
 
+const adminDiagnosticsRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many diagnostic requests. Please try again in 15 minutes." },
+  statusCode: 429,
+});
+
 router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res: Response) => {
   const { password } = req.body as { password?: string };
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -90,7 +99,7 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
   });
 });
 
-router.get("/admin/email-health", async (_req: Request, res: Response) => {
+router.get("/admin/email-health", adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
   const result = await verifyEmailTransport();
   res.status(200).json({
     ...result,
@@ -99,7 +108,7 @@ router.get("/admin/email-health", async (_req: Request, res: Response) => {
   });
 });
 
-router.get("/admin/smtp-ports", async (_req: Request, res: Response) => {
+router.get("/admin/smtp-ports", adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
   const [port465, port587] = await Promise.all([probeSmtpPort(465), probeSmtpPort(587)]);
   res.json({ port465, port587 });
 });
