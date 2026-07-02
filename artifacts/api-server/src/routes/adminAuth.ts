@@ -2,11 +2,11 @@ import { Router, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { requireAdmin } from "../middleware/requireAdmin";
+import { verifyEmailTransport } from "../lib/email.js";
 import crypto from "crypto";
 
 const router = Router();
 
-// Progressive delay: after 3 attempts, add 500 ms per extra attempt (up to 5 s)
 const loginSlowDown = slowDown({
   windowMs: 15 * 60 * 1000,
   delayAfter: 3,
@@ -14,7 +14,6 @@ const loginSlowDown = slowDown({
   maxDelayMs: 5000,
 });
 
-// Hard cap: 10 attempts per 15-minute window — return 429 when exceeded
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -37,7 +36,6 @@ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res:
     return res.status(401).json({ error: "Invalid password" });
   }
 
-  // Use timing-safe comparison to prevent timing attacks
   const passwordBuffer = Buffer.from(password, "utf8");
   const adminPasswordBuffer = Buffer.from(adminPassword, "utf8");
 
@@ -69,7 +67,6 @@ router.get("/admin/auth-check", requireAdmin, (_req: Request, res: Response) => 
   res.json({ authenticated: true });
 });
 
-// Diagnostic: check which critical env vars are set (values never exposed)
 router.get("/admin/env-check", (_req: Request, res: Response) => {
   res.json({
     DATABASE_URL: !!process.env.DATABASE_URL,
@@ -88,6 +85,11 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
     VERCEL: !!process.env.VERCEL,
     NODE_ENV: process.env.NODE_ENV || "unset",
   });
+});
+
+router.get("/admin/email-health", async (_req: Request, res: Response) => {
+  const result = await verifyEmailTransport();
+  res.status(result.ok ? 200 : 503).json(result);
 });
 
 router.get("/admin/session", (req: Request, res: Response) => {
