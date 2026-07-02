@@ -20,9 +20,8 @@ export default function Checkout() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<{ cost: number; label: string } | null>(null);
 
-  // FIXED: Fetch the PayPal client ID from the server instead of relying on a
-  // build-time env var (VITE_PAYPAL_CLIENT_ID). The server's /api/paypal/client-id
-  // endpoint already returns the live client ID correctly.
+  // Fetch the PayPal client ID from the server so checkout does not depend on a
+  // build-time frontend environment variable.
   const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
   const [paypalError, setPaypalError] = useState<string | null>(null);
 
@@ -148,7 +147,7 @@ export default function Checkout() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                           items: items.map((item) => ({
-                            sku: item.sku,                                   // ← now explicitly typed, never undefined
+                            sku: item.sku,
                             quantity: item.quantity,
                             selectedAttributes: item.selectedAttributes ?? {},
                           })),
@@ -214,11 +213,19 @@ export default function Checkout() {
                       setLoading(false);
                     }
                   }}
+                  onCancel={() => {
+                    const message = "PayPal checkout was canceled. Your cart has not been charged.";
+                    setError(message);
+                    setLoading(false);
+                    setProcessingPayment(false);
+                    orderDataRef.current = null;
+                  }}
                   onError={() => {
                     const message = "There was an error with your PayPal payment. Please try again.";
                     setError(message);
                     toast.error(message);
                     setLoading(false);
+                    setProcessingPayment(false);
                   }}
                 />
 
