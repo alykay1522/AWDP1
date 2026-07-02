@@ -7,8 +7,27 @@ import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
 import { calculateShipping } from "../lib/shipping.js";
 import { logger } from "../lib/logger";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
+
+const createOrderRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many checkout attempts. Please try again in 15 minutes." },
+  statusCode: 429,
+});
+
+const captureOrderRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many payment attempts. Please wait a few minutes and try again." },
+  statusCode: 429,
+});
 
 const CartItemSchema = z.object({
   sku: z.string(),
@@ -22,6 +41,11 @@ const CartItemSchema = z.object({
 
 const CreateOrderSchema = z.object({
   items: z.array(CartItemSchema).min(1),
+});
+
+const CaptureOrderSchema = z.object({
+  paypalOrderId: z.string().trim().regex(/^[A-Za-z0-9-]{5,64}$/),
+  orderId: z.string().regex(/^AWDP-[A-HJ-NP-Z2-9]{8}$/),
 });
 
 function generateOrderId(): string {
@@ -110,7 +134,7 @@ async function serverPriceItems(
 }
 
 // POST /api/paypal/create-order
-router.post("/paypal/create-order", async (req, res) => {
+router.post("/paypal/create-order", createOrderRateLimiter, async (req, res) => {
   try {
     const parsed = CreateOrderSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -172,16 +196,14 @@ router.post("/paypal/create-order", async (req, res) => {
 });
 
 // POST /api/paypal/capture-order
-router.post("/paypal/capture-order", async (req, res) => {
+router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) => {
   try {
-    const { paypalOrderId, orderId } = req.body as {
-      paypalOrderId: string;
-      orderId: string;
-    };
-
-    if (!paypalOrderId || !orderId) {
-      return res.status(400).json({ error: "paypalOrderId and orderId are required" });
+    const parsed = CaptureOrderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Valid paypalOrderId and orderId are required" });
     }
+
+    const { paypalOrderId, orderId } = parsed.data;
 
     const [localOrder] = await db
       .select({ orderId: ordersTable.orderId, total: ordersTable.total, status: ordersTable.status })
@@ -192,8 +214,13 @@ router.post("/paypal/capture-order", async (req, res) => {
     if (!localOrder) {
       return res.status(404).json({ error: "Local order not found" });
     }
+
+    // A browser/network retry can arrive after the first capture completed and the
+    // local order was already marked paid. Treat that as a successful idempotent
+    // retry instead of telling a charged customer that the payment failed.
     if (localOrder.status === "paid") {
-      return res.status(400).json({ error: "Order has already been fulfilled" });
+      logger.info({ orderId }, "PayPal capture retry for an already-paid order");
+      return res.json({ success: true, orderId, alreadyProcessed: true });
     }
 
     const capture = await capturePayPalOrder(paypalOrderId);
