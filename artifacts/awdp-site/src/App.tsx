@@ -13,7 +13,6 @@ import { useAdminAuth } from "./lib/useAdminAuth.js";
 import NotFound from "./pages/not-found.jsx";
 import { ErrorBoundary } from "./components/error-boundary.jsx";
 
-// Public storefront pages remain eager so customer navigation stays immediate.
 import Home from "./pages/home.jsx";
 import Shop from "./pages/shop.jsx";
 import ProductDetail from "./pages/product.jsx";
@@ -34,8 +33,6 @@ import GuideGlazingBead from "./pages/guide-glazing-bead.jsx";
 import Resources from "./pages/resources.jsx";
 import BalanceWizard from "./components/BalanceWizard.jsx";
 
-// Admin code is never needed by storefront visitors. Keeping it in separate
-// chunks materially reduces the initial customer-facing JavaScript payload.
 const AdminLogin = lazy(() => import("./pages/admin-login.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin-dashboard.jsx"));
 const AdminProductsList = lazy(() => import("./pages/admin-products-list.jsx"));
@@ -59,6 +56,20 @@ function ScrollToTop() {
     window.scrollTo(0, 0);
   }, [location]);
   return null;
+}
+
+function PartsIdentificationWithNotice() {
+  return (
+    <>
+      <div className="bg-amber-50 border-y border-amber-200 px-4 py-4 text-amber-950">
+        <div className="max-w-3xl mx-auto text-center text-sm md:text-base">
+          <p className="font-bold">Please wait for us to respond to your first inquiry before submitting another.</p>
+          <p>Submitting multiple inquiries will cause a delay. We hope to get back to you in a timely manner.</p>
+        </div>
+      </div>
+      <PartsIdentification />
+    </>
+  );
 }
 
 const queryClient = new QueryClient();
@@ -206,7 +217,7 @@ function AppContent() {
         <Route path="/shop" component={Shop} />
         <Route path="/product/:sku" component={ProductDetail} />
         <Route path="/categories" component={Categories} />
-        <Route path="/parts-identification" component={PartsIdentification} />
+        <Route path="/parts-identification" component={PartsIdentificationWithNotice} />
         <Route path="/contact" component={Contact} />
         <Route path="/about" component={About} />
         <Route path="/checkout" component={Checkout} />
