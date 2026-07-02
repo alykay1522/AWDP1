@@ -41,7 +41,6 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormValues) => {
     try {
-      // useSubmitContact calls POST /api/contact which saves to DB and sends the Resend email
       await submitContactMutation.mutateAsync({ data });
       setIsSubmitted(true);
     } catch (error) {
@@ -96,7 +95,6 @@ export default function Contact() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Contact Info */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border p-8">
               <h3 className="text-xl font-serif font-bold text-slate-900 mb-6 border-b pb-4">Get In Touch</h3>
@@ -148,7 +146,6 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* Contact Form */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm border p-8 md:p-10">
               {isSubmitted ? (
@@ -158,7 +155,7 @@ export default function Contact() {
                   </div>
                   <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">Message Sent!</h2>
                   <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
-                    Thank you for contacting All Window Door Parts. A member of our team will get back to you shortly.
+                    Thank you for contacting All Window Door Parts. We hope to get back to you in a timely manner.
                   </p>
                   <Button onClick={() => setIsSubmitted(false)} variant="outline">Send Another Message</Button>
                 </div>

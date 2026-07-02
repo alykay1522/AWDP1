@@ -1,20 +1,5 @@
-import nodemailer from "nodemailer";
-import { getContactForwardEmails } from "./lib/notifyRecipients.js";
-
-const FROM_EMAIL = "All Window Door Parts <info@allwindowdoorparts.com>";
-
-function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  if (!host || !user || !pass) {
-    console.warn("[email] SMTP not configured — skipping order notification");
-    return null;
-  }
-  const port   = parseInt(process.env.SMTP_PORT ?? "465", 10);
-  const secure = process.env.SMTP_SECURE !== "false";
-  return nodemailer.createTransport({ host, port, secure, auth: { user, pass }, tls: { rejectUnauthorized: true } });
-}
+import { waitUntil } from "@vercel/functions";
+import { getOrderRecipients, sendOutboundEmail } from "./lib/email.js";
 
 interface OrderItem { name: string; sku: string; price: number; quantity: number; }
 interface OrderEmailPayload {
@@ -59,7 +44,7 @@ function ownerHtml(o: OrderEmailPayload): string {
       <tfoot><tr><td colspan="3" style="padding:12px 8px;text-align:right;font-weight:bold;font-size:16px">Order Total:</td><td style="padding:12px 8px;text-align:right;font-weight:bold;font-size:16px;color:#1e3a8a">$${o.total}</td></tr></tfoot>
     </table>
     <div style="margin-top:24px;padding:16px;background:#fef9c3;border-left:4px solid #f59e0b">
-      <strong>Action Required:</strong> Fulfill this order. Contact: <a href="mailto:${o.customerEmail}">${o.customerEmail}</a>
+      <strong>Order follow-up:</strong> Contact <a href="mailto:${o.customerEmail}">${o.customerEmail}</a>
     </div>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">All Window Door Parts — 785-533-0244 — info@allwindowdoorparts.com</div>
@@ -76,7 +61,7 @@ function customerHtml(o: OrderEmailPayload): string {
   <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">Thank You for Your Order!</h1></div>
   <div style="padding:24px">
     <p>Hi ${o.customerName||"Valued Customer"},</p>
-    <p>We've received your order and will be in touch shortly to confirm shipping details.</p>
+    <p>We've received your order. We hope to get back to you in a timely manner regarding shipping details.</p>
     <table style="width:100%;border-collapse:collapse;margin:4px 0 16px;background:#f8fafc">
       <tr><td style="padding:8px"><strong>Order ID:</strong></td><td style="padding:8px">${o.orderId}</td></tr>
     </table>
@@ -93,15 +78,37 @@ function customerHtml(o: OrderEmailPayload): string {
 </body></html>`;
 }
 
-export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
-  const transport = createTransport();
-  if (!transport) return;
+async function deliverOrderNotifications(payload: OrderEmailPayload): Promise<void> {
+  await sendOutboundEmail({
+    to: getOrderRecipients(),
+    replyTo: payload.customerEmail || undefined,
+    subject: `New Order ${payload.orderId} — $${payload.total}`,
+    html: ownerHtml(payload),
+  });
 
-  const staff = getContactForwardEmails();
-  if (staff.length > 0) {
-    await transport.sendMail({ from: FROM_EMAIL, to: staff.join(", "), subject: `New Order ${payload.orderId} — $${payload.total}`, html: ownerHtml(payload) });
-  }
   if (payload.customerEmail) {
-    await transport.sendMail({ from: FROM_EMAIL, to: payload.customerEmail, replyTo: "info@allwindowdoorparts.com", subject: `Order Confirmation — ${payload.orderId}`, html: customerHtml(payload) });
+    try {
+      await sendOutboundEmail({
+        to: payload.customerEmail,
+        replyTo: "info@allwindowdoorparts.com",
+        subject: `Order Confirmation — ${payload.orderId}`,
+        html: customerHtml(payload),
+      });
+    } catch (error) {
+      console.error("[email] Customer order confirmation failed", error);
+    }
   }
+}
+
+export async function sendOrderNotification(payload: OrderEmailPayload): Promise<void> {
+  const delivery = deliverOrderNotifications(payload);
+
+  if (process.env.VERCEL) {
+    waitUntil(delivery.catch((error) => {
+      console.error("[email] Staff order notification failed", error);
+    }));
+    return;
+  }
+
+  await delivery;
 }
