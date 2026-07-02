@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Package, ExternalLink, RefreshCw, Download, Upload, Loader2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
@@ -593,7 +593,6 @@ export default function AdminProductsList() {
           )}
         </div>
       </div>
-import { Button, buttonVariants } from "`@/components/ui/button`";
 
       <AlertDialog open={pendingDeleteSku !== null} onOpenChange={(open) => !open && setPendingDeleteSku(null)}>
         <AlertDialogContent>

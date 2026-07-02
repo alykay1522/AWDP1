@@ -4,7 +4,7 @@ import {
   ImageIcon, Upload, Loader2, RefreshCw, Copy, Check, Trash2,
   FileArchive, FileText, CheckCircle2, AlertCircle, Search,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
 import { AdminQueryError } from "@/components/admin/admin-error";
