@@ -5,7 +5,9 @@ export interface ContactSubmission {
   name: string;
   email: string;
   phone?: string;
+  subject?: string;
   message: string;
+  submissionId?: string;
   submittedAt: string | Date;
 }
 
@@ -25,13 +27,13 @@ export interface PartsIdSubmission {
   submittedAt: string | Date;
 }
 
-interface MailAttachment {
+export interface MailAttachment {
   filename: string;
   content: Buffer;
   contentType?: string;
 }
 
-interface OutboundMessage {
+export interface OutboundMessage {
   to: string | string[];
   replyTo?: string;
   subject: string;
@@ -39,7 +41,7 @@ interface OutboundMessage {
   attachments?: MailAttachment[];
 }
 
-const REQUIRED_PARTS_ID_RECIPIENTS = [
+const REQUIRED_STAFF_RECIPIENTS = [
   "thepolak@wefixitusa.com",
   "alyshameade.1522@gmail.com",
 ] as const;
@@ -62,23 +64,23 @@ function formatSubmittedAt(date: string | Date): string {
   }
 }
 
-const smtpTimeoutMs = Math.max(3000, Number(process.env.SMTP_TIMEOUT_MS || 10000));
-const smtpPort = Number(process.env.SMTP_PORT || 465);
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: smtpPort,
-  secure: smtpPort === 465,
-  auth: process.env.SMTP_USER && process.env.SMTP_PASS
-    ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    : undefined,
-  connectionTimeout: smtpTimeoutMs,
-  greetingTimeout: smtpTimeoutMs,
-  socketTimeout: smtpTimeoutMs,
-  pool: false,
-});
+function envFlag(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback;
+  return !["0", "false", "no", "off"].includes(value.trim().toLowerCase());
+}
+
+function extractEmailAddress(value: string): string {
+  const bracketed = value.match(/<([^>]+)>/);
+  return (bracketed?.[1] || value).trim();
+}
 
 function senderAddress(): string {
-  return process.env.SMTP_FROM || process.env.RESEND_FROM || process.env.SMTP_USER || "info@allwindowdoorparts.com";
+  const configured =
+    process.env.SMTP_FROM ||
+    process.env.RESEND_FROM ||
+    process.env.SMTP_USER ||
+    "info@allwindowdoorparts.com";
+  return extractEmailAddress(configured);
 }
 
 function normalizeRecipients(value: string | string[]): string[] {
@@ -88,20 +90,76 @@ function normalizeRecipients(value: string | string[]): string[] {
     .filter((recipient) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient));
 }
 
-function partsIdRecipients(): string[] {
-  const configured = [
-    process.env.PARTSID_RECIPIENTS,
-    process.env.CONTACT_RECIPIENTS,
-  ]
+function configuredRecipients(...values: Array<string | undefined>): string[] {
+  return values
     .filter((value): value is string => Boolean(value))
     .flatMap((value) => normalizeRecipients(value));
-
-  return [...new Set([...REQUIRED_PARTS_ID_RECIPIENTS, ...configured])];
 }
+
+function uniqueRecipients(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.toLowerCase()))];
+}
+
+export function getContactRecipients(): string[] {
+  return uniqueRecipients([
+    ...REQUIRED_STAFF_RECIPIENTS,
+    ...configuredRecipients(process.env.CONTACT_RECIPIENTS, process.env.CONTACT_FORWARD_EMAILS),
+  ]);
+}
+
+export function getPartsIdRecipients(): string[] {
+  return uniqueRecipients([
+    ...REQUIRED_STAFF_RECIPIENTS,
+    ...configuredRecipients(
+      process.env.PARTSID_RECIPIENTS,
+      process.env.CONTACT_RECIPIENTS,
+      process.env.CONTACT_FORWARD_EMAILS,
+    ),
+  ]);
+}
+
+export function getOrderRecipients(): string[] {
+  return uniqueRecipients([
+    ...REQUIRED_STAFF_RECIPIENTS,
+    ...configuredRecipients(
+      process.env.ORDER_RECIPIENTS,
+      process.env.CONTACT_RECIPIENTS,
+      process.env.CONTACT_FORWARD_EMAILS,
+    ),
+  ]);
+}
+
+const emailTimeoutMs = Math.max(3000, Number(process.env.SMTP_TIMEOUT_MS || 10000));
+const smtpPort = Number(process.env.SMTP_PORT || 465);
+const smtpSecure = envFlag(process.env.SMTP_SECURE, smtpPort === 465);
+
+function createSmtpTransport() {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: smtpPort,
+    secure: smtpSecure,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    connectionTimeout: emailTimeoutMs,
+    greetingTimeout: emailTimeoutMs,
+    socketTimeout: emailTimeoutMs,
+    requireTLS: !smtpSecure && smtpPort === 587,
+    pool: false,
+    tls: {
+      rejectUnauthorized: envFlag(process.env.SMTP_TLS_REJECT_UNAUTHORIZED, true),
+      servername: process.env.SMTP_HOST,
+    },
+  });
+}
+
+const smtpTransporter = createSmtpTransport();
 
 async function sendWithResend(message: OutboundMessage) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), smtpTimeoutMs);
+  const timer = setTimeout(() => controller.abort(), emailTimeoutMs);
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -134,7 +192,7 @@ async function sendWithResend(message: OutboundMessage) {
   }
 }
 
-async function sendMessage(message: OutboundMessage) {
+export async function sendOutboundEmail(message: OutboundMessage) {
   const recipients = normalizeRecipients(message.to);
   if (recipients.length === 0) throw new Error("Email has no valid recipients.");
 
@@ -142,11 +200,11 @@ async function sendMessage(message: OutboundMessage) {
     return sendWithResend({ ...message, to: recipients });
   }
 
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!smtpTransporter) {
     throw new Error("Email delivery is not configured. Set RESEND_API_KEY or SMTP_HOST/SMTP_USER/SMTP_PASS.");
   }
 
-  return transporter.sendMail({
+  return smtpTransporter.sendMail({
     from: `"All Window Door Parts" <${senderAddress()}>`,
     to: recipients,
     replyTo: message.replyTo,
@@ -156,21 +214,50 @@ async function sendMessage(message: OutboundMessage) {
   });
 }
 
+export async function verifyEmailTransport(): Promise<{
+  configured: boolean;
+  provider: "resend" | "smtp" | "none";
+  ok: boolean;
+  errorCode?: string;
+}> {
+  if (process.env.RESEND_API_KEY) {
+    return { configured: true, provider: "resend", ok: true };
+  }
+
+  if (!smtpTransporter) {
+    return { configured: false, provider: "none", ok: false, errorCode: "NOT_CONFIGURED" };
+  }
+
+  try {
+    await smtpTransporter.verify();
+    return { configured: true, provider: "smtp", ok: true };
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: unknown }).code || "SMTP_VERIFY_FAILED")
+        : "SMTP_VERIFY_FAILED";
+    return { configured: true, provider: "smtp", ok: false, errorCode: code };
+  }
+}
+
 export async function forwardContactEmail(submission: ContactSubmission) {
   const html = `
     <h2>New Contact Form Submission</h2>
+    ${submission.submissionId ? `<p><strong>Submission ID:</strong> ${esc(submission.submissionId)}</p>` : ""}
     <p><strong>Name:</strong> ${esc(submission.name)}</p>
     <p><strong>Email:</strong> ${esc(submission.email)}</p>
     <p><strong>Phone:</strong> ${esc(submission.phone)}</p>
+    <p><strong>Subject:</strong> ${esc(submission.subject) || "General inquiry"}</p>
     <p><strong>Message:</strong><br>${esc(submission.message).replace(/\n/g, "<br>")}</p>
     <p><strong>Submitted At:</strong> ${formatSubmittedAt(submission.submittedAt)}</p>
   `;
 
-  const recipient = process.env.CONTACT_RECIPIENTS || senderAddress();
-  return sendMessage({
-    to: recipient,
+  return sendOutboundEmail({
+    to: getContactRecipients(),
     replyTo: submission.email,
-    subject: "New Contact Form Submission",
+    subject: submission.subject
+      ? `New Contact Message — ${submission.subject}`
+      : "New Contact Form Submission",
     html,
   });
 }
@@ -205,21 +292,16 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
       }]
     : undefined;
 
-  // These two addresses are mandatory business recipients. Configured addresses
-  // are additive, not replacements, so Parts ID submissions cannot silently go
-  // only to the SMTP login address.
-  const internalInfo = await sendMessage({
-    to: partsIdRecipients(),
+  const internalInfo = await sendOutboundEmail({
+    to: getPartsIdRecipients(),
     replyTo: submission.email,
     subject: `New Parts ID Request — ${submission.ticketId}`,
     html,
     attachments,
   });
 
-  // Customer confirmation is useful but must never prevent the internal
-  // forwarding result from succeeding.
   try {
-    await sendMessage({
+    await sendOutboundEmail({
       to: submission.email,
       subject: `We received your Parts ID request — ${submission.ticketId}`,
       html: `
@@ -227,7 +309,8 @@ export async function forwardPartsIdEmail(submission: PartsIdSubmission) {
         <p>Hi ${esc(submission.name)},</p>
         <p>Your request has been received under ticket <strong>${esc(submission.ticketId)}</strong>.</p>
         <p>${submission.imageFileName ? "Your uploaded photo was saved with the request." : "No photo was attached. You can reply to this email with photos if needed."}</p>
-        <p>Our team will review the information and contact you with the best available match.</p>
+        <p>We hope to get back to you in a timely manner.</p>
+        <p>Please wait for our response before submitting another inquiry. Multiple inquiries may delay our response.</p>
         <p>All Window Door Parts<br>785-533-0244</p>
       `,
     });
