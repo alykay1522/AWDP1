@@ -3,8 +3,6 @@
 
   const BANNER_SELECTOR = 'img[src*="/assets/header_bg"]';
   const STYLE_ID = "awdp-responsive-banner-styles";
-  const SVG_NS = "http://www.w3.org/2000/svg";
-  const XLINK_NS = "http://www.w3.org/1999/xlink";
 
   function installStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -13,133 +11,65 @@
     style.id = STYLE_ID;
     style.textContent = `
       .awdp-banner-shell {
+        position: relative;
         width: 100%;
+        height: clamp(260px, 22.4vw, 430px);
         overflow: hidden;
-        background: #d5d5d5;
+        background: #d2d2d2;
         line-height: 0;
+        isolation: isolate;
       }
 
-      .awdp-banner-desktop {
-        display: none;
-        width: 100%;
-        max-width: 1920px;
-        margin: 0 auto;
+      .awdp-banner-backdrop {
+        position: absolute;
+        z-index: 0;
+        inset: -24px;
+        width: calc(100% + 48px);
+        height: calc(100% + 48px);
+        max-height: none !important;
+        object-fit: cover;
+        object-position: center 38%;
+        filter: blur(18px) saturate(0.9) brightness(0.94);
+        transform: scale(1.035);
+        pointer-events: none;
+        user-select: none;
       }
 
-      .awdp-banner-desktop svg {
-        display: block;
-        width: 100%;
-        height: auto;
-      }
-
-      .awdp-banner-mobile {
+      .awdp-banner-foreground {
+        position: relative;
+        z-index: 1;
         display: block !important;
         width: 100% !important;
-        height: auto !important;
+        height: 100% !important;
         max-height: none !important;
         margin: 0 auto !important;
         object-fit: contain !important;
+        object-position: center center !important;
       }
 
-      @media (min-width: 900px) {
-        .awdp-banner-desktop { display: block; }
-        .awdp-banner-mobile { display: none !important; }
+      @media (max-width: 899px) {
+        .awdp-banner-shell {
+          height: auto;
+          background: #d2d2d2;
+        }
+
+        .awdp-banner-backdrop {
+          display: none !important;
+        }
+
+        .awdp-banner-foreground {
+          width: 100% !important;
+          height: auto !important;
+          object-fit: contain !important;
+        }
       }
     `;
     document.head.appendChild(style);
   }
 
-  function setImageHref(image, source) {
-    image.setAttribute("href", source);
-    image.setAttributeNS(XLINK_NS, "xlink:href", source);
-  }
-
-  function addCrop(svg, source, frame, crop, transform) {
-    const nested = document.createElementNS(SVG_NS, "svg");
-    nested.setAttribute("x", String(frame.x));
-    nested.setAttribute("y", String(frame.y));
-    nested.setAttribute("width", String(frame.width));
-    nested.setAttribute("height", String(frame.height));
-    nested.setAttribute("viewBox", `${crop.x} ${crop.y} ${crop.width} ${crop.height}`);
-    nested.setAttribute("preserveAspectRatio", "none");
-    nested.setAttribute("overflow", "hidden");
-
-    const image = document.createElementNS(SVG_NS, "image");
-    image.setAttribute("x", "0");
-    image.setAttribute("y", "0");
-    image.setAttribute("width", "1352");
-    image.setAttribute("height", "551");
-    image.setAttribute("preserveAspectRatio", "none");
-    if (transform) image.setAttribute("transform", transform);
-    setImageHref(image, source);
-
-    nested.appendChild(image);
-    svg.appendChild(nested);
-  }
-
-  function buildDesktopBanner(source) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "awdp-banner-desktop";
-    wrapper.setAttribute("aria-hidden", "true");
-
-    const svg = document.createElementNS(SVG_NS, "svg");
-    svg.setAttribute("viewBox", "0 0 1920 430");
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.setAttribute("focusable", "false");
-
-    const background = document.createElementNS(SVG_NS, "rect");
-    background.setAttribute("x", "0");
-    background.setAttribute("y", "0");
-    background.setAttribute("width", "1920");
-    background.setAttribute("height", "430");
-    background.setAttribute("fill", "#d5d5d5");
-    svg.appendChild(background);
-
-    // Keep the approved artwork at its natural proportions. The center carries
-    // the full headline, while mirrored edge slices extend the flag to full width.
-    addCrop(
-      svg,
-      source,
-      { x: 0, y: 0, width: 284, height: 300 },
-      { x: 0, y: 0, width: 284, height: 300 },
-      "translate(284 0) scale(-1 1)"
-    );
-    addCrop(
-      svg,
-      source,
-      { x: 284, y: 0, width: 1352, height: 300 },
-      { x: 0, y: 0, width: 1352, height: 300 }
-    );
-    addCrop(
-      svg,
-      source,
-      { x: 1636, y: 0, width: 284, height: 300 },
-      { x: 0, y: 0, width: 284, height: 300 },
-      "translate(1352 0) scale(-1 1)"
-    );
-
-    // Move the two lower information blocks directly below the headline so the
-    // desktop banner stays shallow without stretching any lettering or logos.
-    addCrop(
-      svg,
-      source,
-      { x: 65, y: 285, width: 605, height: 143 },
-      { x: 35, y: 332, width: 605, height: 143 }
-    );
-    addCrop(
-      svg,
-      source,
-      { x: 1385, y: 285, width: 470, height: 143 },
-      { x: 858, y: 332, width: 470, height: 143 }
-    );
-
-    wrapper.appendChild(svg);
-    return wrapper;
-  }
-
   function enhanceBanner(image) {
     const parent = image.parentElement;
-    if (!parent) return;
+    if (!parent || image.dataset.awdpBannerEnhanced === "true") return;
 
     const source = image.currentSrc || image.src;
     if (!source) return;
@@ -151,14 +81,19 @@
     parent.setAttribute("role", "img");
     parent.setAttribute("aria-label", label);
 
-    image.classList.add("awdp-banner-mobile");
+    const backdrop = document.createElement("img");
+    backdrop.src = source;
+    backdrop.alt = "";
+    backdrop.setAttribute("aria-hidden", "true");
+    backdrop.className = "awdp-banner-backdrop";
+    backdrop.decoding = "async";
+
+    image.classList.add("awdp-banner-foreground");
     image.setAttribute("alt", "");
     image.setAttribute("aria-hidden", "true");
+    image.dataset.awdpBannerEnhanced = "true";
 
-    const currentDesktop = parent.querySelector(":scope > .awdp-banner-desktop");
-    if (!currentDesktop) {
-      parent.insertBefore(buildDesktopBanner(source), image);
-    }
+    parent.insertBefore(backdrop, image);
   }
 
   function scan() {
