@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
-  ChevronRight, ExternalLink, SlidersHorizontal, LogOut,
+  ChevronRight, ExternalLink, LogOut,
   FileText, PenLine, RefreshCcw,
 } from "lucide-react";
 import { useAdminLogout } from "../lib/useAdminAuth.js";
@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
     children: [
       { href: "/admin/products", label: "All Products" },
       { href: "/admin/products/new", label: "Add New" },
+      { href: "/admin/products/import-package", label: "Products + Images" },
       { href: "/admin/products/bulk-editor", label: "Bulk Editor" },
       { href: "/admin/csv-import", label: "Description CSV" },
     ],
