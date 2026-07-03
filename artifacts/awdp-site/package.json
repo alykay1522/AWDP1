@@ -17,6 +17,7 @@
     "@paypal/react-paypal-js": "^10.0.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "jszip": "^3.10.1",
     "nodemailer": "^9.0.1",
     "pg": "^8.13.0",
     "react-helmet-async": "^3.0.0"

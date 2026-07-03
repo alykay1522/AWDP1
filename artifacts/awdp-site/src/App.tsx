@@ -45,6 +45,7 @@ const AdminPrices = lazy(() => import("./pages/admin-prices.jsx"));
 const AdminSettings = lazy(() => import("./pages/admin-settings.jsx"));
 const AdminImages = lazy(() => import("./pages/admin-images.jsx"));
 const AdminBulkEditor = lazy(() => import("./pages/admin-bulk-editor.jsx"));
+const AdminProductPackageImport = lazy(() => import("./pages/admin-product-package-import.jsx"));
 const AdminCsvImport = lazy(() => import("./pages/admin-csv-import.jsx"));
 const AdminContent = lazy(() => import("./pages/admin-content.jsx"));
 const AdminResourcesPage = lazy(() => import("./pages/admin-resources.jsx"));
@@ -173,6 +174,7 @@ function AdminRoutes() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/products/new" component={AdminNewProduct} />
               <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
+              <Route path="/admin/products/import-package" component={AdminProductPackageImport} />
               <Route path="/admin/products" component={AdminProductsList} />
               <Route path="/admin/orders" component={AdminOrders} />
               <Route path="/admin/categories" component={AdminCategories} />

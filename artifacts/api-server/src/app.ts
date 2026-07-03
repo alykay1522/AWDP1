@@ -45,8 +45,14 @@ const PgSession = connectPgSimple(session);
 
 const app: Express = express();
 app.disable("etag");
-// Trust reverse proxy — works for both Replit and Vercel
-app.set("trust proxy", true);
+
+// Trust only the known reverse-proxy hop. `true` lets clients spoof X-Forwarded-For and
+// defeats IP-based rate limiting. Override for other hosting topologies with TRUST_PROXY_HOPS.
+const trustProxyHops = Number.parseInt(
+  process.env.TRUST_PROXY_HOPS ?? (process.env.VERCEL ? "1" : "0"),
+  10,
+);
+app.set("trust proxy", Number.isFinite(trustProxyHops) && trustProxyHops > 0 ? trustProxyHops : false);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
 // CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
@@ -198,18 +204,16 @@ app.use(
     store: new PgSession({
       pool,
       tableName: "admin_sessions",
+      // Serverless functions should not keep timers alive to prune sessions. Expired rows are
+      // ignored by the store and can be cleaned by a scheduled database job if desired.
+      pruneSessionInterval: process.env.VERCEL ? false : 15 * 60,
+      errorLog: (...args: unknown[]) => logger.warn({ args }, "PostgreSQL session store error"),
     }),
     name: "awdp_admin",
     secret: process.env.SESSION_SECRET || "change-me-in-production",
     resave: false,
     saveUninitialized: false,
-    // Warn if using default secret in development
-    genid: () => {
-      if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === "change-me-in-production") {
-        logger.warn("Using default SESSION_SECRET. Set SESSION_SECRET environment variable for production.");
-      }
-      return Date.now().toString();
-    },
+    // Use express-session's cryptographically secure default session ID generator.
     cookie: (() => {
       // On Vercel (and any HTTPS deployment), use secure cookies.
       // sameSite "lax" works for same-origin requests on Vercel.
