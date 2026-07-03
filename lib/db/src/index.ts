@@ -8,21 +8,46 @@ const { Pool: PgPool } = pg;
 
 type AppDb = NodePgDatabase<typeof schema>;
 
-function buildSslConfig(): pg.ClientConfig["ssl"] {
-  if (process.env.NODE_ENV !== "production") return undefined;
-  if (process.env.DATABASE_URL?.includes("sslmode=disable")) {
+function parseDatabaseUrl(raw: string): pg.PoolConfig {
+  const url = new URL(raw);
+  if (url.protocol !== "postgres:" && url.protocol !== "postgresql:") {
+    throw new Error("DATABASE_URL must use the postgres:// or postgresql:// protocol");
+  }
+
+  const sslMode = url.searchParams.get("sslmode")?.toLowerCase();
+  if (process.env.NODE_ENV === "production" && sslMode === "disable") {
     throw new Error(
       "[SECURITY] DATABASE_URL contains 'sslmode=disable' in production. " +
         "Unencrypted database connections are not permitted. " +
         "Remove 'sslmode=disable' from DATABASE_URL to enforce TLS.",
     );
   }
-  const strict = process.env.PG_SSL_REJECT_UNAUTHORIZED !== "false";
-  return { rejectUnauthorized: strict };
+
+  const shouldUseSsl = process.env.NODE_ENV === "production"
+    || Boolean(sslMode && sslMode !== "disable" && sslMode !== "allow");
+  const strictSsl = process.env.PG_SSL_REJECT_UNAUTHORIZED !== "false";
+  const database = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+
+  if (!url.hostname || !database) {
+    throw new Error("DATABASE_URL must include a database host and database name");
+  }
+
+  return {
+    host: url.hostname,
+    port: url.port ? Number.parseInt(url.port, 10) : 5432,
+    database,
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    ssl: shouldUseSsl ? { rejectUnauthorized: strictSsl } : undefined,
+    application_name: url.searchParams.get("application_name") ?? undefined,
+    options: url.searchParams.get("options") ?? undefined,
+    enableChannelBinding: url.searchParams.get("channel_binding") === "require",
+  };
 }
 
 function createPoolInstance(): Pool {
-  if (!process.env.DATABASE_URL) {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
     throw new Error(
       "DATABASE_URL must be set. Did you forget to provision a database?",
     );
@@ -32,12 +57,11 @@ function createPoolInstance(): Pool {
   const poolMax = Number(process.env.PG_POOL_MAX ?? (process.env.VERCEL ? "2" : "10"));
 
   const p = new PgPool({
-    connectionString: process.env.DATABASE_URL,
+    ...parseDatabaseUrl(databaseUrl),
     min: poolMin,
     max: poolMax,
     idleTimeoutMillis: 60000,
     connectionTimeoutMillis: 10000,
-    ssl: buildSslConfig(),
   });
 
   p.on("error", (err: Error) => {
