@@ -1,8 +1,7 @@
 import { productsTable } from "@workspace/db/schema";
 import { and, eq, isNotNull, ne, sql, type SQL } from "drizzle-orm";
 
-// Public pricing policy used consistently by listings, categories, featured items,
-// direct product pages, and the sitemap.
+// Public pricing policy used consistently by product pages and active listings.
 export const visiblePrice = sql`(${productsTable.price}::numeric = 0 OR ${productsTable.price}::numeric >= 35)`;
 
 // The legacy source database contains a small set of service/advertising pages that
@@ -12,14 +11,16 @@ export const NON_PRODUCT_PATTERN = "(handyman|remodeling help|wildlife feeder|fe
 
 const isNotLegacyService = sql`LOWER(${productsTable.name} || ' ' || ${productsTable.sku}) !~ ${NON_PRODUCT_PATTERN}`;
 
+// A direct product URL may remain useful when an item is temporarily out of stock.
 export const publicProductCondition: SQL = and(
-  eq(productsTable.inStock, true),
   visiblePrice,
   isNotLegacyService,
 ) as SQL;
 
+// Shop listings and category counts only include currently purchasable, imaged items.
 export const publicListingCondition: SQL = and(
   publicProductCondition,
+  eq(productsTable.inStock, true),
   isNotNull(productsTable.imageUrl),
   ne(productsTable.imageUrl, ""),
 ) as SQL;
