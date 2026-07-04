@@ -55,7 +55,7 @@ const trustProxyHops = Number.parseInt(
 app.set("trust proxy", Number.isFinite(trustProxyHops) && trustProxyHops > 0 ? trustProxyHops : false);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
-// CSP allows PayPal, Google Fonts, and Google Tag Manager used by the frontend
+// CSP allows PayPal, Google Fonts, Google Tag Manager, and direct Vercel Blob uploads.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -72,7 +72,15 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
-        connectSrc: ["'self'", "https://www.paypal.com", "https://api.paypal.com", "wss://chat.tawk.to", "https://va.tawk.to"],
+        connectSrc: [
+          "'self'",
+          "https://www.paypal.com",
+          "https://api.paypal.com",
+          "wss://chat.tawk.to",
+          "https://va.tawk.to",
+          "https://blob.vercel-storage.com",
+          "https://*.blob.vercel-storage.com",
+        ],
         frameSrc: ["'self'", "https://www.paypal.com", "https://tawk.to"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
@@ -193,7 +201,8 @@ app.use("/api/admin", (req, res, next) => {
   });
 });
 
-// Large admin CSV imports send JSON `{ rows }` from the browser; override with API_JSON_BODY_LIMIT if needed.
+// JSON imports are intentionally chunked in the browser. This limit protects the API parser;
+// it cannot and should not be used to raise Vercel's upstream binary request limit.
 const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT ?? "32mb";
 app.use(express.json({ limit: jsonBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: jsonBodyLimit }));
@@ -242,6 +251,17 @@ app.use("/api", adminAuthRouter);
 
 // All other /api/admin/* routes require authentication
 app.use("/api/admin", requireAdmin);
+
+// These server-side multipart ZIP endpoints are intentionally retired. Large archives are now
+// opened in the browser and images upload directly to Blob, bypassing Function body-size limits.
+app.post(
+  ["/api/admin/products/upload-images-zip", "/api/admin/products/diagnose-zip"],
+  (_req, res) => res.status(410).json({
+    error: "This ZIP endpoint has been retired.",
+    detail: "Refresh the admin page and use the browser-based ZIP importer or analyzer.",
+  }),
+);
+
 app.use("/api", adminOrdersRouter);
 app.use("/api", adminProductsRouter);
 app.use("/api", adminSettingsRouter);
@@ -269,7 +289,9 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (errType === "entity.too.large" || /entity too large/i.test(message)) {
     return res.status(413).json({
       error: "Request body too large",
-      detail: `Send smaller import batches or raise API_JSON_BODY_LIMIT (current: ${jsonBodyLimit}).`,
+      detail: process.env.VERCEL
+        ? "Large files must use the direct Blob uploader. API_JSON_BODY_LIMIT only controls small JSON imports and cannot override Vercel's upstream request limit."
+        : `Send smaller JSON import batches or adjust API_JSON_BODY_LIMIT (current: ${jsonBodyLimit}).`,
     });
   }
   if (message.startsWith("Not allowed by CORS:")) {
