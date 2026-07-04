@@ -33,6 +33,10 @@ export const MAX_ZIP_BYTES = 1024 * 1024 * 1024;
 const MAX_ZIP_ENTRIES = 20_000;
 const MAX_DECLARED_UNCOMPRESSED_BYTES = 4 * 1024 * 1024 * 1024;
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+const ZIP_EOCD_SIGNATURE = 0x06054b50;
+const ZIP_CENTRAL_FILE_SIGNATURE = 0x02014b50;
+const ZIP64_SENTINEL_16 = 0xffff;
+const ZIP64_SENTINEL_32 = 0xffffffff;
 
 function compactKey(value: string): string {
   return value.toLowerCase().replace(/[\s\-_.]+/g, "");
@@ -162,8 +166,11 @@ export function prepareProductRow(row: CsvRow): CsvRow {
   return prepared;
 }
 
+function imageExtension(filename: string): string {
+  return filename.split(".").pop()?.toLowerCase() ?? "";
+}
+
 export function contentTypeFor(filename: string): string {
-  const extension = filename.split(".").pop()?.toLowerCase();
   return {
     jpg: "image/jpeg",
     jpeg: "image/jpeg",
@@ -171,12 +178,72 @@ export function contentTypeFor(filename: string): string {
     webp: "image/webp",
     gif: "image/gif",
     avif: "image/avif",
-  }[extension ?? ""] ?? "application/octet-stream";
+  }[imageExtension(filename)] ?? "application/octet-stream";
 }
 
-function declaredUncompressedSize(entry: JSZipObject): number {
-  const internal = entry as JSZipObject & { _data?: { uncompressedSize?: number } };
-  return Number(internal._data?.uncompressedSize ?? 0);
+function inspectZipCentralDirectory(buffer: ArrayBuffer): { entryCount: number; declaredTotal: number } {
+  const view = new DataView(buffer);
+  if (view.byteLength < 22) throw new Error("ZIP is truncated or invalid.");
+
+  const earliestEocd = Math.max(0, view.byteLength - 22 - 0xffff);
+  let eocdOffset = -1;
+  for (let offset = view.byteLength - 22; offset >= earliestEocd; offset--) {
+    if (view.getUint32(offset, true) !== ZIP_EOCD_SIGNATURE) continue;
+    const commentLength = view.getUint16(offset + 20, true);
+    if (offset + 22 + commentLength <= view.byteLength) {
+      eocdOffset = offset;
+      break;
+    }
+  }
+  if (eocdOffset < 0) throw new Error("ZIP central directory could not be found. The archive may be damaged.");
+
+  const diskNumber = view.getUint16(eocdOffset + 4, true);
+  const centralDisk = view.getUint16(eocdOffset + 6, true);
+  const entriesOnDisk = view.getUint16(eocdOffset + 8, true);
+  const entryCount = view.getUint16(eocdOffset + 10, true);
+  const centralSize = view.getUint32(eocdOffset + 12, true);
+  const centralOffset = view.getUint32(eocdOffset + 16, true);
+
+  if (diskNumber !== 0 || centralDisk !== 0 || entriesOnDisk !== entryCount) {
+    throw new Error("Multi-volume ZIP archives are not supported. Create a single ZIP file.");
+  }
+  if (entryCount === ZIP64_SENTINEL_16 || centralSize === ZIP64_SENTINEL_32 || centralOffset === ZIP64_SENTINEL_32) {
+    throw new Error("ZIP64 archives are not supported by this browser importer. Split the archive into smaller standard ZIP files.");
+  }
+  if (entryCount > MAX_ZIP_ENTRIES) {
+    throw new Error(`ZIP contains ${entryCount.toLocaleString()} entries; the safe limit is ${MAX_ZIP_ENTRIES.toLocaleString()}.`);
+  }
+  if (centralOffset + centralSize > view.byteLength) throw new Error("ZIP central directory is outside the archive bounds.");
+
+  let offset = centralOffset;
+  let declaredTotal = 0;
+  for (let index = 0; index < entryCount; index++) {
+    if (offset + 46 > view.byteLength || view.getUint32(offset, true) !== ZIP_CENTRAL_FILE_SIGNATURE) {
+      throw new Error(`ZIP central directory entry ${index + 1} is invalid.`);
+    }
+
+    const flags = view.getUint16(offset + 8, true);
+    const uncompressedSize = view.getUint32(offset + 24, true);
+    const filenameLength = view.getUint16(offset + 28, true);
+    const extraLength = view.getUint16(offset + 30, true);
+    const commentLength = view.getUint16(offset + 32, true);
+
+    if ((flags & 0x0001) !== 0) throw new Error("Password-protected ZIP archives are not supported.");
+    if (uncompressedSize === ZIP64_SENTINEL_32) {
+      throw new Error("ZIP64 entries are not supported. Split the archive into smaller standard ZIP files.");
+    }
+
+    declaredTotal += uncompressedSize;
+    if (declaredTotal > MAX_DECLARED_UNCOMPRESSED_BYTES) {
+      throw new Error(`ZIP expands beyond ${formatBytes(MAX_DECLARED_UNCOMPRESSED_BYTES)}; split it into smaller archives.`);
+    }
+
+    const nextOffset = offset + 46 + filenameLength + extraLength + commentLength;
+    if (nextOffset <= offset || nextOffset > view.byteLength) throw new Error("ZIP central directory contains an invalid entry length.");
+    offset = nextOffset;
+  }
+
+  return { entryCount, declaredTotal };
 }
 
 export async function loadZipArchive(file: File): Promise<JSZip> {
@@ -185,20 +252,17 @@ export async function loadZipArchive(file: File): Promise<JSZip> {
     throw new Error(`ZIP is ${formatBytes(file.size)}. Split archives larger than ${formatBytes(MAX_ZIP_BYTES)} into smaller packages.`);
   }
 
-  const zip = await JSZip.loadAsync(file, { checkCRC32: false, createFolders: true });
-  const entries = Object.values(zip.files);
-  if (entries.length > MAX_ZIP_ENTRIES) {
-    throw new Error(`ZIP contains ${entries.length.toLocaleString()} entries; the safe limit is ${MAX_ZIP_ENTRIES.toLocaleString()}.`);
-  }
-
-  const declaredTotal = entries.reduce((sum, entry) => sum + declaredUncompressedSize(entry), 0);
-  if (declaredTotal > MAX_DECLARED_UNCOMPRESSED_BYTES) {
-    throw new Error(`ZIP expands to approximately ${formatBytes(declaredTotal)}; split it into smaller archives.`);
-  }
-  if (file.size > 0 && declaredTotal > 250 * 1024 * 1024 && declaredTotal / file.size > 200) {
+  const buffer = await file.arrayBuffer();
+  const inspection = inspectZipCentralDirectory(buffer);
+  if (file.size > 0 && inspection.declaredTotal > 250 * 1024 * 1024 && inspection.declaredTotal / file.size > 200) {
     throw new Error("ZIP has a suspicious compression ratio and was rejected for safety.");
   }
 
+  const zip = await JSZip.loadAsync(buffer, { checkCRC32: false, createFolders: true });
+  const entries = Object.values(zip.files);
+  if (entries.length > MAX_ZIP_ENTRIES || entries.length > inspection.entryCount + 1) {
+    throw new Error(`ZIP contains too many entries; the safe limit is ${MAX_ZIP_ENTRIES.toLocaleString()}.`);
+  }
   return zip;
 }
 
@@ -207,7 +271,7 @@ function imageRank(entry: ZipImageEntry): number {
   let score = 0;
   if (/thumb|thumbnail|small|_sm|-sm|icon/.test(lower)) score += 100;
   if (/main|primary|hero|large|front/.test(lower)) score -= 20;
-  const extension = lower.split(".").pop();
+  const extension = imageExtension(lower);
   if (extension === "jpg" || extension === "jpeg") score += 0;
   else if (extension === "webp" || extension === "avif") score += 1;
   else if (extension === "png") score += 2;
@@ -222,7 +286,7 @@ export function buildZipImages(zip: JSZip): ZipImageEntry[] {
       const normalizedPath = entry.name.replace(/\\/g, "/");
       const segments = normalizedPath.split("/").filter(Boolean);
       const basename = segments.pop() ?? normalizedPath;
-      const extension = basename.split(".").pop()?.toLowerCase() ?? "";
+      const extension = imageExtension(basename);
       if (!IMAGE_EXTENSIONS.has(extension)) return null;
       const parent = segments.pop() ?? basename.replace(/\.[^.]+$/, "");
       return {
@@ -282,6 +346,10 @@ export async function uploadAdminImage(
   if (!body.size) throw new Error(`${filename} is empty.`);
   if (body.size > MAX_IMAGE_BYTES) {
     throw new Error(`${filename} is ${formatBytes(body.size)}; the per-image limit is ${formatBytes(MAX_IMAGE_BYTES)}.`);
+  }
+  const extension = imageExtension(filename);
+  if (!IMAGE_EXTENSIONS.has(extension)) {
+    throw new Error(`${filename} is not a supported image. Use JPEG, PNG, WebP, GIF, or AVIF.`);
   }
 
   const cleanSku = options.sku ? normalizeSku(options.sku).replace(/[^A-Z0-9_-]/g, "-") : "unassigned";
