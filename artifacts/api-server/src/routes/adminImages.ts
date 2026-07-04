@@ -41,6 +41,16 @@ function isVercelBlobUrl(value: unknown): value is string {
   }
 }
 
+function isSafeHttpsUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length === 0 || value.length > 2048) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 function isProductImagePath(value: unknown): value is string {
   return typeof value === "string" && value.startsWith("product-images/") && !value.includes("..");
 }
@@ -192,7 +202,7 @@ router.post("/admin/images/match-products", async (req, res) => {
   }
 });
 
-// POST /api/admin/images/link-products — links already-uploaded Blob URLs to product SKUs.
+// POST /api/admin/images/link-products — links uploaded Blob or external HTTPS image URLs to product SKUs.
 router.post("/admin/images/link-products", async (req, res) => {
   const rawLinks = Array.isArray(req.body?.links) ? req.body.links : [];
   if (rawLinks.length === 0) return res.status(400).json({ error: "At least one image link is required." });
@@ -205,10 +215,10 @@ router.post("/admin/images/link-products", async (req, res) => {
       const value = entry && typeof entry === "object" ? (entry as Record<string, unknown>) : {};
       return { sku: normalizeSku(value.sku), imageUrl: value.imageUrl };
     })
-    .filter((entry: { sku: string; imageUrl: unknown }): entry is { sku: string; imageUrl: string } => Boolean(entry.sku) && isVercelBlobUrl(entry.imageUrl));
+    .filter((entry: { sku: string; imageUrl: unknown }): entry is { sku: string; imageUrl: string } => Boolean(entry.sku) && isSafeHttpsUrl(entry.imageUrl));
 
   if (links.length !== rawLinks.length) {
-    return res.status(400).json({ error: "Every row must contain a valid SKU and Vercel Blob image URL." });
+    return res.status(400).json({ error: "Every row must contain a valid SKU and HTTPS image URL." });
   }
 
   try {
