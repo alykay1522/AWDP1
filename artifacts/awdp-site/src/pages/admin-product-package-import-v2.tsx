@@ -71,6 +71,14 @@ async function readJsonOrThrow(response: Response, fallback: string): Promise<Re
   return parsed.json as Record<string, unknown>;
 }
 
+async function assertImageStorageReady(): Promise<void> {
+  const response = await fetch("/api/admin/images/storage-status", { credentials: "include" });
+  const status = await readJsonOrThrow(response, "Unable to check image storage configuration");
+  if (!status.directClientUploads) {
+    throw new Error("Image storage is not configured. Connect a Vercel Blob store so BLOB_READ_WRITE_TOKEN is available, redeploy, and retry the package import.");
+  }
+}
+
 function downloadTemplate() {
   const csv = [
     "sku,name,description,price,originalPrice,category,supplier,inStock,imageFile,tags,compatibleBrands,specifications",
@@ -136,6 +144,11 @@ export default function AdminProductPackageImportV2() {
       const images = buildZipImages(zip);
       imageCount = images.length;
       const imageMatches = matchRowsToImages(rowsWithSku, images);
+      if (imageMatches.length > 0) {
+        setStage("Checking image storage configuration before changing products…");
+        await assertImageStorageReady();
+      }
+
       const preparedRows = rowsWithSku.map(prepareProductRow);
       const totalChunks = Math.ceil(preparedRows.length / PRODUCT_IMPORT_CHUNK);
 
