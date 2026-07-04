@@ -1,84 +1,93 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { productsTable, categoriesTable } from "@workspace/db/schema";
+import { productsTable } from "@workspace/db/schema";
+import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { logger } from "../lib/logger";
 
 const router = Router();
-
-const BASE_URL = "https://www.allwindowdoorparts.com";
+const BASE_URL = (process.env.PUBLIC_SITE_URL || "https://www.allwindowdoorparts.com").replace(/\/+$/, "");
 
 const STATIC_PAGES = [
-  { path: "/",                    priority: "1.0", changefreq: "weekly" },
-  { path: "/shop",                priority: "0.9", changefreq: "daily" },
-  { path: "/categories",          priority: "0.8", changefreq: "weekly" },
+  { path: "/", priority: "1.0", changefreq: "weekly" },
+  { path: "/shop", priority: "0.9", changefreq: "daily" },
+  { path: "/categories", priority: "0.8", changefreq: "weekly" },
   { path: "/parts-identification", priority: "0.9", changefreq: "monthly" },
-  { path: "/about",               priority: "0.6", changefreq: "monthly" },
-  { path: "/contact",             priority: "0.6", changefreq: "monthly" },
-  { path: "/policies",            priority: "0.5", changefreq: "yearly"  },
-  { path: "/guides",              priority: "0.7", changefreq: "monthly" },
-  { path: "/resources",           priority: "0.6", changefreq: "monthly" },
+  { path: "/identify-balance", priority: "0.7", changefreq: "monthly" },
+  { path: "/about", priority: "0.6", changefreq: "monthly" },
+  { path: "/contact", priority: "0.6", changefreq: "monthly" },
+  { path: "/policies", priority: "0.5", changefreq: "yearly" },
+  { path: "/guides", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/window-balance", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/window-operator", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/patio-door-roller", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/weatherstripping", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/door-lock", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/glazing-bead", priority: "0.7", changefreq: "monthly" },
+  { path: "/resources", priority: "0.6", changefreq: "monthly" },
 ];
 
-function xmlEscape(str: string): string {
-  return str
+// These are imported legacy service/advertising pages, not purchasable hardware.
+// They remain available in admin for cleanup but must not enter search-engine feeds.
+const NON_PRODUCT_PATTERN = "(handyman|remodeling help|wildlife feeder|feeder control system|scam alert|service call)";
+
+function xmlEscape(value: string): string {
+  return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+function productPath(sku: string): string {
+  return `/product/${encodeURIComponent(sku)}`;
+}
+
+function renderUrl(path: string, changefreq: string, priority: string, lastmod?: Date | null): string {
+  const modified = lastmod && Number.isFinite(lastmod.getTime())
+    ? `\n    <lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>`
+    : "";
+  return `  <url>
+    <loc>${xmlEscape(`${BASE_URL}${path}`)}</loc>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>${modified}
+  </url>`;
 }
 
 router.get("/sitemap.xml", async (_req, res) => {
   try {
-    const [categories, products] = await Promise.all([
-      db.select({ name: categoriesTable.name, slug: categoriesTable.slug }).from(categoriesTable),
-      db.select({ sku: productsTable.sku }).from(productsTable),
-    ]);
+    const products = await db
+      .select({
+        sku: productsTable.sku,
+        createdAt: productsTable.createdAt,
+      })
+      .from(productsTable)
+      .where(and(
+        eq(productsTable.inStock, true),
+        isNotNull(productsTable.imageUrl),
+        ne(productsTable.imageUrl, ""),
+        sql`(${productsTable.price}::numeric = 0 OR ${productsTable.price}::numeric >= 35)`,
+        sql`LOWER(${productsTable.name} || ' ' || ${productsTable.sku}) !~ ${NON_PRODUCT_PATTERN}`,
+      ));
 
-    const today = new Date().toISOString().split("T")[0];
-
-    const urls: string[] = [];
-
-    // Static pages
-    for (const page of STATIC_PAGES) {
-      urls.push(`  <url>
-    <loc>${BASE_URL}${page.path}</loc>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-    <lastmod>${today}</lastmod>
-  </url>`);
-    }
-
-    // Category pages (via shop filter)
-    for (const cat of categories) {
-      const catPath = `/categories/${encodeURIComponent(cat.slug ?? cat.name.toLowerCase().replace(/\s+/g, "-"))}`;
-      urls.push(`  <url>
-    <loc>${BASE_URL}${catPath}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <lastmod>${today}</lastmod>
-  </url>`);
-    }
-
-    // Product pages
-    for (const product of products) {
-      urls.push(`  <url>
-    <loc>${BASE_URL}/product/${xmlEscape(product.sku)}</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <lastmod>${today}</lastmod>
-  </url>`);
-    }
+    const urls = [
+      ...STATIC_PAGES.map((page) => renderUrl(page.path, page.changefreq, page.priority)),
+      ...products.map((product) => renderUrl(productPath(product.sku), "monthly", "0.6", product.createdAt)),
+    ];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.join("\n")}
 </urlset>`;
 
-    res.setHeader("Content-Type", "application/xml");
-    res.setHeader("Cache-Control", "public, max-age=86400"); // 24h cache
-    res.send(xml);
-  } catch (err: any) {
-    res.status(500).send("<?xml version='1.0'?><error>Failed to generate sitemap</error>");
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
+    return res.status(200).send(xml);
+  } catch (error) {
+    logger.error({ err: error }, "Failed to generate sitemap");
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(503).send("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>Sitemap temporarily unavailable</error>");
   }
 });
 
