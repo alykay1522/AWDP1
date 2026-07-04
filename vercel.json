@@ -8,6 +8,16 @@
       "source": "/assets/header_bg.jpg",
       "destination": "/assets/header_bg.png?v=approved-20260629-2",
       "permanent": false
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/policies#privacy",
+      "permanent": true
+    },
+    {
+      "source": "/categories/:slug",
+      "destination": "/categories",
+      "permanent": true
     }
   ],
   "rewrites": [
