@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import legacyProductImagesRouter from "./legacyProductImages";
 import productsRouter from "./products";
 import partsIdRouter from "./partsId";
 import contactRouter from "./contact";
@@ -9,6 +10,7 @@ import legacyPdfsRouter from "./legacyPdfs";
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(legacyProductImagesRouter);
 router.use(productsRouter);
 router.use(partsIdRouter);
 router.use(contactRouter);
