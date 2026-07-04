@@ -62,7 +62,14 @@ function errorMessage(error: unknown): string {
 }
 
 function isManagedImage(url: string | null): boolean {
-  return Boolean(url && (url.includes(".blob.vercel-storage.com/") || url.startsWith("/api/admin/images/serve/")));
+  if (!url) return false;
+  if (url.startsWith("/api/admin/images/serve/")) return true;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && parsed.hostname.endsWith(".blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
 }
 
 async function readJsonOrThrow(response: Response, fallback: string): Promise<Record<string, unknown>> {
