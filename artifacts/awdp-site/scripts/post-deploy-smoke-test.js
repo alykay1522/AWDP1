@@ -1,4 +1,5 @@
 const BASE_URL = (process.env.SITE_URL || "https://www.allwindowdoorparts.com").replace(/\/+$/, "");
+const APEX_URL = "https://allwindowdoorparts.com";
 const ALLOW_WRITE_TESTS = process.env.ALLOW_WRITE_SMOKE_TESTS === "true";
 const results = [];
 
@@ -14,6 +15,22 @@ async function read(path, options = {}) {
     signal: AbortSignal.timeout(20_000),
     ...options,
   });
+}
+
+async function checkApexRedirect() {
+  try {
+    const response = await fetch(`${APEX_URL}/shop?search=balance`, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(20_000),
+    });
+    const location = response.headers.get("location") || "";
+    const valid = [301, 302, 307, 308].includes(response.status)
+      && location.startsWith(`${BASE_URL}/shop`)
+      && location.includes("search=balance");
+    log(valid ? "Apex domain redirects to the canonical www host" : `Apex redirect failed: ${response.status} ${location}`, valid);
+  } catch (error) {
+    log(`Apex redirect check failed: ${error.message}`, false);
+  }
 }
 
 async function checkPage(path, expectedHeading, expectedCanonical) {
@@ -92,6 +109,30 @@ async function checkUnknownProduct404() {
   }
 }
 
+async function checkCatalogQuarantine() {
+  try {
+    const response = await read("/api/products?search=handyman&limit=10");
+    const body = await response.json().catch(() => ({}));
+    const products = Array.isArray(body.products) ? body.products : [];
+    const valid = response.ok && products.length === 0 && Number(body.total || 0) === 0;
+    log(valid ? "Legacy service listings are quarantined from the public catalog" : `Legacy service search returned ${products.length} products`, valid);
+  } catch (error) {
+    log(`Catalog quarantine check failed: ${error.message}`, false);
+  }
+}
+
+async function checkLegacyImageFallback() {
+  try {
+    const response = await read("/api/admin/images/serve/product-images/smoke-test-missing-image.jpg");
+    const type = response.headers.get("content-type") || "";
+    const fallback = response.headers.get("x-awdp-image-fallback") || "";
+    const valid = response.ok && type.includes("image/svg+xml") && Boolean(fallback);
+    log(valid ? "Missing legacy images return a stable placeholder" : `Legacy image fallback failed: ${response.status} ${type} ${fallback}`, valid);
+  } catch (error) {
+    log(`Legacy image fallback check failed: ${error.message}`, false);
+  }
+}
+
 async function runOptionalWriteTests() {
   if (!ALLOW_WRITE_TESTS) {
     console.log("ℹ️  Skipping form submissions. Set ALLOW_WRITE_SMOKE_TESTS=true only in an isolated test environment.");
@@ -119,6 +160,7 @@ async function runOptionalWriteTests() {
 
 async function runSmokeTests() {
   console.log(`\n🚀 Running read-only deployment smoke tests on: ${BASE_URL}\n`);
+  await checkApexRedirect();
   await checkPage("/", "Replacement Window &amp; Door Parts", `${BASE_URL}/`);
   await checkPage("/shop", "Shop Replacement Window &amp; Door Parts", `${BASE_URL}/shop`);
   await checkPage("/parts-identification", "Free Parts Identification", `${BASE_URL}/parts-identification`);
@@ -126,6 +168,8 @@ async function runSmokeTests() {
   await checkRobots();
   await checkSitemap();
   await checkUnknownProduct404();
+  await checkCatalogQuarantine();
+  await checkLegacyImageFallback();
   await runOptionalWriteTests();
 
   const passed = results.filter((result) => result.success).length;
