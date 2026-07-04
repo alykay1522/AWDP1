@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { productsTable } from "@workspace/db/schema";
-import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { publicListingCondition } from "../lib/catalogVisibility";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -25,10 +25,6 @@ const STATIC_PAGES = [
   { path: "/guides/glazing-bead", priority: "0.7", changefreq: "monthly" },
   { path: "/resources", priority: "0.6", changefreq: "monthly" },
 ];
-
-// These are imported legacy service/advertising pages, not purchasable hardware.
-// They remain available in admin for cleanup but must not enter search-engine feeds.
-const NON_PRODUCT_PATTERN = "(handyman|remodeling help|wildlife feeder|feeder control system|scam alert|service call)";
 
 function xmlEscape(value: string): string {
   return value
@@ -62,13 +58,7 @@ router.get("/sitemap.xml", async (_req, res) => {
         createdAt: productsTable.createdAt,
       })
       .from(productsTable)
-      .where(and(
-        eq(productsTable.inStock, true),
-        isNotNull(productsTable.imageUrl),
-        ne(productsTable.imageUrl, ""),
-        sql`(${productsTable.price}::numeric = 0 OR ${productsTable.price}::numeric >= 35)`,
-        sql`LOWER(${productsTable.name} || ' ' || ${productsTable.sku}) !~ ${NON_PRODUCT_PATTERN}`,
-      ));
+      .where(publicListingCondition);
 
     const urls = [
       ...STATIC_PAGES.map((page) => renderUrl(page.path, page.changefreq, page.priority)),
