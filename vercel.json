@@ -5,6 +5,17 @@
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "allwindowdoorparts.com"
+        }
+      ],
+      "destination": "https://www.allwindowdoorparts.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/assets/header_bg.jpg",
       "destination": "/assets/header_bg.png?v=approved-20260629-2",
       "permanent": false
