@@ -190,7 +190,7 @@ function inspectZipCentralDirectory(buffer: ArrayBuffer): { entryCount: number; 
   for (let offset = view.byteLength - 22; offset >= earliestEocd; offset--) {
     if (view.getUint32(offset, true) !== ZIP_EOCD_SIGNATURE) continue;
     const commentLength = view.getUint16(offset + 20, true);
-    if (offset + 22 + commentLength <= view.byteLength) {
+    if (offset + 22 + commentLength === view.byteLength) {
       eocdOffset = offset;
       break;
     }
@@ -252,15 +252,21 @@ export async function loadZipArchive(file: File): Promise<JSZip> {
     throw new Error(`ZIP is ${formatBytes(file.size)}. Split archives larger than ${formatBytes(MAX_ZIP_BYTES)} into smaller packages.`);
   }
 
-  const buffer = await file.arrayBuffer();
+  let buffer: ArrayBuffer;
+  try {
+    buffer = await file.arrayBuffer();
+  } catch {
+    throw new Error(`Your browser could not load this ${formatBytes(file.size)} ZIP into memory. Split it into smaller archives and retry.`);
+  }
+
   const inspection = inspectZipCentralDirectory(buffer);
   if (file.size > 0 && inspection.declaredTotal > 250 * 1024 * 1024 && inspection.declaredTotal / file.size > 200) {
     throw new Error("ZIP has a suspicious compression ratio and was rejected for safety.");
   }
 
-  const zip = await JSZip.loadAsync(buffer, { checkCRC32: false, createFolders: true });
+  const zip = await JSZip.loadAsync(buffer, { checkCRC32: false, createFolders: false });
   const entries = Object.values(zip.files);
-  if (entries.length > MAX_ZIP_ENTRIES || entries.length > inspection.entryCount + 1) {
+  if (entries.length > MAX_ZIP_ENTRIES) {
     throw new Error(`ZIP contains too many entries; the safe limit is ${MAX_ZIP_ENTRIES.toLocaleString()}.`);
   }
   return zip;
