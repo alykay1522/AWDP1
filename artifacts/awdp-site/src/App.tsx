@@ -12,26 +12,28 @@ import { AdminLayout } from "./components/admin-layout.jsx";
 import { useAdminAuth } from "./lib/useAdminAuth.js";
 import NotFound from "./pages/not-found.jsx";
 import { ErrorBoundary } from "./components/error-boundary.jsx";
-
 import Home from "./pages/home.jsx";
-import Shop from "./pages/shop.jsx";
-import ProductDetail from "./pages/product.jsx";
-import Categories from "./pages/categories.jsx";
-import PartsIdentification from "./pages/parts-id.jsx";
-import Contact from "./pages/contact.jsx";
-import About from "./pages/about.jsx";
-import Checkout from "./pages/checkout.jsx";
-import CheckoutSuccess from "./pages/checkout-success.jsx";
-import Policies from "./pages/policies.jsx";
-import GuideHub from "./pages/guide-hub.jsx";
-import GuideWindowBalance from "./pages/guide-window-balance.jsx";
-import GuidePatioDoorRoller from "./pages/guide-patio-door-roller.jsx";
-import GuideWeatherstripping from "./pages/guide-weatherstripping.jsx";
-import GuideWindowOperator from "./pages/guide-window-operator.jsx";
-import GuideDoorLock from "./pages/guide-door-lock.jsx";
-import GuideGlazingBead from "./pages/guide-glazing-bead.jsx";
-import Resources from "./pages/resources.jsx";
-import BalanceWizard from "./components/BalanceWizard.jsx";
+
+// Keep the homepage in the entry bundle and split every secondary storefront page.
+// The prior eager imports produced a nearly 1 MB entry chunk for first-time visitors.
+const Shop = lazy(() => import("./pages/shop.jsx"));
+const ProductDetail = lazy(() => import("./pages/product.jsx"));
+const Categories = lazy(() => import("./pages/categories.jsx"));
+const PartsIdentification = lazy(() => import("./pages/parts-id.jsx"));
+const Contact = lazy(() => import("./pages/contact.jsx"));
+const About = lazy(() => import("./pages/about.jsx"));
+const Checkout = lazy(() => import("./pages/checkout.jsx"));
+const CheckoutSuccess = lazy(() => import("./pages/checkout-success.jsx"));
+const Policies = lazy(() => import("./pages/policies.jsx"));
+const GuideHub = lazy(() => import("./pages/guide-hub.jsx"));
+const GuideWindowBalance = lazy(() => import("./pages/guide-window-balance.jsx"));
+const GuidePatioDoorRoller = lazy(() => import("./pages/guide-patio-door-roller.jsx"));
+const GuideWeatherstripping = lazy(() => import("./pages/guide-weatherstripping.jsx"));
+const GuideWindowOperator = lazy(() => import("./pages/guide-window-operator.jsx"));
+const GuideDoorLock = lazy(() => import("./pages/guide-door-lock.jsx"));
+const GuideGlazingBead = lazy(() => import("./pages/guide-glazing-bead.jsx"));
+const Resources = lazy(() => import("./pages/resources.jsx"));
+const BalanceWizard = lazy(() => import("./components/BalanceWizard.jsx"));
 
 const AdminLogin = lazy(() => import("./pages/admin-login.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin-dashboard.jsx"));
@@ -54,7 +56,7 @@ const AdminPriceSync = lazy(() => import("./pages/admin-price-sync.jsx"));
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [location]);
   return null;
 }
@@ -73,14 +75,29 @@ function PartsIdentificationWithNotice() {
   );
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-function AdminLoadingFallback() {
+function RouteLoadingFallback({ label = "Loading page…" }: { label?: string }) {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center" role="status" aria-live="polite">
-      <div className="text-slate-500 text-sm">Loading admin tools…</div>
+    <div className="min-h-[45vh] flex items-center justify-center bg-slate-50" role="status" aria-live="polite" aria-label={label}>
+      <div className="flex items-center gap-3 text-slate-600 text-sm">
+        <span className="h-5 w-5 rounded-full border-2 border-slate-300 border-t-primary animate-spin" aria-hidden="true" />
+        {label}
+      </div>
     </div>
   );
+}
+
+function AdminLoadingFallback() {
+  return <RouteLoadingFallback label="Loading admin tools…" />;
 }
 
 function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?: () => void }) {
@@ -91,42 +108,31 @@ function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?:
           <span className="text-3xl" aria-hidden="true">⚠️</span>
         </div>
         <h2 className="text-2xl font-semibold text-slate-900 mb-2">Admin failed to load</h2>
-        <p className="text-slate-600 mb-6">
-          Something went wrong while loading the admin panel. This could be a temporary connection issue or a component error.
-        </p>
-
+        <p className="text-slate-600 mb-6">Something went wrong while loading the admin panel. This could be a temporary connection issue or a component error.</p>
         <div className="space-y-3">
           <button
             onClick={() => {
-              if (resetError) resetError();
+              resetError?.();
               window.location.reload();
             }}
             className="w-full px-4 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
           >
             Try again
           </button>
-
           <button
             onClick={() => { window.location.href = "/admin/login"; }}
             className="w-full px-4 py-2.5 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors"
           >
             Go to login
           </button>
-
-          <a
-            href="mailto:info@allwindowdoorparts.com?subject=Admin%20Panel%20Error"
-            className="block text-sm text-slate-500 hover:text-slate-700 mt-4"
-          >
+          <a href="mailto:info@allwindowdoorparts.com?subject=Admin%20Panel%20Error" className="block text-sm text-slate-500 hover:text-slate-700 mt-4">
             Contact support
           </a>
         </div>
-
         {error && (
           <details className="mt-6 text-left">
             <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-600">Technical details</summary>
-            <pre className="mt-2 p-3 bg-slate-900 text-red-400 text-xs rounded overflow-auto max-h-40">
-              {error.message}
-            </pre>
+            <pre className="mt-2 p-3 bg-slate-900 text-red-400 text-xs rounded overflow-auto max-h-40">{error.message}</pre>
           </details>
         )}
       </div>
@@ -136,22 +142,15 @@ function AdminErrorFallback({ error, resetError }: { error?: Error; resetError?:
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, isError, error } = useAdminAuth();
-
   if (isLoading) return <AdminLoadingFallback />;
-
   if (isError) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="max-w-md text-center">
           <div className="text-red-600 mb-3 text-4xl" aria-hidden="true">🔒</div>
           <h3 className="text-xl font-semibold mb-2">Unable to verify admin access</h3>
-          <p className="text-slate-600 mb-4">
-            We couldn't check your authentication status. Please try logging in again.
-          </p>
-          <button
-            onClick={() => { window.location.href = "/admin/login"; }}
-            className="px-6 py-2 bg-primary text-white rounded-lg font-medium"
-          >
+          <p className="text-slate-600 mb-4">We couldn't check your authentication status. Please try logging in again.</p>
+          <button onClick={() => { window.location.href = "/admin/login"; }} className="px-6 py-2 bg-primary text-white rounded-lg font-medium">
             Go to Admin Login
           </button>
           {error && <p className="text-xs text-red-500 mt-3">{error.message}</p>}
@@ -159,7 +158,6 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
   if (!isAuthenticated) return <Redirect to="/admin/login" replace />;
   return <>{children}</>;
 }
@@ -196,6 +194,36 @@ function AdminRoutes() {
   );
 }
 
+function PublicRoutes() {
+  return (
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/shop" component={Shop} />
+        <Route path="/product/:sku" component={ProductDetail} />
+        <Route path="/categories" component={Categories} />
+        <Route path="/parts-identification" component={PartsIdentificationWithNotice} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/about" component={About} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/checkout/success" component={CheckoutSuccess} />
+        <Route path="/policies" component={Policies} />
+        <Route path="/privacy-policy"><Redirect to="/policies#privacy" replace /></Route>
+        <Route path="/guides" component={GuideHub} />
+        <Route path="/guides/window-balance" component={GuideWindowBalance} />
+        <Route path="/guides/patio-door-roller" component={GuidePatioDoorRoller} />
+        <Route path="/guides/weatherstripping" component={GuideWeatherstripping} />
+        <Route path="/guides/window-operator" component={GuideWindowOperator} />
+        <Route path="/guides/door-lock" component={GuideDoorLock} />
+        <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
+        <Route path="/resources" component={Resources} />
+        <Route path="/identify-balance" component={BalanceWizard} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
+  );
+}
+
 function AppContent() {
   const [location] = useLocation();
   const normalized = (location || "/").replace(/\/$/, "") || "/";
@@ -211,36 +239,7 @@ function AppContent() {
   }
 
   if (normalized.startsWith("/admin")) return <AdminRoutes />;
-
-  return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/shop" component={Shop} />
-        <Route path="/product/:sku" component={ProductDetail} />
-        <Route path="/categories" component={Categories} />
-        <Route path="/parts-identification" component={PartsIdentificationWithNotice} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/about" component={About} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/checkout/success" component={CheckoutSuccess} />
-        <Route path="/policies" component={Policies} />
-        <Route path="/privacy-policy">
-          {() => { window.location.replace("/policies#privacy"); return null; }}
-        </Route>
-        <Route path="/guides" component={GuideHub} />
-        <Route path="/guides/window-balance" component={GuideWindowBalance} />
-        <Route path="/guides/patio-door-roller" component={GuidePatioDoorRoller} />
-        <Route path="/guides/weatherstripping" component={GuideWeatherstripping} />
-        <Route path="/guides/window-operator" component={GuideWindowOperator} />
-        <Route path="/guides/door-lock" component={GuideDoorLock} />
-        <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/identify-balance" component={BalanceWizard} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
-  );
+  return <Layout><PublicRoutes /></Layout>;
 }
 
 function App() {

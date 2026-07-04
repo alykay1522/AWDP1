@@ -6,13 +6,13 @@ import { Button } from "./ui/button.jsx";
 import { ProductImage } from "./product-image.jsx";
 
 const CATEGORY_SNIPPETS: Record<string, string> = {
-  "Window Balances":                   "Replacement sash balance for smooth, reliable window operation.",
-  "Window Hardware":                   "Genuine replacement hardware for casement, awning, and double-hung windows.",
-  "Sash Hardware":                     "Tilt latches, pivot bars, and sash components for proper window function.",
-  "Door Hardware":                     "Replacement locks, handles, hinges, and rollers for patio and entry doors.",
-  "Window Glazing and Weatherstrip":   "Seals, glazing, and weatherstripping to stop drafts and improve energy efficiency.",
-  "Screen Hardware and Accessories":   "Screen frames, spline, rollers, and hardware for screen door and window repair.",
-  "Other Hardware":                    "Specialty and hard-to-find window and door replacement parts.",
+  "Window Balances": "Replacement sash balance for smooth, reliable window operation.",
+  "Window Hardware": "Genuine replacement hardware for casement, awning, and double-hung windows.",
+  "Sash Hardware": "Tilt latches, pivot bars, and sash components for proper window function.",
+  "Door Hardware": "Replacement locks, handles, hinges, and rollers for patio and entry doors.",
+  "Window Glazing and Weatherstrip": "Seals, glazing, and weatherstripping to stop drafts and improve energy efficiency.",
+  "Screen Hardware and Accessories": "Screen frames, spline, rollers, and hardware for screen door and window repair.",
+  "Other Hardware": "Specialty and hard-to-find window and door replacement parts.",
 };
 
 function getCategorySnippet(category?: string | null, description?: string | null): string | null {
@@ -20,6 +20,10 @@ function getCategorySnippet(category?: string | null, description?: string | nul
   const isGeneric = description?.toLowerCase().includes("email us photos");
   if (!isGeneric && description && description.length > 20) return null;
   return CATEGORY_SNIPPETS[category] ?? null;
+}
+
+function productPath(sku: string): string {
+  return `/product/${encodeURIComponent(sku)}`;
 }
 
 type ProductWithVariantCount = Product & { variantCount?: number };
@@ -30,48 +34,35 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
-
   const price = Number(product.price);
-  const isCallForPricing = !product.price || price === 0 || isNaN(price);
+  const isCallForPricing = !product.price || price === 0 || Number.isNaN(price);
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : null;
   const isSale = !isCallForPricing && originalPrice !== null && originalPrice > price;
   const snippet = getCategorySnippet(product.category, product.description);
   const variantCount = product.variantCount ?? 1;
+  const href = productPath(product.sku);
 
   return (
-    <div className="group relative bg-card border border-border rounded-lg overflow-hidden hover-elevate transition-all duration-300 flex flex-col h-full">
-      {/* Badges */}
+    <article className="group relative bg-card border border-border rounded-lg overflow-hidden hover-elevate transition-all duration-300 flex flex-col h-full">
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-        {isSale && (
-          <span className="bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded shadow-sm">
-            Sale
-          </span>
-        )}
-        {isCallForPricing && (
-          <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-            Contact for Price
-          </span>
-        )}
-        {!product.inStock && (
-          <span className="bg-muted text-muted-foreground text-xs font-bold px-2 py-1 rounded border shadow-sm">
-            Out of Stock
-          </span>
-        )}
+        {isSale && <span className="bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded shadow-sm">Sale</span>}
+        {isCallForPricing && <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Contact for Price</span>}
+        {!product.inStock && <span className="bg-muted text-muted-foreground text-xs font-bold px-2 py-1 rounded border shadow-sm">Out of Stock</span>}
       </div>
-      {/* Variant count badge — top right */}
+
       {variantCount > 1 && (
         <div className="absolute top-3 right-3 z-10">
           <span className="bg-slate-800/80 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm backdrop-blur-sm">
-            <Layers className="w-3 h-3" />
+            <Layers className="w-3 h-3" aria-hidden="true" />
             {variantCount} options
           </span>
         </div>
       )}
 
-      <Link href={`/product/${product.sku}`} className="block relative aspect-square bg-white border-b overflow-hidden">
+      <Link href={href} className="block relative aspect-square bg-white border-b overflow-hidden" aria-label={`View ${product.name}`}>
         <ProductImage
           src={product.imageUrl}
-          alt={product.name}
+          alt={`${product.name} — SKU ${product.sku}`}
           className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
         />
       </Link>
@@ -85,57 +76,51 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-        
-        <Link href={`/product/${product.sku}`}>
+
+        <Link href={href}>
           <h3 className="font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[2.5rem]">
             {product.name}
           </h3>
         </Link>
 
-        {snippet && (
-          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-1.5">{snippet}</p>
-        )}
-        
+        {snippet && <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-1.5">{snippet}</p>}
+
         <div className="mt-auto pt-4 flex items-end justify-between">
           <div>
             {isCallForPricing ? (
               <span className="text-sm font-bold text-amber-700 block mb-1">Contact for Pricing</span>
+            ) : isSale ? (
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
+                <span className="text-xl font-bold text-accent">${price.toFixed(2)}</span>
+              </div>
             ) : (
-              isSale ? (
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground line-through">${originalPrice!.toFixed(2)}</span>
-                  <span className="text-xl font-bold text-accent">${price.toFixed(2)}</span>
-                </div>
-              ) : (
-                <span className="text-xl font-bold text-primary block">${price.toFixed(2)}</span>
-              )
+              <span className="text-xl font-bold text-primary block">${price.toFixed(2)}</span>
             )}
             {product.inStock ? (
               <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1 uppercase tracking-wider">
-                <PackageCheck className="w-3 h-3" /> In Stock
+                <PackageCheck className="w-3 h-3" aria-hidden="true" /> In Stock
               </span>
             ) : (
-              <span className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-wider block">
-                Backordered
-              </span>
+              <span className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-wider block">Backordered</span>
             )}
           </div>
-          
-          <Button 
-            size="icon" 
+
+          <Button
+            size="icon"
             variant="secondary"
             className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
             disabled={!product.inStock || isCallForPricing}
-            onClick={(e) => {
-              e.preventDefault();
+            aria-label={`Add ${product.name} to cart`}
+            onClick={(event) => {
+              event.preventDefault();
               addToCart(product);
             }}
           >
-            <ShoppingCart className="w-4 h-4" />
-            <span className="sr-only">Add to Cart</span>
+            <ShoppingCart className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

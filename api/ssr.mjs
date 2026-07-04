@@ -5,10 +5,8 @@ export const config = {
 };
 
 /**
- * Vercel rewrite target for pre-rendered SEO pages (see vercel.json rewrites).
- * Delegates to the existing SSR metadata/body injector so every crawler and
- * visitor hitting a known static/guide/product route gets a real per-page
- * <title>/description/OG/schema instead of the generic SPA shell — and so
- * a truly unknown /product/:sku gets an honest 404 instead of 200.
+ * Vercel rewrite target for crawler-visible storefront pages.
+ * The renderer injects route-specific metadata and route-specific HTML content,
+ * canonicalizes encoded product paths, and returns real 404 responses.
  */
-export { default } from "../artifacts/awdp-site/api/ssr.mjs";
+export { default } from "../artifacts/awdp-site/api/ssr-v2.mjs";
