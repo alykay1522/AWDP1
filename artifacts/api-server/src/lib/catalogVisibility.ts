@@ -6,10 +6,17 @@ export const visiblePrice = sql`(${productsTable.price}::numeric = 0 OR ${produc
 
 // The legacy source database contains a small set of service/advertising pages that
 // were imported as products. Keep the rows available to administrators, but quarantine
-// them from the customer catalog and search-engine feeds.
+// them from the customer catalog and search-engine feeds. Some of those rows only reveal
+// their service-page purpose in the description, so all customer-facing text is checked.
 export const NON_PRODUCT_PATTERN = "(handyman|remodeling help|wildlife feeder|feeder control system|scam alert|service call)";
 
-const isNotLegacyService = sql`LOWER(${productsTable.name} || ' ' || ${productsTable.sku}) !~ ${NON_PRODUCT_PATTERN}`;
+const isNotLegacyService = sql`
+  LOWER(
+    COALESCE(${productsTable.name}, '') || ' ' ||
+    COALESCE(${productsTable.sku}, '') || ' ' ||
+    COALESCE(${productsTable.description}, '')
+  ) !~ ${NON_PRODUCT_PATTERN}
+`;
 
 // A direct product URL may remain useful when an item is temporarily out of stock.
 export const publicProductCondition: SQL = and(
