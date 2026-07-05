@@ -18,7 +18,7 @@
     "@types/multer": "^2.1.0",
     "@types/nodemailer": "^8.0.0",
     "@types/sharp": "^0.32.0",
-    "@vercel/blob": "^0.27.3",
+    "@vercel/blob": "^2.5.0",
     "@vercel/functions": "^3.1.4",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
