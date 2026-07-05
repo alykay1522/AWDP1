@@ -17,8 +17,10 @@ function run(command, cwd) {
 }
 
 if (process.env.VERCEL_GIT_COMMIT_REF === "audit/product-duplicates-and-image-quality") {
+  const apiDir = path.join(repoRoot, "artifacts", "api-server");
   console.log("\n[vercel-build] Preview catalog audit...");
-  run("node ./scripts/preview-catalog-audit.mjs", path.join(repoRoot, "artifacts", "api-server"));
+  run("node ./scripts/preview-catalog-audit.mjs", apiDir);
+  run("node ./scripts/preview-public-name-audit.mjs", apiDir);
 }
 
 console.log("\n[vercel-build] Step 1: build API server...");
