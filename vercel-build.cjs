@@ -16,6 +16,11 @@ function run(command, cwd) {
   });
 }
 
+if (process.env.VERCEL_GIT_COMMIT_REF === "audit/product-duplicates-and-image-quality") {
+  console.log("\n[vercel-build] Preview catalog audit...");
+  run("node ./scripts/preview-catalog-audit.mjs", path.join(repoRoot, "artifacts", "api-server"));
+}
+
 console.log("\n[vercel-build] Step 1: build API server...");
 run("node ./build.mjs", path.join(repoRoot, "artifacts", "api-server"));
 
