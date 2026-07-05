@@ -5,6 +5,6 @@
   "main": "index.js",
   "dependencies": {
     "@tanstack/react-query": "catalog:",
-    "react": "^18.2.0"
+    "react": "^19.2.7"
   }
 }
