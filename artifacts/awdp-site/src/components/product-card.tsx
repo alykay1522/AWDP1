@@ -63,7 +63,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <ProductImage
           src={product.imageUrl}
           alt={`${product.name} — SKU ${product.sku}`}
-          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+          className="p-4"
         />
       </Link>
 
