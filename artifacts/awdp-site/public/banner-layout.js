@@ -87,6 +87,7 @@
     backdrop.setAttribute("aria-hidden", "true");
     backdrop.className = "awdp-banner-backdrop";
     backdrop.decoding = "async";
+    backdrop.dataset.awdpBannerEnhanced = "true";
 
     image.classList.add("awdp-banner-foreground");
     image.setAttribute("alt", "");
