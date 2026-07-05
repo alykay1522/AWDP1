@@ -1,28 +1,23 @@
 const BASE_URL = (process.env.SITE_URL || "https://www.allwindowdoorparts.com").replace(/\/+$/, "");
 const APEX_URL = "https://allwindowdoorparts.com";
-const ALLOW_WRITE_TESTS = process.env.ALLOW_WRITE_SMOKE_TESTS === "true";
 const results = [];
 
 function log(message, success = true) {
-  const icon = success ? "✅" : "❌";
-  console.log(`${icon} ${message}`);
+  console.log(`${success ? "✅" : "❌"} ${message}`);
   results.push({ message, success });
 }
 
-async function read(path, options = {}) {
-  return fetch(`${BASE_URL}${path}`, {
-    redirect: "manual",
-    signal: AbortSignal.timeout(20_000),
-    ...options,
-  });
+async function requestAbsolute(url) {
+  return fetch(url, { redirect: "manual", signal: AbortSignal.timeout(20_000) });
+}
+
+async function read(path) {
+  return requestAbsolute(`${BASE_URL}${path}`);
 }
 
 async function checkApexRedirect() {
   try {
-    const response = await fetch(`${APEX_URL}/shop?search=balance`, {
-      redirect: "manual",
-      signal: AbortSignal.timeout(20_000),
-    });
+    const response = await requestAbsolute(`${APEX_URL}/shop?search=balance`);
     const location = response.headers.get("location") || "";
     const valid = [301, 302, 307, 308].includes(response.status)
       && location.startsWith(`${BASE_URL}/shop`)
@@ -37,19 +32,10 @@ async function checkPage(path, expectedHeading, expectedCanonical) {
   try {
     const response = await read(path);
     const html = await response.text();
-    if (!response.ok) {
-      log(`${path} returned ${response.status}`, false);
-      return;
-    }
-    if (!html.includes(expectedHeading)) {
-      log(`${path} did not contain its crawler-visible heading`, false);
-      return;
-    }
-    if (expectedCanonical && !html.includes(`rel="canonical" href="${expectedCanonical}"`)) {
-      log(`${path} did not contain the expected canonical URL`, false);
-      return;
-    }
-    log(`${path} serves route-specific HTML and metadata`);
+    const valid = response.ok
+      && html.includes(expectedHeading)
+      && html.includes(`rel="canonical" href="${expectedCanonical}"`);
+    log(valid ? `${path} serves route-specific HTML and metadata` : `${path} failed crawler HTML validation`, valid);
   } catch (error) {
     log(`${path} failed: ${error.message}`, false);
   }
@@ -57,9 +43,10 @@ async function checkPage(path, expectedHeading, expectedCanonical) {
 
 async function checkHealth() {
   try {
-    const response = await read("/api/health");
+    const response = await read("/api/healthz");
     const body = await response.json().catch(() => ({}));
-    log(response.ok ? "API health endpoint is reachable" : `API health returned ${response.status}: ${body.error || "unknown error"}`, response.ok);
+    const valid = response.ok && body.status === "ok";
+    log(valid ? "API healthz endpoint and database checks pass" : `API healthz returned ${response.status}: ${body.error || body.status || "unknown error"}`, valid);
   } catch (error) {
     log(`API health check failed: ${error.message}`, false);
   }
@@ -84,14 +71,11 @@ async function checkSitemap() {
     const response = await read("/sitemap.xml");
     const xml = await response.text();
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-    const hasRawWhitespace = locs.some((url) => /\s/.test(url));
-    const hasBrokenCategoryDetail = locs.some((url) => /\/categories\/.+/.test(url));
     const valid = response.ok
       && response.headers.get("content-type")?.includes("application/xml")
       && xml.includes("<urlset")
       && locs.length > 10
-      && !hasRawWhitespace
-      && !hasBrokenCategoryDetail;
+      && !locs.some((url) => /\s/.test(url) || /\/categories\/.+/.test(url));
     log(valid ? `Sitemap contains ${locs.length} valid URLs` : "Sitemap contains malformed or unsupported URLs", valid);
   } catch (error) {
     log(`Sitemap check failed: ${error.message}`, false);
@@ -133,31 +117,6 @@ async function checkLegacyImageFallback() {
   }
 }
 
-async function runOptionalWriteTests() {
-  if (!ALLOW_WRITE_TESTS) {
-    console.log("ℹ️  Skipping form submissions. Set ALLOW_WRITE_SMOKE_TESTS=true only in an isolated test environment.");
-    return;
-  }
-
-  const marker = `Automated smoke test ${new Date().toISOString()}`;
-  for (const [path, payload, label] of [
-    ["/api/contact", { name: "Smoke Test", email: "smoketest@example.com", message: marker, subject: "Smoke Test" }, "Contact form"],
-    ["/api/parts-id", { name: "Smoke Test", email: "smoketest@example.com", description: marker, windowDoorBrand: "Test Brand", windowDoorAge: "5-10 years" }, "Parts ID form"],
-  ]) {
-    try {
-      const response = await read(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const body = await response.json().catch(() => ({}));
-      log(response.ok && body.success ? `${label} submission succeeded` : `${label} submission failed: ${body.error || response.status}`, response.ok && body.success);
-    } catch (error) {
-      log(`${label} submission failed: ${error.message}`, false);
-    }
-  }
-}
-
 async function runSmokeTests() {
   console.log(`\n🚀 Running read-only deployment smoke tests on: ${BASE_URL}\n`);
   await checkApexRedirect();
@@ -170,7 +129,6 @@ async function runSmokeTests() {
   await checkUnknownProduct404();
   await checkCatalogQuarantine();
   await checkLegacyImageFallback();
-  await runOptionalWriteTests();
 
   const passed = results.filter((result) => result.success).length;
   const failed = results.length - passed;
