@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Wrench } from "lucide-react";
 import { logo as logoRainbow } from "../lib/assetUrls.js";
+import { getProductImageCandidates } from "../lib/product-image-url.js";
 
 interface ProductImageProps {
   src: string | null | undefined;
@@ -11,12 +12,18 @@ interface ProductImageProps {
 }
 
 export function ProductImage({ src, alt, className, placeholderClassName, loading = "lazy" }: ProductImageProps) {
-  const [failed, setFailed] = useState(false);
+  const candidates = useMemo(() => getProductImageCandidates(src), [src]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
 
-  if (!src || failed) {
+  useEffect(() => {
+    setCandidateIndex(0);
+  }, [src]);
+
+  const activeSrc = candidates[candidateIndex];
+  if (!activeSrc) {
     return (
       <div className={placeholderClassName ?? "w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-slate-50"}>
-        <Wrench className="w-12 h-12 mb-2 opacity-20" />
+        <Wrench className="w-12 h-12 mb-2 opacity-20" aria-hidden="true" />
         <span className="text-xs uppercase tracking-widest opacity-50 font-bold">No Image</span>
       </div>
     );
@@ -25,16 +32,16 @@ export function ProductImage({ src, alt, className, placeholderClassName, loadin
   return (
     <div className="relative w-full h-full">
       <img
-        src={src}
+        src={activeSrc}
         alt={alt}
-        width="400"
-        height="400"
+        width="800"
+        height="800"
         className={className}
         loading={loading}
         decoding="async"
-        onError={() => setFailed(true)}
+        fetchPriority={loading === "eager" ? "high" : "auto"}
+        onError={() => setCandidateIndex((index) => index + 1)}
       />
-      {/* Rainbow logo watermark — bottom-right corner */}
       <img
         src={logoRainbow}
         alt=""
