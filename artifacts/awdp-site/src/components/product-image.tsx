@@ -30,16 +30,16 @@ export function ProductImage({ src, alt, className, placeholderClassName, loadin
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full flex items-center justify-center">
       <img
         src={activeSrc}
         alt={alt}
-        width="800"
-        height="800"
-        className={className}
+        className={`${className ?? ""} !w-auto !h-auto max-w-full max-h-full object-contain`}
         loading={loading}
         decoding="async"
         fetchPriority={loading === "eager" ? "high" : "auto"}
+        draggable={false}
+        style={{ imageRendering: "auto" }}
         onError={() => setCandidateIndex((index) => index + 1)}
       />
       <img
