@@ -8,6 +8,7 @@ import checkoutRouter from "./checkout";
 import legacyPdfsRouter from "./legacyPdfs";
 
 const router: IRouter = Router();
+
 router.use(healthRouter);
 router.use(legacyProductImagesRouter);
 router.use(productsRouter);
