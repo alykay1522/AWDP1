@@ -1,7 +1,7 @@
 import { useCart } from "../lib/cart.jsx";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
-import { ShoppingCart, PackageCheck, Layers } from "lucide-react";
+import { ShoppingCart, Layers } from "lucide-react";
 import { Button } from "./ui/button.jsx";
 import { ProductImage } from "./product-image.jsx";
 
@@ -47,7 +47,6 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         {isSale && <span className="bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded shadow-sm">Sale</span>}
         {isCallForPricing && <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Contact for Price</span>}
-        {!product.inStock && <span className="bg-muted text-muted-foreground text-xs font-bold px-2 py-1 rounded border shadow-sm">Out of Stock</span>}
       </div>
 
       {variantCount > 1 && (
@@ -97,20 +96,13 @@ export function ProductCard({ product }: ProductCardProps) {
             ) : (
               <span className="text-xl font-bold text-primary block">${price.toFixed(2)}</span>
             )}
-            {product.inStock ? (
-              <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1 uppercase tracking-wider">
-                <PackageCheck className="w-3 h-3" aria-hidden="true" /> In Stock
-              </span>
-            ) : (
-              <span className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-wider block">Backordered</span>
-            )}
           </div>
 
           <Button
             size="icon"
             variant="secondary"
             className="rounded-full w-10 h-10 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-sm"
-            disabled={!product.inStock || isCallForPricing}
+            disabled={isCallForPricing}
             aria-label={`Add ${product.name} to cart`}
             onClick={(event) => {
               event.preventDefault();
