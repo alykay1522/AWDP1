@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { requireAdmin } from "../middleware/requireAdmin";
+import { clearCsrfCookie, getOrCreateCsrfToken, setCsrfCookie } from "../middleware/csrfProtection";
 import { verifyEmailTransport } from "../lib/email.js";
 import { probeSmtpPort } from "../lib/smtpProbe.js";
 import crypto from "crypto";
@@ -34,6 +35,13 @@ const adminDiagnosticsRateLimiter = rateLimit({
   statusCode: 429,
 });
 
+router.get("/admin/csrf-token", (req: Request, res: Response) => {
+  const csrfToken = getOrCreateCsrfToken(req);
+  setCsrfCookie(res, csrfToken);
+  res.setHeader("Cache-Control", "no-store");
+  return res.json({ csrfToken });
+});
+
 router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res: Response) => {
   const { password } = req.body as { password?: string };
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -56,19 +64,22 @@ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res:
     return res.status(401).json({ error: "Invalid password" });
   }
 
+  const csrfToken = getOrCreateCsrfToken(req);
+  setCsrfCookie(res, csrfToken);
   (req.session as any).adminAuthenticated = true;
   req.session.save((err) => {
     if (err) {
       console.error("Session save error:", err);
       return res.status(500).json({ error: "Session error" });
     }
-    return res.json({ ok: true });
+    return res.json({ ok: true, csrfToken });
   });
 });
 
 router.post("/admin/logout", (req: Request, res: Response) => {
   req.session.destroy(() => {
     res.clearCookie("awdp_admin");
+    clearCsrfCookie(res);
     res.json({ ok: true });
   });
 });
