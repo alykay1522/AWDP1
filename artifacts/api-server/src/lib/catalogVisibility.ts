@@ -1,5 +1,5 @@
 import { productsTable } from "@workspace/db/schema";
-import { and, eq, isNotNull, ne, sql, type SQL } from "drizzle-orm";
+import { and, isNotNull, ne, sql, type SQL } from "drizzle-orm";
 
 // Public pricing policy used consistently by product pages and active listings.
 export const visiblePrice = sql`(${productsTable.price}::numeric = 0 OR ${productsTable.price}::numeric >= 35)`;
@@ -18,16 +18,16 @@ const isNotLegacyService = sql`
   ) !~ ${NON_PRODUCT_PATTERN}
 `;
 
-// A direct product URL may remain useful when an item is temporarily out of stock.
+// A direct product URL may remain useful regardless of internal inventory flags.
 export const publicProductCondition: SQL = and(
   visiblePrice,
   isNotLegacyService,
 ) as SQL;
 
-// Shop listings and category counts only include currently purchasable, imaged items.
+// Shop listings and category counts include customer-visible, imaged products.
+// Inventory is managed internally and is not used as customer-facing availability copy.
 export const publicListingCondition: SQL = and(
   publicProductCondition,
-  eq(productsTable.inStock, true),
   isNotNull(productsTable.imageUrl),
   ne(productsTable.imageUrl, ""),
 ) as SQL;
