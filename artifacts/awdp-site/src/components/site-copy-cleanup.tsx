@@ -56,9 +56,21 @@ function addFullFaqLink() {
   container.appendChild(wrapper);
 }
 
+function normalizeButton(button: HTMLButtonElement) {
+  button.removeAttribute("disabled");
+  button.removeAttribute("aria-disabled");
+  button.textContent = "Add to Cart";
+}
+
 function removeCopyNode(node: Text) {
   const parent = node.parentElement;
-  const removable = parent?.closest("tr, li, p, .bg-amber-50, .bg-amber-500\\/20, .rounded, .rounded-md, .rounded-lg, .rounded-xl, span, div");
+  const button = parent?.closest("button") as HTMLButtonElement | null;
+  if (button) {
+    normalizeButton(button);
+    return;
+  }
+
+  const removable = parent?.closest("tr, li, p, .bg-amber-50, .bg-amber-500\\/20, .rounded, .rounded-md, .rounded-lg, .rounded-xl, span");
   (removable ?? parent)?.remove();
 }
 
@@ -66,9 +78,7 @@ function normalizeActionButtons() {
   for (const button of Array.from(document.querySelectorAll("button"))) {
     const text = button.textContent?.replace(/\s+/g, " ").trim() ?? "";
     if (STOCK_STATUS_PHRASES.some((phrase) => text.includes(phrase))) {
-      button.removeAttribute("disabled");
-      button.removeAttribute("aria-disabled");
-      button.textContent = "Add to Cart";
+      normalizeButton(button);
     }
   }
 }
