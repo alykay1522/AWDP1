@@ -70,12 +70,24 @@
       }
     </script>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T2CJPWGP3L"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-T2CJPWGP3L', { anonymize_ip: true });
+      (function () {
+        var path = window.location.pathname;
+        var isAdminRoute = path === '/admin' || path.indexOf('/admin/') === 0;
+        if (isAdminRoute) return;
+
+        var measurementId = 'G-T2CJPWGP3L';
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+        document.head.appendChild(script);
+
+        window.gtag('js', new Date());
+        window.gtag('config', measurementId, { anonymize_ip: true });
+      })();
     </script>
   </head>
   <body>
