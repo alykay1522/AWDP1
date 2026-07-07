@@ -56,7 +56,7 @@ const trustProxyHops = Number.parseInt(
 app.set("trust proxy", Number.isFinite(trustProxyHops) && trustProxyHops > 0 ? trustProxyHops : false);
 
 // Security headers — helmet sets X-Frame-Options, HSTS, nosniff, referrer policy, etc.
-// CSP allows PayPal, Google Fonts, Google Tag Manager, and direct Vercel Blob uploads.
+// CSP allows PayPal, Google Fonts, Google Tag Manager/Analytics, and direct Vercel Blob uploads.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -77,6 +77,11 @@ app.use(
           "'self'",
           "https://www.paypal.com",
           "https://api.paypal.com",
+          "https://www.google-analytics.com",
+          "https://*.google-analytics.com",
+          "https://analytics.google.com",
+          "https://www.google.com",
+          "https://stats.g.doubleclick.net",
           "wss://chat.tawk.to",
           "https://va.tawk.to",
           "https://blob.vercel-storage.com",
