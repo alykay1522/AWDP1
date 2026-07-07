@@ -82,7 +82,7 @@ const queryClient = new QueryClient({
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },
-  },
+  }
 });
 
 function RouteLoadingFallback({ label = "Loading page…" }: { label?: string }) {
@@ -242,6 +242,20 @@ function AppContent() {
   return <Layout><PublicRoutes /></Layout>;
 }
 
+function PublicTelemetry() {
+  const [location] = useLocation();
+  const normalized = (location || "/").replace(/\/$/, "") || "/";
+
+  if (normalized === "/admin" || normalized.startsWith("/admin/")) return null;
+
+  return (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  );
+}
+
 function App() {
   return (
     <HelmetProvider>
@@ -251,13 +265,12 @@ function App() {
             <WouterRouter>
               <ScrollToTop />
               <AppContent />
+              <PublicTelemetry />
             </WouterRouter>
             <Toaster />
           </TooltipProvider>
         </CartProvider>
       </QueryClientProvider>
-      <Analytics />
-      <SpeedInsights />
     </HelmetProvider>
   );
 }
