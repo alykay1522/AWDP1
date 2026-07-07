@@ -18,6 +18,7 @@ import adminCsvImportRouter from "./routes/adminCsvImport";
 import adminResourcesRouter from "./routes/adminResources";
 import adminSisterPriceSyncRouter from "./routes/adminSisterPriceSync";
 import { requireAdmin } from "./middleware/requireAdmin";
+import { requireAdminCsrf } from "./middleware/csrfProtection";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
 import sitemapRouter from "./routes/sitemap";
@@ -150,9 +151,28 @@ app.use(
   }),
 );
 // credentials + wildcard Origin (*) is invalid in browsers → cross-site admin login shows "Failed to fetch".
-// Dynamic delegate: if CORS_ORIGINS is set but omits the live custom domain, same-host browser Origins still work.
+// Dynamic delegate: allow same-host browser Origins, explicit CORS_ORIGINS, and local development.
 const configuredCorsOrigins =
   process.env.CORS_ORIGINS?.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean) ?? [];
+
+function originMatchesRequestHost(req: Request, originHeader: string): boolean {
+  try {
+    const origin = new URL(originHeader);
+    return origin.hostname === req.hostname;
+  } catch {
+    return false;
+  }
+}
+
+function isLocalDevelopmentOrigin(originHeader: string): boolean {
+  if (isProductionRuntime()) return false;
+  try {
+    const hostname = new URL(originHeader).hostname;
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  } catch {
+    return false;
+  }
+}
 
 app.use(
   cors((req, callback) => {
@@ -162,19 +182,14 @@ app.use(
     if (!originHeader) {
       return callback(null, { origin: true, credentials });
     }
-    if (configuredCorsOrigins.length === 0) {
-      return callback(null, { origin: true, credentials });
-    }
     if (configuredCorsOrigins.includes(originHeader)) {
       return callback(null, { origin: true, credentials });
     }
-    try {
-      const originHost = new URL(originHeader).hostname;
-      if (originHost === req.hostname) {
-        return callback(null, { origin: true, credentials });
-      }
-    } catch {
-      /* ignore malformed Origin */
+    if (originMatchesRequestHost(req, originHeader)) {
+      return callback(null, { origin: true, credentials });
+    }
+    if (isLocalDevelopmentOrigin(originHeader)) {
+      return callback(null, { origin: true, credentials });
     }
     return callback(new Error(`Not allowed by CORS: ${originHeader}`));
   }),
@@ -241,6 +256,9 @@ app.use(
     })(),
   })
 );
+
+// Require a same-origin CSRF token for all mutating admin requests, including login/logout.
+app.use("/api/admin", requireAdminCsrf);
 
 // Public routes
 app.use("/api", router);
