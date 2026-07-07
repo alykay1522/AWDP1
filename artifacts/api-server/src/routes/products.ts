@@ -44,6 +44,53 @@ function toPositiveInteger(value: string | undefined, fallback: number): number 
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+type OptionRecord = Record<string, unknown> | null | undefined;
+
+function mergeOptionRecords(attributes: OptionRecord, specifications: OptionRecord): Record<string, unknown> {
+  return {
+    ...(attributes ?? {}),
+    ...(specifications ?? {}),
+  };
+}
+
+function firstDisplayValue(value: unknown): string | null {
+  if (Array.isArray(value)) {
+    const first = value.map(String).map((item) => item.trim()).find(Boolean);
+    return first ?? null;
+  }
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  return text.split("|").map((item) => item.trim()).find(Boolean) ?? null;
+}
+
+function formatVariantLabel(row: { name: string; variantLabel: string | null; attributes?: OptionRecord; specifications?: OptionRecord }): string {
+  if (row.variantLabel) return row.variantLabel;
+
+  const options = mergeOptionRecords(row.attributes, row.specifications);
+  const preferred = [
+    "length",
+    "length_inches",
+    "weight_code",
+    "Color",
+    "color",
+    "colors",
+    "Handing / Location",
+    "hand",
+    "Size",
+    "size",
+  ];
+
+  const parts = preferred
+    .map((key) => {
+      const value = firstDisplayValue(options[key]);
+      return value ? `${key.replace(/_/g, " ")}: ${value}` : "";
+    })
+    .filter(Boolean);
+
+  return parts.length > 0 ? parts.slice(0, 3).join(" / ") : row.name;
+}
+
 router.get("/products/featured", async (req, res) => {
   try {
     const featured = await db
@@ -100,7 +147,9 @@ router.get("/products/:sku/variants", async (req, res) => {
         variant_label AS "variantLabel",
         price,
         in_stock AS "inStock",
-        image_url AS "imageUrl"
+        image_url AS "imageUrl",
+        attributes,
+        specifications
       FROM products
       WHERE variant_group_id = ${product.variantGroupId}
         AND ${publicProductCondition}
@@ -121,18 +170,25 @@ router.get("/products/:sku/variants", async (req, res) => {
       price: string;
       inStock: boolean;
       imageUrl: string | null;
+      attributes?: Record<string, unknown> | null;
+      specifications?: Record<string, unknown> | null;
     };
 
-    const variants = (rows.rows as unknown as VariantRow[]).sort((left, right) => {
-      const leftLabel = left.variantLabel ?? left.name;
-      const rightLabel = right.variantLabel ?? right.name;
-      const leftNumber = Number.parseFloat(leftLabel.replace(/[^0-9.]/g, "") || "0");
-      const rightNumber = Number.parseFloat(rightLabel.replace(/[^0-9.]/g, "") || "0");
-      if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber) && leftNumber !== rightNumber) {
-        return leftNumber - rightNumber;
-      }
-      return leftLabel.localeCompare(rightLabel);
-    });
+    const variants = (rows.rows as unknown as VariantRow[])
+      .map((row) => ({
+        ...row,
+        attributes: mergeOptionRecords(row.attributes, row.specifications),
+      }))
+      .sort((left, right) => {
+        const leftLabel = formatVariantLabel(left);
+        const rightLabel = formatVariantLabel(right);
+        const leftNumber = Number.parseFloat(leftLabel.replace(/[^0-9.]/g, "") || "0");
+        const rightNumber = Number.parseFloat(rightLabel.replace(/[^0-9.]/g, "") || "0");
+        if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber) && leftNumber !== rightNumber) {
+          return leftNumber - rightNumber;
+        }
+        return leftLabel.localeCompare(rightLabel);
+      });
 
     return res.json({ variants });
   } catch (error) {
@@ -150,7 +206,11 @@ router.get("/products/:sku", async (req, res) => {
       .limit(1);
 
     if (!product) return res.status(404).json({ error: "not_found", message: "Product not found" });
-    return res.json(product);
+
+    return res.json({
+      ...product,
+      attributes: mergeOptionRecords(product.attributes, product.specifications),
+    });
   } catch (error) {
     req.log.error({ err: error }, "Error fetching product by SKU");
     return res.status(503).json({ error: "catalog_unavailable", message: "Product details are temporarily unavailable" });
