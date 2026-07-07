@@ -36,6 +36,8 @@ export default function ProductPage() {
     parent_sku: product.parent_sku
   });
 
+  const optionSpecifications = product.specifications || product.attributes || {};
+
   return (
     <div className="product-page">
       <div className="product-main">
@@ -74,10 +76,11 @@ export default function ProductPage() {
             </div>
           )}
 
-          {product.variations && product.variations.length > 0 && (
+          {((product.variations && product.variations.length > 0) || Object.keys(optionSpecifications).length > 0) && (
             <VariantSelector
               variations={product.variations}
               selectedSku={selectedSku}
+              specifications={optionSpecifications}
               onChange={(newSku) => router.push(`/product/${newSku}`)}
             />
           )}
