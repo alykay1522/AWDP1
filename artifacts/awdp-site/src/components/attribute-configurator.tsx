@@ -82,14 +82,29 @@ function publishSelection(selection: Record<string, string>) {
   }
 }
 
+function uniqueValues(values: string[]): string[] {
+  return [...new Set(values.map((item) => item.trim()).filter(Boolean))];
+}
+
 function normalizeToArray(value: unknown): string[] {
   if (value === null || value === undefined) return [];
   if (Array.isArray(value)) {
-    return [...new Set(value.map(String).map((item) => item.trim()).filter(Boolean))];
+    return uniqueValues(value.map(String));
   }
   if (typeof value === "boolean") return [value ? "Yes" : "No"];
+
   const text = String(value).trim();
-  return text ? [text] : [];
+  if (!text) return [];
+
+  // Marvin import rows store dropdown choices in specifications as pipe-delimited
+  // JSON strings, e.g. {"Color":"White ($68.88)|Bronze ($68.88)"}.
+  // Split those into one selectable option per value while leaving ordinary
+  // single-value specifications untouched.
+  if (text.includes("|")) {
+    return uniqueValues(text.split("|"));
+  }
+
+  return [text];
 }
 
 interface AttributeConfiguratorProps {
