@@ -5,6 +5,8 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Link } from "wouter";
+import { useCustomer } from "@/hooks/useCustomer";
 
 function attributeLabel(key: string): string {
   return key
@@ -14,6 +16,7 @@ function attributeLabel(key: string): string {
 
 export default function Checkout() {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
+  const { customer, loading: customerLoading } = useCustomer();
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +72,19 @@ export default function Checkout() {
     <PayPalScriptProvider options={{ "client-id": paypalClientId, currency: "USD" }}>
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-4xl font-bold tracking-tight mb-8">Checkout</h1>
+
+        {!customerLoading && !customer && (
+          <div className="mb-6 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600">
+            Have an account?{" "}
+            <Link href="/login" className="text-primary font-medium hover:underline">Sign in</Link>{" "}
+            to save this order to your order history.
+          </div>
+        )}
+        {!customerLoading && customer && (
+          <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            Signed in as {customer.email} — this order will be saved to your account.
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">

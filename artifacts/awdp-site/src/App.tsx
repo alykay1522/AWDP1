@@ -33,6 +33,8 @@ const GuideWindowOperator = lazy(() => import("./pages/guide-window-operator.jsx
 const GuideDoorLock = lazy(() => import("./pages/guide-door-lock.jsx"));
 const GuideGlazingBead = lazy(() => import("./pages/guide-glazing-bead.jsx"));
 const Resources = lazy(() => import("./pages/resources.jsx"));
+const Login = lazy(() => import("./pages/login.jsx"));
+const Account = lazy(() => import("./pages/account.jsx"));
 const BalanceWizard = lazy(() => import("./components/BalanceWizard.jsx"));
 
 const AdminLogin = lazy(() => import("./pages/admin-login.jsx"));
@@ -206,6 +208,8 @@ function PublicRoutes() {
         <Route path="/contact" component={Contact} />
         <Route path="/about" component={About} />
         <Route path="/checkout" component={Checkout} />
+        <Route path="/login" component={Login} />
+        <Route path="/account" component={Account} />
         <Route path="/checkout/success" component={CheckoutSuccess} />
         <Route path="/policies" component={Policies} />
         <Route path="/privacy-policy"><Redirect to="/policies#privacy" replace /></Route>
