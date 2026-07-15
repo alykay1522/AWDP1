@@ -9,7 +9,6 @@ import { logo, logoBanner, paypalImg, headerBg } from "../lib/assetUrls.js";
 import { ProductImage } from "./product-image.jsx";
 import { toast } from "../hooks/use-toast.js";
 import { Input } from "./ui/input.jsx";
-import { PayPalCheckoutButton } from "./PayPalCheckoutButton.jsx";
 import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "../lib/siteContact.js";
 
 const SHOP_CATEGORIES = [
@@ -402,16 +401,18 @@ setNavSuggestionsOpen(data.length > 0);
                         </div>
                       </div>
 
-                      <PayPalCheckoutButton
-                        items={items}
-                        totalPrice={totalPrice}
+                      {/* Checkout collects required contact info (name, email, phone, address)
+                          before payment — always route through /checkout. */}
+                      <Button
+                        className="w-full h-11 font-semibold"
                         disabled={belowMinimum}
-                        onSuccess={(orderId) => {
-                          clearCart();
+                        onClick={() => {
                           setIsCartOpen(false);
-                          setLocation(`/checkout/success?order_id=${orderId}`);
+                          setLocation("/checkout");
                         }}
-                      />
+                      >
+                        Proceed to Checkout
+                      </Button>
                       <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
                         <Lock className="w-3 h-3" /> SSL encrypted · PayPal • Visa • MC • Amex • Discover
                       </p>

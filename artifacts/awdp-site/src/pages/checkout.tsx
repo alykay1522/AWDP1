@@ -1,6 +1,6 @@
 import { useCart } from "@/lib/cart";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,59 @@ function attributeLabel(key: string): string {
 export default function Checkout() {
   const { items, totalPrice, clearCart, removeFromCart } = useCart();
   const { customer, loading: customerLoading } = useCustomer();
+
+  // Required contact info — checkout cannot complete without all of these.
+  const [contact, setContact] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    line1: "",
+    line2: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "US",
+  });
+  const [showContactErrors, setShowContactErrors] = useState(false);
+  const prefilledRef = useRef(false);
+
+  // Prefill from the signed-in customer's saved info (once)
+  useEffect(() => {
+    if (!customer || prefilledRef.current) return;
+    prefilledRef.current = true;
+    setContact((prev) => ({
+      ...prev,
+      name: prev.name || customer.name || "",
+      email: prev.email || customer.email || "",
+      phone: prev.phone || customer.phone || "",
+      line1: prev.line1 || customer.shippingAddress?.line1 || "",
+      line2: prev.line2 || customer.shippingAddress?.line2 || "",
+      city: prev.city || customer.shippingAddress?.city || "",
+      state: prev.state || customer.shippingAddress?.state || "",
+      postal_code: prev.postal_code || customer.shippingAddress?.postal_code || "",
+      country: prev.country || customer.shippingAddress?.country || "US",
+    }));
+  }, [customer]);
+
+  const contactErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    if (contact.name.trim().length < 2) errors.name = "Full name is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) errors.email = "A valid email address is required";
+    const phoneDigits = contact.phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) errors.phone = "A valid phone number (at least 10 digits) is required";
+    if (contact.line1.trim().length < 3) errors.line1 = "Street address is required";
+    if (!contact.city.trim()) errors.city = "City is required";
+    if (contact.state.trim().length < 2) errors.state = "State is required";
+    if (contact.postal_code.trim().length < 3) errors.postal_code = "ZIP code is required";
+    return errors;
+  }, [contact]);
+  const contactValid = Object.keys(contactErrors).length === 0;
+
+  // Ref so PayPal SDK callbacks always read the latest values
+  const contactRef = useRef(contact);
+  useEffect(() => {
+    contactRef.current = contact;
+  }, [contact]);
   const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,14 +198,87 @@ export default function Checkout() {
             </CardContent>
           </Card>
 
-          <div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact & Shipping</CardTitle>
+                <p className="text-sm text-slate-500">All fields marked * are required to place your order.</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3" onBlurCapture={() => setShowContactErrors(true)}>
+                  <div>
+                    <label htmlFor="co-name" className="block text-sm font-medium mb-1">Full Name *</label>
+                    <input id="co-name" type="text" required autoComplete="name" className="w-full border rounded-lg px-3 py-2 text-sm"
+                      value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
+                    {showContactErrors && contactErrors.name && <p className="text-xs text-red-600 mt-1">{contactErrors.name}</p>}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="co-email" className="block text-sm font-medium mb-1">Email *</label>
+                      <input id="co-email" type="email" required autoComplete="email" className="w-full border rounded-lg px-3 py-2 text-sm"
+                        value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
+                      {showContactErrors && contactErrors.email && <p className="text-xs text-red-600 mt-1">{contactErrors.email}</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="co-phone" className="block text-sm font-medium mb-1">Phone *</label>
+                      <input id="co-phone" type="tel" required autoComplete="tel" placeholder="(555) 555-5555" className="w-full border rounded-lg px-3 py-2 text-sm"
+                        value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} />
+                      {showContactErrors && contactErrors.phone && <p className="text-xs text-red-600 mt-1">{contactErrors.phone}</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="co-line1" className="block text-sm font-medium mb-1">Street Address *</label>
+                    <input id="co-line1" type="text" required autoComplete="address-line1" className="w-full border rounded-lg px-3 py-2 text-sm"
+                      value={contact.line1} onChange={(e) => setContact({ ...contact, line1: e.target.value })} />
+                    {showContactErrors && contactErrors.line1 && <p className="text-xs text-red-600 mt-1">{contactErrors.line1}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="co-line2" className="block text-sm font-medium mb-1">Apt / Suite (optional)</label>
+                    <input id="co-line2" type="text" autoComplete="address-line2" className="w-full border rounded-lg px-3 py-2 text-sm"
+                      value={contact.line2} onChange={(e) => setContact({ ...contact, line2: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label htmlFor="co-city" className="block text-sm font-medium mb-1">City *</label>
+                      <input id="co-city" type="text" required autoComplete="address-level2" className="w-full border rounded-lg px-3 py-2 text-sm"
+                        value={contact.city} onChange={(e) => setContact({ ...contact, city: e.target.value })} />
+                      {showContactErrors && contactErrors.city && <p className="text-xs text-red-600 mt-1">{contactErrors.city}</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="co-state" className="block text-sm font-medium mb-1">State *</label>
+                      <input id="co-state" type="text" required autoComplete="address-level1" className="w-full border rounded-lg px-3 py-2 text-sm"
+                        value={contact.state} onChange={(e) => setContact({ ...contact, state: e.target.value })} />
+                      {showContactErrors && contactErrors.state && <p className="text-xs text-red-600 mt-1">{contactErrors.state}</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="co-zip" className="block text-sm font-medium mb-1">ZIP *</label>
+                      <input id="co-zip" type="text" required autoComplete="postal-code" className="w-full border rounded-lg px-3 py-2 text-sm"
+                        value={contact.postal_code} onChange={(e) => setContact({ ...contact, postal_code: e.target.value })} />
+                      {showContactErrors && contactErrors.postal_code && <p className="text-xs text-red-600 mt-1">{contactErrors.postal_code}</p>}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Payment</CardTitle>
               </CardHeader>
               <CardContent>
+                {!contactValid && (
+                  <div
+                    className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm"
+                    role="status"
+                    onClick={() => setShowContactErrors(true)}
+                  >
+                    Please complete your contact &amp; shipping info above (name, email, phone, and address) to pay.
+                  </div>
+                )}
                 <PayPalButtons
                   style={{ layout: "vertical" }}
+                  disabled={!contactValid}
+                  forceReRender={[contactValid]}
                   createOrder={async () => {
                     setLoading(true);
                     setError(null);
@@ -167,6 +293,19 @@ export default function Checkout() {
                             quantity: item.quantity,
                             selectedAttributes: item.selectedAttributes ?? {},
                           })),
+                          customer: {
+                            name: contactRef.current.name.trim(),
+                            email: contactRef.current.email.trim(),
+                            phone: contactRef.current.phone.trim(),
+                            address: {
+                              line1: contactRef.current.line1.trim(),
+                              line2: contactRef.current.line2.trim() || undefined,
+                              city: contactRef.current.city.trim(),
+                              state: contactRef.current.state.trim(),
+                              postal_code: contactRef.current.postal_code.trim(),
+                              country: contactRef.current.country.trim() || "US",
+                            },
+                          },
                         }),
                       });
 

@@ -39,8 +39,33 @@ const CartItemSchema = z.object({
   price: z.number().optional(),
 });
 
+const CheckoutAddressSchema = z.object({
+  line1: z.string().trim().min(3, "Street address is required").max(200),
+  line2: z.string().trim().max(200).optional(),
+  city: z.string().trim().min(1, "City is required").max(100),
+  state: z.string().trim().min(2, "State is required").max(100),
+  postal_code: z.string().trim().min(3, "ZIP code is required").max(20),
+  country: z.string().trim().length(2).default("US"),
+});
+
+const CheckoutCustomerSchema = z.object({
+  name: z.string().trim().min(2, "Full name is required").max(120),
+  email: z.string().trim().toLowerCase().email("A valid email address is required").max(254),
+  phone: z
+    .string()
+    .trim()
+    .max(25)
+    .refine((value) => {
+      const digits = value.replace(/\D/g, "");
+      return digits.length >= 10 && digits.length <= 15;
+    }, "A valid phone number (at least 10 digits) is required"),
+  address: CheckoutAddressSchema,
+});
+
 const CreateOrderSchema = z.object({
   items: z.array(CartItemSchema).min(1),
+  // Contact info is REQUIRED to complete checkout — name, email, phone, address.
+  customer: CheckoutCustomerSchema,
 });
 
 const CaptureOrderSchema = z.object({
@@ -167,6 +192,8 @@ router.post("/paypal/create-order", createOrderRateLimiter, async (req, res) => 
     const total = subtotal + shipping.cost;
     const orderId = generateOrderId();
 
+    const customer = parsed.data.customer;
+
     const paypalOrder = await createPayPalOrder({
       items: items.map((item) => ({
         name: item.name,
@@ -176,14 +203,34 @@ router.post("/paypal/create-order", createOrderRateLimiter, async (req, res) => 
       })),
       orderId,
       shippingCost: shipping.cost,
+      shipping: {
+        fullName: customer.name,
+        address: {
+          line1: customer.address.line1,
+          line2: customer.address.line2,
+          city: customer.address.city,
+          state: customer.address.state,
+          postal_code: customer.address.postal_code,
+          country: customer.address.country,
+        },
+      },
     });
 
     const sessionCustomerId = (req.session as any)?.customerId;
     await db.insert(ordersTable).values({
       orderId,
       customerId: typeof sessionCustomerId === "number" ? sessionCustomerId : null,
-      customerName: "Customer",
-      customerEmail: "",
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      shippingAddress: {
+        line1: customer.address.line1,
+        line2: customer.address.line2,
+        city: customer.address.city,
+        state: customer.address.state,
+        postal_code: customer.address.postal_code,
+        country: customer.address.country,
+      },
       lineItems: items,
       subtotal: subtotal.toFixed(2),
       shippingCost: shipping.cost.toFixed(2),
@@ -215,7 +262,14 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
     const { paypalOrderId, orderId } = parsed.data;
 
     const [localOrder] = await db
-      .select({ orderId: ordersTable.orderId, total: ordersTable.total, status: ordersTable.status })
+      .select({
+        orderId: ordersTable.orderId,
+        total: ordersTable.total,
+        status: ordersTable.status,
+        customerName: ordersTable.customerName,
+        customerEmail: ordersTable.customerEmail,
+        shippingAddress: ordersTable.shippingAddress,
+      })
       .from(ordersTable)
       .where(eq(ordersTable.orderId, orderId))
       .limit(1);
@@ -260,21 +314,27 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
       const shipping = purchaseUnit?.shipping;
       const captureId = purchaseUnit?.payments?.captures?.[0]?.id;
 
-      const customerEmail = payer?.email_address || "";
+      // Checkout collects name/email/phone/address up front; keep those values and
+      // only fall back to PayPal payer data when a field is somehow missing.
+      const customerEmail =
+        localOrder.customerEmail || payer?.email_address || "";
       const customerName =
+        (localOrder.customerName && localOrder.customerName !== "Customer" ? localOrder.customerName : "") ||
         shipping?.name?.full_name ||
         `${payer?.name?.given_name || ""} ${payer?.name?.surname || ""}`.trim() ||
         "Customer";
-      const shippingAddress = shipping?.address
-        ? {
-            line1: shipping.address.address_line_1 || "",
-            line2: shipping.address.address_line_2,
-            city: shipping.address.admin_area_2 || "",
-            state: shipping.address.admin_area_1 || "",
-            postal_code: shipping.address.postal_code || "",
-            country: shipping.address.country_code || "US",
-          }
-        : undefined;
+      const shippingAddress =
+        (localOrder.shippingAddress as any) ||
+        (shipping?.address
+          ? {
+              line1: shipping.address.address_line_1 || "",
+              line2: shipping.address.address_line_2,
+              city: shipping.address.admin_area_2 || "",
+              state: shipping.address.admin_area_1 || "",
+              postal_code: shipping.address.postal_code || "",
+              country: shipping.address.country_code || "US",
+            }
+          : undefined);
 
       await db
         .update(ordersTable)
