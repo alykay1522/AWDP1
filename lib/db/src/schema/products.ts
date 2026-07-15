@@ -49,6 +49,7 @@ export const partsIdRequestsTable = pgTable("parts_id_requests", {
 export const ordersTable = pgTable("orders", {
   id: serial("id").primaryKey(),
   orderId: text("order_id").notNull().unique(),
+  customerId: integer("customer_id"),
   stripeSessionId: text("stripe_session_id").unique(),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   customerName: text("customer_name").notNull(),

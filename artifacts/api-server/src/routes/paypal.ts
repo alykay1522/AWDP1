@@ -178,8 +178,10 @@ router.post("/paypal/create-order", createOrderRateLimiter, async (req, res) => 
       shippingCost: shipping.cost,
     });
 
+    const sessionCustomerId = (req.session as any)?.customerId;
     await db.insert(ordersTable).values({
       orderId,
+      customerId: typeof sessionCustomerId === "number" ? sessionCustomerId : null,
       customerName: "Customer",
       customerEmail: "",
       lineItems: items,

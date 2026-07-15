@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useCart } from "../lib/cart.jsx";
-import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Menu, Phone, Search, ChevronRight, CheckCircle2, Wrench, PackageSearch, Loader2, Lock, Truck, ChevronDown, ShieldCheck, User } from "lucide-react";
 import { Button } from "./ui/button.jsx";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet.jsx";
 import { ScrollArea } from "./ui/scroll-area.jsx";
@@ -268,6 +268,11 @@ setNavSuggestionsOpen(data.length > 0);
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
+              <Link href="/account" aria-label="My account">
+                <Button variant="outline" size="icon" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+                  <User className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </Link>
               <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon" aria-label="Open cart" className="relative border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">
@@ -436,6 +441,9 @@ setNavSuggestionsOpen(data.length > 0);
                     </Link>
                     <Link href="/about" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
                     <Link href="/contact" className="py-2 border-b" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+                    <Link href="/account" className="py-2 border-b flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="w-5 h-5" /> My Account
+                    </Link>
                   </nav>
                 </SheetContent>
               </Sheet>
