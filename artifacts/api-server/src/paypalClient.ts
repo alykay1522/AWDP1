@@ -67,6 +67,17 @@ export async function createPayPalOrder(params: {
   items: Array<{ name: string; sku: string; price: number; quantity: number }>;
   orderId: string;
   shippingCost: number;
+  shipping?: {
+    fullName: string;
+    address: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  };
 }): Promise<{ id: string; status: string }> {
   const token = await getAccessToken();
 
@@ -97,6 +108,21 @@ export async function createPayPalOrder(params: {
           quantity: String(item.quantity),
           category: "PHYSICAL_GOODS",
         })),
+        ...(params.shipping
+          ? {
+              shipping: {
+                name: { full_name: params.shipping.fullName.substring(0, 300) },
+                address: {
+                  address_line_1: params.shipping.address.line1,
+                  ...(params.shipping.address.line2 ? { address_line_2: params.shipping.address.line2 } : {}),
+                  admin_area_2: params.shipping.address.city,
+                  admin_area_1: params.shipping.address.state,
+                  postal_code: params.shipping.address.postal_code,
+                  country_code: params.shipping.address.country,
+                },
+              },
+            }
+          : {}),
       },
     ],
     payment_source: {
@@ -105,7 +131,7 @@ export async function createPayPalOrder(params: {
           brand_name: "All Window Door Parts",
           locale: "en-US",
           landing_page: "NO_PREFERENCE",
-          shipping_preference: "GET_FROM_FILE",
+          shipping_preference: params.shipping ? "SET_PROVIDED_ADDRESS" : "GET_FROM_FILE",
           user_action: "PAY_NOW",
         },
       },
