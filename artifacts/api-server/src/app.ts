@@ -17,6 +17,7 @@ import adminGenerateRouter from "./routes/adminGenerate";
 import adminCsvImportRouter from "./routes/adminCsvImport";
 import adminResourcesRouter from "./routes/adminResources";
 import adminSisterPriceSyncRouter from "./routes/adminSisterPriceSync";
+import adminBuddyRouter from "./routes/adminBuddy";
 import { requireAdmin } from "./middleware/requireAdmin";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
@@ -253,6 +254,7 @@ app.use("/api", adminGenerateRouter);
 app.use("/api/admin/csv-import", adminCsvImportRouter);
 app.use("/api", adminResourcesRouter);
 app.use("/api", adminSisterPriceSyncRouter);
+app.use("/api", adminBuddyRouter);
 
 // Sitemap at root (not under /api so search engines can reach it)
 app.use(sitemapRouter);

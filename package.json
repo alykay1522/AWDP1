@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter awdp-site run dev",
-    "build": "pnpm --filter awdp-site run build",
+    "build": "pnpm --filter @workspace/api-server run build && pnpm --filter awdp-site run build",
     "preview": "pnpm --filter awdp-site run serve",
     "vercel:set-api": "node scripts/vercel-set-api-origin.mjs"
   },

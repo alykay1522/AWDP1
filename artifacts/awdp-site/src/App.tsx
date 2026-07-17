@@ -50,6 +50,7 @@ import AdminCsvImport from "./pages/admin-csv-import.jsx";
 import AdminContent from "./pages/admin-content.jsx";
 import AdminResourcesPage from "./pages/admin-resources.jsx";
 import AdminPriceSync from "./pages/admin-price-sync.jsx";
+import AdminBuddy from "./pages/admin-buddy.jsx";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -181,6 +182,7 @@ function AppContent() {
               <Route path="/admin/content" component={AdminContent} />
               <Route path="/admin/resources" component={AdminResourcesPage} />
               <Route path="/admin/price-sync" component={AdminPriceSync} />
+              <Route path="/admin/buddy" component={AdminBuddy} />
               <Route component={NotFound} />
             </Switch>
           </AdminLayout>

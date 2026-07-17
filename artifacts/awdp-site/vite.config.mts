@@ -15,8 +15,9 @@ export default defineConfig({
       // Use the inlined copy inside src/ — eliminates cross-workspace pnpm
       // catalog: resolution that breaks Vercel's isolated install
       "@workspace/api-client-react": path.resolve(siteDir, "src", "lib", "api-client", "index.ts"),
+      "@tanstack/react-query": path.resolve(siteDir, "node_modules", "@tanstack", "react-query"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "@tanstack/react-query"],
   },
   root: siteDir,
 
