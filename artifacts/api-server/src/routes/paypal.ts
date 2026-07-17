@@ -359,6 +359,7 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
           orderId: order.orderId,
           customerName,
           customerEmail,
+          customerPhone: order.customerPhone ?? undefined,
           shippingAddress,
           items: lineItems.map((item: any) => ({
             name: item.name,
@@ -367,8 +368,10 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
             quantity: Number(item.quantity),
           })),
           subtotal: order.subtotal,
+          shippingCost: order.shippingCost,
           total: order.total,
           paymentMethod: "paypal",
+          createdAt: order.createdAt,
         }).catch((error) => logger.error({ error }, "[email] sendOrderNotification error"));
       }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { useCart } from "@/lib/cart";
-import { CheckCircle2, Package, Phone, Mail, ArrowRight, Home } from "lucide-react";
+import { CheckCircle2, Package, Phone, Mail, ArrowRight, Home, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "@/lib/siteContact";
 
@@ -9,7 +9,11 @@ export default function CheckoutSuccess() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const orderId = params.get("order_id");
+  const email = params.get("email");
   const sessionId = params.get("session_id");
+  const invoiceHref = orderId
+    ? `/api/orders/${encodeURIComponent(orderId)}/invoice${email ? `?email=${encodeURIComponent(email)}` : ""}`
+    : null;
   const { clearCart } = useCart();
   const [fulfilled, setFulfilled] = useState(false);
 
@@ -49,6 +53,16 @@ export default function CheckoutSuccess() {
           <div className="bg-muted/50 border rounded-lg p-4 text-left space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Order Reference</p>
             <p className="text-xl font-bold text-primary font-mono tracking-wider">{orderId}</p>
+            {invoiceHref && (
+              <a
+                href={invoiceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-2 text-sm font-semibold text-primary hover:underline"
+              >
+                <FileText className="w-4 h-4" aria-hidden="true" /> View / Print Invoice
+              </a>
+            )}
           </div>
         )}
 

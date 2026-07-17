@@ -1,5 +1,6 @@
 import { waitUntil } from "@vercel/functions";
 import { getOrderRecipients, sendOutboundEmail } from "./lib/email.js";
+import { renderInvoiceBody } from "./lib/invoice";
 
 interface OrderItem { name: string; sku: string; price: number; quantity: number; }
 interface OrderEmailPayload {
@@ -10,8 +11,10 @@ interface OrderEmailPayload {
   shippingAddress?: { line1: string; line2?: string; city: string; state: string; postal_code: string; country: string; };
   items: OrderItem[];
   subtotal: string;
+  shippingCost?: string;
   total: string;
   paymentMethod: "stripe" | "paypal";
+  createdAt?: Date | string | null;
 }
 
 function fmtAddr(a?: OrderEmailPayload["shippingAddress"]): string {
@@ -46,6 +49,48 @@ function ownerHtml(o: OrderEmailPayload): string {
     <div style="margin-top:24px;padding:16px;background:#fef9c3;border-left:4px solid #f59e0b">
       <strong>Order follow-up:</strong> Contact <a href="mailto:${o.customerEmail}">${o.customerEmail}</a>
     </div>
+  </div>
+  <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">All Window Door Parts — 785-533-0244 — info@allwindowdoorparts.com</div>
+</body></html>`;
+}
+
+function siteBaseUrl(): string {
+  return (
+    process.env.SITE_URL ||
+    process.env.PUBLIC_SITE_URL ||
+    "https://www.allwindowdoorparts.com"
+  ).replace(/\/+$/, "");
+}
+
+function invoiceUrl(o: OrderEmailPayload): string {
+  return `${siteBaseUrl()}/api/orders/${encodeURIComponent(o.orderId)}/invoice?email=${encodeURIComponent(o.customerEmail)}`;
+}
+
+function customerInvoiceHtml(o: OrderEmailPayload): string {
+  const invoice = renderInvoiceBody({
+    orderId: o.orderId,
+    customerName: o.customerName,
+    customerEmail: o.customerEmail,
+    customerPhone: o.customerPhone,
+    shippingAddress: o.shippingAddress,
+    lineItems: o.items,
+    subtotal: o.subtotal,
+    shippingCost: o.shippingCost ?? "0",
+    total: o.total,
+    status: "paid",
+    createdAt: o.createdAt ?? new Date(),
+    paymentMethod: o.paymentMethod,
+  });
+  return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;color:#1e293b">
+  <div style="background:#1e3a8a;padding:24px;text-align:center"><h1 style="color:#fff;margin:0;font-size:22px">Thank You for Your Order!</h1></div>
+  <div style="padding:24px">
+    <p>Hi ${o.customerName || "Valued Customer"},</p>
+    <p>Your payment has been received. Your invoice is below — you can also
+      <a href="${invoiceUrl(o)}" style="color:#1e3a8a;font-weight:bold">view and print it online</a>.</p>
+    <div style="border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0">${invoice}</div>
+    <p>We hope to get back to you in a timely manner regarding shipping details.</p>
+    <p>Questions? <a href="tel:785-533-0244">785-533-0244</a> or <a href="mailto:info@allwindowdoorparts.com">info@allwindowdoorparts.com</a></p>
+    <p>Thank you for choosing All Window Door Parts — veteran owned &amp; operated, 40+ years experience.</p>
   </div>
   <div style="background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b">All Window Door Parts — 785-533-0244 — info@allwindowdoorparts.com</div>
 </body></html>`;
@@ -91,8 +136,8 @@ async function deliverOrderNotifications(payload: OrderEmailPayload): Promise<vo
       await sendOutboundEmail({
         to: payload.customerEmail,
         replyTo: "info@allwindowdoorparts.com",
-        subject: `Order Confirmation — ${payload.orderId}`,
-        html: customerHtml(payload),
+        subject: `Invoice ${payload.orderId} — Order Confirmation`,
+        html: customerInvoiceHtml(payload),
       });
     } catch (error) {
       console.error("[email] Customer order confirmation failed", error);
