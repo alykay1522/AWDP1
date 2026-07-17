@@ -178,6 +178,14 @@ export default function Account() {
                       <li key={i}>{item.quantity}× {item.name}</li>
                     ))}
                   </ul>
+                  <a
+                    href={`/api/orders/${encodeURIComponent(order.orderId)}/invoice`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-2 text-xs font-semibold text-primary hover:underline"
+                  >
+                    View invoice →
+                  </a>
                 </div>
               ))}
             </div>

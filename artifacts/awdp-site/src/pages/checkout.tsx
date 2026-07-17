@@ -358,7 +358,9 @@ export default function Checkout() {
                       }
 
                       clearCart();
-                      navigate("/checkout/success");
+                      navigate(
+                        `/checkout/success?order_id=${encodeURIComponent(orderData.orderId)}&email=${encodeURIComponent(contactRef.current.email.trim())}`,
+                      );
                     } catch (captureError: any) {
                       const message = captureError.message || "Payment failed. Please contact support at 785-533-0244.";
                       setError(message);

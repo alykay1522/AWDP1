@@ -10,6 +10,7 @@ import paypalRouter from "./routes/paypal";
 import priceMonitorRouter from "./routes/priceMonitor";
 import adminAuthRouter from "./routes/adminAuth";
 import customerAuthRouter from "./routes/customerAuth";
+import invoicesRouter from "./routes/invoices";
 import adminOrdersRouter from "./routes/adminOrders";
 import adminProductsRouter from "./routes/adminProducts";
 import adminSettingsRouter from "./routes/adminSettings";
@@ -270,6 +271,7 @@ app.use("/api/admin", requireAdminCsrf);
 app.use("/api", router);
 app.use("/api", paypalRouter);
 app.use("/api", customerAuthRouter);
+app.use("/api", invoicesRouter);
 
 // Admin auth routes (login/logout/check — no auth required for these)
 app.use("/api", adminAuthRouter);
