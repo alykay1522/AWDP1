@@ -4,6 +4,11 @@
   "buildCommand": "node vercel-build.cjs",
   "outputDirectory": "artifacts/awdp-site/dist/public",
   "redirects": [
+        {
+                "source": "/wp-content/uploads/2023/04/BiltBestWindowParts-PDF-Catalog.pdf",
+                "destination": "https://wefixitusa.com/wp-content/uploads/2023/04/WindowDoorHardwareParts-PDF-Catalog.pdf",
+                "permanent": true
+        },
     {
       "source": "/:path*",
       "has": [
