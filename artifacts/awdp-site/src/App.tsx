@@ -54,6 +54,7 @@ const AdminCsvImport = lazy(() => import("./pages/admin-csv-import.jsx"));
 const AdminContent = lazy(() => import("./pages/admin-content.jsx"));
 const AdminResourcesPage = lazy(() => import("./pages/admin-resources.jsx"));
 const AdminPriceSync = lazy(() => import("./pages/admin-price-sync.jsx"));
+const AdminBuddy = lazy(() => import("./pages/admin-buddy.jsx"));
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -187,6 +188,7 @@ function AdminRoutes() {
               <Route path="/admin/content" component={AdminContent} />
               <Route path="/admin/resources" component={AdminResourcesPage} />
               <Route path="/admin/price-sync" component={AdminPriceSync} />
+              <Route path="/admin/buddy" component={AdminBuddy} />
               <Route component={NotFound} />
             </Switch>
           </AdminLayout>

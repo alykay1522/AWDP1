@@ -81,6 +81,17 @@ interface AdminOrdersResponse {
   stats: Array<{ status: string; count: number; total: string | null }>;
 }
 
+async function readApiError(res: Response, fallback: string) {
+  const text = await res.text().catch(() => "");
+  if (!text) return `${fallback} (${res.status})`;
+  try {
+    const parsed = JSON.parse(text) as { error?: string; detail?: string };
+    return parsed.detail || parsed.error || `${fallback} (${res.status})`;
+  } catch {
+    return `${fallback} (${res.status}): ${text.slice(0, 160)}`;
+  }
+}
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("en-US", {
     month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
@@ -118,7 +129,7 @@ export default function AdminDashboard() {
     queryKey: ["admin-orders-dash"],
     queryFn: async () => {
       const res = await fetch("/api/admin/orders", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to load orders");
+      if (!res.ok) throw new Error(await readApiError(res, "Failed to load orders"));
       return res.json();
     },
   });
@@ -151,8 +162,9 @@ export default function AdminDashboard() {
     },
   });
 
-  // Show error if any critical query fails
-  const hasCriticalError = statsError || ordersError;
+  // Catalog stats are critical for the dashboard shell. Orders render their own
+  // error state below so one broken table/API route does not block the portal.
+  const hasCriticalError = statsError;
 
   if (hasCriticalError) {
     return (
@@ -161,7 +173,6 @@ export default function AdminDashboard() {
           error={statsErrorObj || ordersErrorObj} 
           onRetry={() => {
             if (statsError) refetchStats();
-            if (ordersError) refetchOrders();
           }} 
         />
       </div>
@@ -342,6 +353,10 @@ export default function AdminDashboard() {
             </div>
             {ordersLoading ? (
               <div className="px-5 py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+            ) : ordersError ? (
+              <div className="p-5">
+                <AdminQueryError error={ordersErrorObj} onRetry={refetchOrders} />
+              </div>
             ) : recentOrders.length === 0 ? (
               <p className="px-5 py-8 text-sm text-muted-foreground text-center">No orders yet</p>
             ) : (
