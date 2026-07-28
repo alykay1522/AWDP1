@@ -59,6 +59,17 @@ interface AdminOrdersResponse {
   stats: StatRow[];
 }
 
+async function readApiError(res: Response, fallback: string) {
+  const text = await res.text().catch(() => "");
+  if (!text) return `${fallback} (${res.status})`;
+  try {
+    const parsed = JSON.parse(text) as { error?: string; detail?: string };
+    return parsed.detail || parsed.error || `${fallback} (${res.status})`;
+  } catch {
+    return `${fallback} (${res.status}): ${text.slice(0, 160)}`;
+  }
+}
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending:    { label: "Pending",    color: "bg-yellow-100 text-yellow-800 border-yellow-200",  icon: <Clock className="w-3 h-3" /> },
   paid:       { label: "Paid",       color: "bg-blue-100 text-blue-800 border-blue-200",         icon: <DollarSign className="w-3 h-3" /> },
@@ -111,7 +122,7 @@ export default function AdminOrders() {
     queryKey: ["admin-orders"],
     queryFn: async () => {
       const res = await fetch("/api/admin/orders", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to load orders");
+      if (!res.ok) throw new Error(await readApiError(res, "Failed to load orders"));
       return res.json();
     },
     refetchInterval: 30_000,

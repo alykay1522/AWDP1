@@ -18,8 +18,9 @@ export default defineConfig({
       // Subpath alias: @workspace/api-client-react/src/generated/api.schemas
       // resolves to the local inlined copy at src/lib/api-client/generated/api.schemas
       "@workspace/api-client-react/src": path.resolve(siteDir, "src", "lib", "api-client"),
+      "@tanstack/react-query": path.resolve(siteDir, "node_modules", "@tanstack", "react-query"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "@tanstack/react-query"],
   },
   root: siteDir,
 
