@@ -24,6 +24,14 @@ const loginSlowDown = slowDown({
   maxDelayMs: 5000,
 });
 
+const accountUpdateRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many account update attempts. Please try again later." },
+});
+
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -209,7 +217,7 @@ router.get("/auth/me", async (req, res) => {
 });
 
 // PUT /api/account — update profile / shipping / password
-router.put("/account", requireCustomer, async (req, res) => {
+router.put("/account", requireCustomer, accountUpdateRateLimiter, async (req, res) => {
   try {
     const parsed = UpdateProfileSchema.safeParse(req.body);
     if (!parsed.success) {

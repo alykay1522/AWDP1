@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, FolderTree,
   Settings, MessageSquare, Wrench, ImageIcon, DollarSign,
   ChevronRight, ExternalLink, LogOut,
-  FileText, PenLine, RefreshCcw,
+  FileText, PenLine, RefreshCcw, Bot,
 } from "lucide-react";
 import { useAdminLogout } from "../lib/useAdminAuth.js";
 
@@ -37,6 +37,7 @@ const NAV: NavItem[] = [
   { href: "/admin/images", label: "Product Images", icon: <ImageIcon className="w-4 h-4" /> },
   { href: "/admin/prices", label: "Price Monitor", icon: <DollarSign className="w-4 h-4" /> },
   { href: "/admin/price-sync", label: "Price Sync", icon: <RefreshCcw className="w-4 h-4" /> },
+  { href: "/admin/buddy", label: "AI Buddy", icon: <Bot className="w-4 h-4" /> },
   { href: "/admin/content", label: "Site Content", icon: <PenLine className="w-4 h-4" /> },
   { href: "/admin/resources", label: "PDF Resources", icon: <FileText className="w-4 h-4" /> },
   { href: "/admin/settings", label: "Site Settings", icon: <Settings className="w-4 h-4" /> },
