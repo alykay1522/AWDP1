@@ -21,6 +21,7 @@ export const productsTable = pgTable("products", {
   variantLabel: text("variant_label"),        // display label within the group, e.g. "Left Hand", "White"
   attributes: json("attributes").$type<Record<string, string[]>>(),  // AWDP structured attrs, e.g. {length:["28\""], weight_code:["2830"]}
   soldAs: text("sold_as"),                    // "Pair" | "Each" | "Set"
+  legacySlug: text("legacy_slug"),            // original WooCommerce permalink, kept so indexed URLs resolve
   createdAt: timestamp("created_at").defaultNow(),
 });
 
