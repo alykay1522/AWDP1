@@ -197,12 +197,46 @@ router.get("/products/:sku/variants", async (req, res) => {
   }
 });
 
+/**
+ * Legacy / SEO URL resolution.
+ *
+ * The pre-migration WooCommerce catalog exposed products at descriptive slug
+ * URLs (e.g. `/product/truth-contour-handle-awdp-pp-454`). Those URLs are still
+ * indexed by search engines and linked externally, while the current catalog
+ * addresses products by SKU. `products.legacy_slug` stores the original
+ * permalink so those URLs resolve instead of returning 404.
+ */
+const slugify = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+const slugOf = (column: typeof productsTable.sku): SQL =>
+  sql`trim(both '-' from regexp_replace(lower(${column}), '[^a-z0-9]+', '-', 'g'))`;
+
+/** Extract an embedded SKU from slugs such as `...-awdp-pp-454`. */
+function embeddedSku(value: string): string | null {
+  const match = value.match(/awdp[-_][a-z0-9]+(?:[-_][a-z0-9]+)*$/i);
+  return match ? match[0].toUpperCase().replace(/_/g, "-") : null;
+}
+
 router.get("/products/:sku", async (req, res) => {
   try {
+    const raw = req.params.sku;
+    const slug = slugify(raw);
+    const embedded = embeddedSku(raw);
+
+    const lookups: SQL[] = [
+      eq(productsTable.sku, raw),
+      sql`upper(${productsTable.sku}) = upper(${raw})`,
+      sql`${productsTable.legacySlug} = ${slug}`,
+      sql`${slugOf(productsTable.sku)} = ${slug}`,
+      sql`trim(both '-' from regexp_replace(lower(${productsTable.name}), '[^a-z0-9]+', '-', 'g')) = ${slug}`,
+    ];
+    if (embedded) lookups.push(sql`upper(${productsTable.sku}) = upper(${embedded})`);
+
     const [product] = await db
       .select()
       .from(productsTable)
-      .where(and(eq(productsTable.sku, req.params.sku), publicProductCondition))
+      .where(and(or(...lookups) as SQL, publicProductCondition))
       .limit(1);
 
     if (!product) return res.status(404).json({ error: "not_found", message: "Product not found" });
