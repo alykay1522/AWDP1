@@ -16,7 +16,7 @@
     { "source": "/about", "destination": "/api/ssr?path=/about" },
     { "source": "/contact", "destination": "/api/ssr?path=/contact" },
     { "source": "/policies", "destination": "/api/ssr?path=/policies" },
-    { "source": "/:path*", "destination": "/index.html" }
+    { "source": "/:path*", "destination": "/app.html" }
   ],
   "headers": [
     {

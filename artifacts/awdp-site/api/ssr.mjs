@@ -6,7 +6,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE_URL = "https://www.allwindowdoorparts.com";
 const DEFAULT_IMAGE = `${BASE_URL}/opengraph.jpg`;
 
+// Keep in sync with ssr-v2.mjs: the production build renames the SPA shell to
+// app.html; index.html remains as a fallback for local dev and tests.
 const templateCandidates = [
+  path.join(__dirname, "../dist/public/app.html"),
+  path.join(process.cwd(), "dist/public/app.html"),
+  path.join(process.cwd(), "artifacts/awdp-site/dist/public/app.html"),
   path.join(__dirname, "../dist/public/index.html"),
   path.join(process.cwd(), "dist/public/index.html"),
   path.join(process.cwd(), "artifacts/awdp-site/dist/public/index.html"),
