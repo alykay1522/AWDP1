@@ -49,6 +49,16 @@ export default defineConfig({
     // Suppress "Can't resolve original location" warnings from radix-ui/shadcn
     // sourcemap references — these are harmless but cause fatal errors on Vite 7
     rollupOptions: {
+      // Multi-page build. Without an explicit `input`, Vite emits index.html
+      // only, so admin.html was never built and the /admin -> /admin.html
+      // rewrite fell through to the storefront shell — which carries
+      // `robots: index, follow`, leaving the admin UI indexable. admin.html
+      // loads the same /src/main.tsx entry and only differs by its
+      // `noindex, nofollow, noarchive` meta and title.
+      input: {
+        main: path.resolve(siteDir, "index.html"),
+        admin: path.resolve(siteDir, "admin.html"),
+      },
       onwarn(warning, warn) {
         // Suppress sourcemap warnings from dependencies
         if (warning.code === "SOURCEMAP_ERROR") return;
