@@ -47,11 +47,6 @@ async function initializeDatabase(): Promise<void> {
     logger.info("serverless auto-created admin_sessions table");
   }
 
-<<<<<<< HEAD
-  const catalogSummary = await ensureCatalogNormalized();
-  await ensureCatalogSkuGuard();
-  logger.info({ catalogSummary }, "catalog normalization and SKU guard verified");
-=======
   // Catalog normalization is not required to serve a request, and definitely
   // not to issue a CSRF token. Running it inline meant a slow or failing
   // catalog pass 503'd the admin login — and because it sat inside the retry
@@ -68,7 +63,6 @@ async function initializeDatabase(): Promise<void> {
       logger.warn({ error }, "background catalog warmup failed");
     }
   })();
->>>>>>> ec73a62 (fix(api): stop catalog warmup blocking admin auth requests)
 }
 
 function ensureReady(): Promise<void> {
