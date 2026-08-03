@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, Mail, Camera, Wrench, ChevronRight, CheckCircle2, Layers, Star } from "lucide-react";
+import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, PackageSearch, Mail, Camera, Wrench, ChevronRight, CheckCircle2, Layers, Star } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } from "@/components/measurement-diagrams";
 import { AttributeConfigurator } from "@/components/attribute-configurator";
+import type { Product } from "@/lib/schema/product";
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -120,8 +121,11 @@ export default function ProductDetail() {
   const savings = isSale ? originalPrice - price : 0;
 
   // Derive "Before Ordering" notes from AWDP attributes balance type
-  const productAttributes = (product as any).attributes as Record<string, unknown> | null | undefined;
-  const productSoldAs = (product as any).soldAs as string | null | undefined;
+  // Cast through `unknown`: the generated API client's Product type (orval,
+  // driven by lib/api-spec/openapi.yaml) hasn't caught up with the real
+  // `products` table columns below, so it doesn't structurally overlap.
+  const productAttributes = (product as unknown as Product).attributes;
+  const productSoldAs = (product as unknown as Product).soldAs;
   const balanceTypeRaw = productAttributes?.balance_type;
   const balanceType = (Array.isArray(balanceTypeRaw) ? balanceTypeRaw[0] : balanceTypeRaw)?.toString().toLowerCase() ?? "";
   const attrNotes: string[] =
@@ -515,7 +519,7 @@ export default function ProductDetail() {
                       size="lg" 
                       className="h-14 flex-1 text-lg font-bold shadow-sm" 
                       disabled={!product.inStock}
-                      onClick={() => addToCart(product, quantity)}
+                      onClick={() => addToCart(product as unknown as Product, quantity)}
                     >
                       <ShoppingCart className="mr-2 w-5 h-5" /> 
                       {!product.inStock ? "Out of Stock" : "Add to Cart"}
