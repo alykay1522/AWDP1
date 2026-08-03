@@ -4,6 +4,7 @@ import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
 import { ensureCatalogNormalized } from "./lib/catalogNormalization";
 import { ensureCatalogSkuGuard } from "./lib/catalogSkuGuard";
+import { seedIfEmpty, fixProductCategories, migrateLegacyCategories } from "./seed";
 
 let readyPromise: Promise<void> | undefined;
 
@@ -47,6 +48,16 @@ async function initializeDatabase(): Promise<void> {
     logger.info("serverless auto-created admin_sessions table");
   }
 
+    // Seed the product catalog on first cold start if the DB is empty
+    try {
+          await seedIfEmpty();
+          await fixProductCategories();
+          await migrateLegacyCategories();
+          logger.info("catalog seed/fix completed");
+    } catch (error) {
+          logger.warn({ error }, "catalog seed failed  continuing anyway");
+    }
+  
  // Catalog normalization is not required to serve a request, and definitely
   // not to issue a CSRF token. Running it inline meant a slow or failing
   // catalog pass 503'd the admin login — and because it sat inside the retry
