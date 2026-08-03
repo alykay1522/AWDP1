@@ -202,6 +202,9 @@
   "functions": {
     "api/ssr.mjs": {
       "includeFiles": "artifacts/awdp-site/dist/public/**"
-    }
+    },
+        "api/proxy.mjs": {
+                "maxDuration": 60
+        }
   }
 }
