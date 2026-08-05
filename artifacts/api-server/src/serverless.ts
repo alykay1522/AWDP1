@@ -74,6 +74,7 @@ async function initializeDatabase(): Promise<void> {
       logger.warn({ error }, "background catalog warmup failed");
     }
   })();
+}
 
 function ensureReady(): Promise<void> {
   if (!readyPromise) {
