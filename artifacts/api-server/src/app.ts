@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import session from "express-session";
@@ -36,6 +37,11 @@ function isProductionRuntime() {
   return process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 }
 
+// Random per-process fallback — never a hardcoded literal, so it can't be read out of source
+// control and used to forge/fixate a session. Admin routes are fully blocked below whenever this
+// fallback is in use, so it never actually needs to sign an admin session.
+const insecureFallbackSessionSecret = crypto.randomBytes(32).toString("hex");
+
 function getSessionSecret() {
   const configuredSecret = process.env.SESSION_SECRET?.trim();
   if (configuredSecret && configuredSecret !== "change-me-in-production") {
@@ -43,10 +49,10 @@ function getSessionSecret() {
   }
 
   if (isProductionRuntime()) {
-    logger.warn("SESSION_SECRET is missing or using a placeholder; falling back to a non-production-safe secret so admin auth remains available.");
+    logger.warn("SESSION_SECRET is missing or using a placeholder; admin routes are blocked until it is set.");
   }
 
-  return "awdp-dev-session-secret";
+  return insecureFallbackSessionSecret;
 }
 
 function shouldBlockAdminSessionRoutes(req: Request) {
@@ -54,8 +60,7 @@ function shouldBlockAdminSessionRoutes(req: Request) {
     return false;
   }
 
-  const allowlistedPaths = ["/env-check", "/csrf-token", "/login", "/logout", "/session", "/auth-check"];
-  return !allowlistedPaths.includes(req.path) && !req.path.startsWith("/images/serve/");
+  return req.path !== "/env-check" && !req.path.startsWith("/images/serve/");
 }
 
 // Validate SESSION_SECRET
