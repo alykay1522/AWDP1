@@ -58,7 +58,6 @@ export default function Contact() {
         title="Contact Us | Window & Door Parts Expert Help"
         path="/contact"
         description={`Call 785-533-0244 or email ${SITE_CUSTOMER_EMAIL} for expert help finding window and door parts. Veteran-owned, 40+ years experience. We identify hard-to-find parts. Free consultation.`}
-        keywords="contact all window door parts, window parts phone number, door hardware customer service, 785-533-0244"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "LocalBusiness",

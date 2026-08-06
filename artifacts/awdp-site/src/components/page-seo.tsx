@@ -15,7 +15,6 @@ interface PageSeoProps {
   noIndex?: boolean;
   type?: "website" | "product";
   structuredData?: object | object[];
-  keywords?: string;
   publishedTime?: string;
   modifiedTime?: string;
 }
@@ -29,7 +28,6 @@ export function PageSeo({
   noIndex = false,
   type = "website",
   structuredData,
-  keywords,
   publishedTime,
   modifiedTime,
 }: PageSeoProps) {
@@ -50,7 +48,6 @@ export function PageSeo({
     <Helmet>
       <title>{fullTitle}</title>
       {description && <meta name="description" content={description} />}
-      {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonical} />
       {noIndex ? (
         <meta name="robots" content="noindex, nofollow" />
@@ -68,6 +65,7 @@ export function PageSeo({
       <meta property="og:image:width" content={DEFAULT_IMAGE_WIDTH} />
       <meta property="og:image:height" content={DEFAULT_IMAGE_HEIGHT} />
       <meta property="og:image:alt" content={ogImageAlt} />
+      <meta name="theme-color" content="#0f172a" />
       <meta property="og:locale" content="en_US" />
       {publishedTime && <meta property="article:published_time" content={publishedTime} />}
       {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}

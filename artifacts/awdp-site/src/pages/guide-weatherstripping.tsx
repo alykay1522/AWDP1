@@ -144,7 +144,6 @@ export default function GuideWeatherstripping() {
         title="How to Identify Your Weatherstripping — Kerf, Bulb, Foam, Fin Seal, OEM Profiles"
         description="Learn how to identify window and door weatherstripping by profile shape, kerf size, bulb diameter, fin type, and OEM fitment. Includes measurement instructions and common mistakes."
         path="/guides/weatherstripping"
-        keywords="weatherstripping identification, kerf weatherstripping, bulb seal, fin seal weatherstripping, pile weatherstripping, measure weatherstripping, window door seal replacement"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 

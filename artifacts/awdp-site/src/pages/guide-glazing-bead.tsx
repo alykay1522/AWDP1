@@ -134,7 +134,6 @@ export default function GuideGlazingBead() {
         title="How to Identify Your Glazing Bead — Vinyl, Aluminum, and OEM Window Bead Identification Guide"
         description="Identify your glazing bead by profile shape, leg height, kerf width, and OEM fitment. Includes measurement instructions and common mistakes."
         path="/guides/glazing-bead"
-        keywords="glazing bead identification, snap-in glazing bead, kerf-in glazing bead, aluminum glazing bead, OEM window bead, measure glazing bead, window bead replacement"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 

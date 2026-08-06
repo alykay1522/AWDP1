@@ -146,7 +146,7 @@ describe('Static page metadata injection', () => {
   test('"/shop" injects shop page metadata', async () => {
     const res = await run('GET', '/shop');
     assert.equal(res.statusCode, 200);
-    assert.ok(String(res.body).includes('35,000+'));
+    assert.ok(String(res.body).includes('4,000+'));
   });
 
   test('"/contact" injects phone number', async () => {

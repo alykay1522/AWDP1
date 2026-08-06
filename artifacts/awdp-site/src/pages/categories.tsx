@@ -139,7 +139,6 @@ const categories = (Array.isArray(categoriesRaw) ? categoriesRaw : []).filter((c
         title="Window & Door Parts Categories | Browse by Hardware Type"
         path="/categories"
         description="Browse window and door parts by category: operators, balances, locks, rollers, weatherstripping, screen hardware. 4,000+ in-stock parts. Veteran-owned, 40+ years experience."
-        keywords="window parts categories, door hardware categories, window balances, casement operators, sash hardware, door rollers, weatherstripping, screen hardware"
         structuredData={[
           {
             "@context": "https://schema.org",

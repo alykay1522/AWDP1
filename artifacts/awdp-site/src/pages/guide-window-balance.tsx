@@ -203,7 +203,6 @@ export default function GuideWindowBalance() {
         title="How to Identify Your Window Balance — Channel, Block & Tackle, Spiral, Constant Force"
         description="Learn how to identify your window balance in minutes. Step-by-step guide for channel balances, block & tackle, spiral balances, and constant force coils. Includes measurement instructions and common mistakes."
         path="/guides/window-balance"
-        keywords="how to identify window balance, window balance types, channel balance, spiral balance, coil balance, block and tackle balance, measure window balance, replace window balance"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 
