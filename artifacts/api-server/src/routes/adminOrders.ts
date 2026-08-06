@@ -30,7 +30,10 @@ router.get("/admin/orders", async (req, res) => {
 
     res.json({ orders, stats });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: "Failed to load orders",
+      details: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
