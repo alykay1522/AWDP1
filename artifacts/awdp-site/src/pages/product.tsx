@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from "wouter";
 import { useGetProductBySku, getGetProductBySkuQueryKey, useGetProducts, getGetProductsQueryKey } from "@workspace/api-client-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { PageSeo } from "@/components/page-seo";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { useCart } from "@/lib/cart";
@@ -27,12 +27,17 @@ export default function ProductDetail() {
   const [, navigate] = useLocation();
   const [quantity, setQuantity] = useState(1);
 
-  const { data: product, isLoading, isError } = useGetProductBySku(sku || "", {
+  const { data: product, isLoading, isError, isFetching, isPlaceholderData } = useGetProductBySku(sku || "", {
     query: {
       enabled: !!sku,
       queryKey: getGetProductBySkuQueryKey(sku || ""),
+      // Keep the currently-displayed variant on screen while a sibling variant loads,
+      // instead of unmounting into the skeleton — makes the dropdown feel like an
+      // in-place swap rather than a navigation to a different product page.
+      placeholderData: keepPreviousData,
     }
   });
+  const isSwitchingVariant = isFetching && isPlaceholderData;
 
   // Fetch related products from same category
   const { data: relatedProductsData } = useGetProducts({
@@ -75,6 +80,7 @@ export default function ProductDetail() {
       return res.json() as Promise<{ variants: Variant[] }>;
     },
     enabled: !!sku,
+    placeholderData: keepPreviousData,
   });
   const variants = variantsData?.variants ?? [];
 
@@ -350,7 +356,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Product Info */}
-            <div className="flex flex-col">
+            <div className={`flex flex-col transition-opacity duration-150 ${isSwitchingVariant ? "opacity-60" : ""}`}>
               {/* Category symptom intro */}
               {categoryIntro && (
                 <div className="mb-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
@@ -444,9 +450,10 @@ export default function ProductDetail() {
                   </div>
                   <Select
                     value={sku}
-                    onValueChange={(val) => navigate(`/product/${encodeURIComponent(val)}`)}
+                    disabled={isSwitchingVariant}
+                    onValueChange={(val) => navigate(`/product/${encodeURIComponent(val)}`, { replace: true })}
                   >
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className={`w-full bg-white transition-opacity ${isSwitchingVariant ? "opacity-60" : ""}`}>
                       <SelectValue placeholder="Select a variant…" />
                     </SelectTrigger>
                     <SelectContent>
@@ -463,7 +470,7 @@ export default function ProductDetail() {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Selecting a different option will take you to that product page.
+                    {isSwitchingVariant ? "Updating price and availability…" : "Price, availability, and details update instantly — no page reload."}
                   </p>
                 </div>
               )}
