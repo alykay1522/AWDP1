@@ -92,7 +92,12 @@ function installPackage(packageDirectory, catalog, workspaceMap) {
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
   try {
-    run("npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund", packageDirectory);
+    // --ignore-scripts: some registry deps (e.g. connect-pg-simple) ship a broken
+    // "prepare": "husky install" that fails outside a git checkout with devDependencies
+    // installed, killing the whole install. `npm rebuild` below restores native
+    // postinstall steps (esbuild, sharp) without ever running "prepare".
+    run("npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund --ignore-scripts", packageDirectory);
+    run("npm rebuild --legacy-peer-deps", packageDirectory);
   } finally {
     fs.writeFileSync(packageJsonPath, original);
   }
