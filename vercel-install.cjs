@@ -8,6 +8,10 @@ const { execSync } = require("child_process");
 
 const root = __dirname;
 
+// Packages known to need a native postinstall step (fetching a prebuilt binary).
+// Rebuilding only these by name avoids retriggering broken scripts on unrelated deps.
+const NATIVE_REBUILD_TARGETS = ["esbuild", "sharp"];
+
 function run(command, cwd) {
   console.log(`\n$ ${command}  [${cwd || root}]`);
   execSync(command, {
@@ -92,7 +96,21 @@ function installPackage(packageDirectory, catalog, workspaceMap) {
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
   try {
-    run("npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund", packageDirectory);
+    // --ignore-scripts: some registry deps (e.g. connect-pg-simple) ship a broken
+    // "prepare": "husky install" that fails outside a git checkout with devDependencies
+    // installed, killing the whole install. A bare `npm rebuild` reruns every package's
+    // scripts (including that broken one), so only rebuild the specific packages that
+    // actually need a native postinstall step.
+    run("npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund --ignore-scripts", packageDirectory);
+    const declared = new Set([
+      ...Object.keys(packageJson.dependencies || {}),
+      ...Object.keys(packageJson.devDependencies || {}),
+      ...Object.keys(packageJson.optionalDependencies || {}),
+    ]);
+    const rebuildTargets = NATIVE_REBUILD_TARGETS.filter((name) => declared.has(name));
+    if (rebuildTargets.length > 0) {
+      run(`npm rebuild ${rebuildTargets.join(" ")}`, packageDirectory);
+    }
   } finally {
     fs.writeFileSync(packageJsonPath, original);
   }

@@ -29,18 +29,56 @@ router.get("/healthz", async (_req, res) => {
 
   // Check that critical tables exist
   try {
+    const requiredTables = ["products", "categories", "orders"];
+
     const tableCheck = await pool.query(`
       SELECT table_name FROM information_schema.tables
-      WHERE table_schema = 'public' AND table_name IN ('products', 'categories', 'orders')
+      WHERE table_schema = 'public' AND table_name = ANY($1)
       ORDER BY table_name
-    `);
+    `, [requiredTables]);
     const tables = tableCheck.rows.map((r: { table_name: string }) => r.table_name);
-    const missing = ["products", "categories", "orders"].filter((t) => !tables.includes(t));
-    if (missing.length > 0) {
+    const missingTables = requiredTables.filter((t) => !tables.includes(t));
+    if (missingTables.length > 0) {
       res.status(500).json({
         status: "error",
-        error: `Missing tables: ${missing.join(", ")}. Run: DATABASE_URL="..." pnpm --filter @workspace/db run push`,
+        error: `Missing tables: ${missingTables.join(", ")}. Run: DATABASE_URL="..." pnpm --filter @workspace/db run push`,
         existingTables: tables,
+      });
+      return;
+    }
+
+    const requiredOrderColumns = [
+      "id",
+      "order_id",
+      "customer_id",
+      "stripe_session_id",
+      "stripe_payment_intent_id",
+      "customer_name",
+      "customer_email",
+      "customer_phone",
+      "shipping_address",
+      "line_items",
+      "subtotal",
+      "shipping_cost",
+      "total",
+      "status",
+      "notes",
+      "created_at",
+      "updated_at",
+    ];
+
+    const orderColumnCheck = await pool.query(`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'orders' AND column_name = ANY($1)
+    `, [requiredOrderColumns]);
+    const orderColumns = orderColumnCheck.rows.map((r: { column_name: string }) => r.column_name);
+    const missingOrderColumns = requiredOrderColumns.filter((c) => !orderColumns.includes(c));
+    if (missingOrderColumns.length > 0) {
+      res.status(500).json({
+        status: "error",
+        error: `Missing columns on orders table: ${missingOrderColumns.join(", ")}. Run: DATABASE_URL="..." pnpm --filter @workspace/db run push`,
+        tables,
+        existingOrderColumns: orderColumns,
       });
       return;
     }

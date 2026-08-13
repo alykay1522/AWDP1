@@ -21,15 +21,15 @@ const templateCandidates = [
 
 const STATIC_PAGES = {
   "/": {
-    title: "Window & Door Replacement Parts — 40+ Years Experience | All Window Door Parts",
-    description: "Veteran-owned supplier with 40+ years of experience. Shop more than 1,000 window and door replacement parts, including balances, operators, rollers, locks, and weatherstripping.",
+    title: "Replacement Window & Door Parts | All Window Door Parts",
+    description: "Veteran-owned supplier with 40+ years of experience. Shop 4,000+ in-stock replacement window and door parts. Free Parts ID and expert help.",
     heading: "Replacement Window & Door Parts",
     intro: "Find current, obsolete, and hard-to-find replacement hardware for windows and doors. Our experts can identify an unknown part from photos at no charge.",
     links: [["Shop Window & Door Parts", "/shop"], ["Free Parts Identification", "/parts-identification"], ["Browse Repair Guides", "/guides"]],
   },
   "/shop": {
     title: "Shop Window & Door Replacement Parts | All Window Door Parts",
-    description: "Browse more than 1,000 window and door replacement parts, including casement operators, sash balances, patio door rollers, locks, weatherstripping, and screen hardware.",
+    description: "Browse 4,000+ in-stock window and door replacement parts, including casement operators, sash balances, patio door rollers, locks, weatherstripping, and screen hardware.",
     heading: "Shop Replacement Window & Door Parts",
     intro: "Search by SKU, brand, category, or part description. Product listings include measurements, compatibility details, stock status, and available variants when applicable.",
     links: [["Browse by Category", "/categories"], ["Free Parts Identification", "/parts-identification"], ["Window & Door Repair Guides", "/guides"]],
@@ -265,9 +265,12 @@ function managedHead(metadata, indexable = true) {
     <meta property="og:type" content="${metadata.schemaType === "Product" ? "product" : "website"}" />
     <meta property="og:site_name" content="All Window Door Parts" />
     <meta property="og:title" content="${escapeHtml(metadata.title)}" />
+    <meta name="theme-color" content="#0f172a" />
     <meta property="og:description" content="${escapeHtml(metadata.description)}" />
     <meta property="og:url" content="${escapeHtml(canonical)}" />
     <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${escapeHtml(metadata.imageAlt || metadata.heading)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(metadata.title)}" />

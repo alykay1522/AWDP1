@@ -34,6 +34,31 @@
       "source": "/categories/:slug",
       "destination": "/categories",
       "permanent": true
+    },
+    {
+      "source": "/category/:slug",
+      "destination": "/categories",
+      "permanent": true
+    },
+    {
+      "source": "/brands",
+      "destination": "/categories",
+      "permanent": true
+    },
+    {
+      "source": "/cart",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/free-parts-identification",
+      "destination": "/parts-identification",
+      "permanent": true
+    },
+    {
+      "source": "/free-parts-id-help",
+      "destination": "/parts-identification",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -220,6 +245,9 @@
   "functions": {
     "api/ssr.mjs": {
       "includeFiles": "artifacts/awdp-site/dist/public/**"
-    }
+    },
+        "api/proxy.mjs": {
+                "maxDuration": 60
+        }
   }
 }

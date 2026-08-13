@@ -308,6 +308,12 @@ export function normalizeRow(raw: Record<string, string>): Record<string, string
     compatibleBrands: pick("compatiblebrands", "compatbrand", "brands", "fits",
                             "compatible", "fitment"),
     specifications: pick("specifications", "specs", "attributes", "attrs"),
+    // Structured variant data — deliberately distinct aliases from "attributes"/"attrs"
+    // above, which are reserved for the free-text specifications column.
+    variantAttributes: pick("variantattributes", "dropdownoptions", "variantoptions", "options"),
+    variantGroupId: pick("variantgroupid", "variantgroup", "productgroup", "groupid", "family"),
+    variantLabel:   pick("variantlabel", "optionlabel", "variant"),
+    soldAs:         pick("soldas", "soldby", "packaging", "unitofsale"),
   };
 }
 
@@ -365,6 +371,14 @@ export function buildProductImportValues(
     try { specifications = JSON.parse(row.specifications); } catch {}
   }
 
+  let attributes: Record<string, string[]> | undefined;
+  if (row.variantAttributes) {
+    try {
+      const parsed = JSON.parse(row.variantAttributes);
+      if (parsed && typeof parsed === "object") attributes = parsed;
+    } catch {}
+  }
+
   const productName = row.name || existing?.name || rawSku;
   const category = resolveProductCategory({
     rawCategory: row.category,
@@ -383,6 +397,10 @@ export function buildProductImportValues(
     tags:           row.tags || !isUpdate ? tags : undefined,
     compatibleBrands: row.compatibleBrands || !isUpdate ? compatibleBrands : undefined,
     specifications: row.specifications || !isUpdate ? specifications : undefined,
+    attributes:     attributes ?? (isUpdate ? undefined : null),
+    variantGroupId: row.variantGroupId || (isUpdate ? undefined : null),
+    variantLabel:   row.variantLabel || (isUpdate ? undefined : null),
+    soldAs:         row.soldAs || (isUpdate ? undefined : null),
   };
 
   if (priceValid) {

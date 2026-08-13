@@ -129,7 +129,6 @@ export default function GuideWindowOperator() {
         title="How to Identify Your Window Operator — Casement & Awning Crank Identification Guide"
         description="Identify your casement or awning window operator by arm style, link length, mounting hole pattern, and brand clues. Includes measurement instructions and common mistakes."
         path="/guides/window-operator"
-        keywords="casement window operator identification, awning operator, window crank replacement, Truth EntryGard operator, dual arm operator, single arm operator, dyad operator, measure window operator"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 

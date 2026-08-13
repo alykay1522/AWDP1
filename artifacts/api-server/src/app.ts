@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import session from "express-session";
@@ -36,8 +37,30 @@ function isProductionRuntime() {
   return process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 }
 
-function shouldBlockAdminSessionRoutes() {
-  return isProductionRuntime() && !hasSecureSessionSecret();
+// Random per-process fallback — never a hardcoded literal, so it can't be read out of source
+// control and used to forge/fixate a session. Admin routes are fully blocked below whenever this
+// fallback is in use, so it never actually needs to sign an admin session.
+const insecureFallbackSessionSecret = crypto.randomBytes(32).toString("hex");
+
+function getSessionSecret() {
+  const configuredSecret = process.env.SESSION_SECRET?.trim();
+  if (configuredSecret && configuredSecret !== "change-me-in-production") {
+    return configuredSecret;
+  }
+
+  if (isProductionRuntime()) {
+    logger.warn("SESSION_SECRET is missing or using a placeholder; admin routes are blocked until it is set.");
+  }
+
+  return insecureFallbackSessionSecret;
+}
+
+function shouldBlockAdminSessionRoutes(req: Request) {
+  if (!isProductionRuntime() || hasSecureSessionSecret()) {
+    return false;
+  }
+
+  return req.path !== "/env-check" && !req.path.startsWith("/images/serve/");
 }
 
 // Validate SESSION_SECRET
@@ -210,11 +233,7 @@ app.use("/api", (_req, res, next) => {
 });
 
 app.use("/api/admin", (req, res, next) => {
-  if (!shouldBlockAdminSessionRoutes()) {
-    return next();
-  }
-
-  if (req.path === "/env-check" || req.path.startsWith("/images/serve/")) {
+  if (!shouldBlockAdminSessionRoutes(req)) {
     return next();
   }
 
@@ -242,7 +261,7 @@ app.use(
       errorLog: (...args: unknown[]) => logger.warn({ args }, "PostgreSQL session store error"),
     }),
     name: "awdp_admin",
-    secret: process.env.SESSION_SECRET || "change-me-in-production",
+    secret: getSessionSecret(),
     resave: false,
     saveUninitialized: false,
     // Use express-session's cryptographically secure default session ID generator.

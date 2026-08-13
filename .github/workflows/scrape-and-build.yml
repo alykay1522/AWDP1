@@ -8,7 +8,7 @@ on:
 jobs:
   scrape-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,10 +32,10 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '24'
-          cache: 'pnpm'
+          package-manager-cache: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build site
         run: pnpm --filter awdp-site run build
@@ -43,11 +43,3 @@ jobs:
           VITE_SITE_NAME: All Window Door Parts
           VITE_CONTACT_EMAIL: Info@allwindowdoorparts.com
           VITE_PHONE: 785-533-0244
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'

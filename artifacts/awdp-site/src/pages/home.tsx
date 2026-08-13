@@ -269,10 +269,9 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <PageSeo
-        title="Window &amp; Door Replacement Parts — 40+ Years Experience"
+        title="Replacement Window & Door Parts"
         path="/"
-        description="All Window Door Parts — veteran-owned supplier with 40+ years experience. Shop 4,000+ in-stock replacement window &amp; door hardware parts: casement operators, sash balances, patio door rollers, locks, weatherstripping. Free Parts ID. Call 785-533-0244."
-        keywords="window replacement parts, door hardware parts, casement window operator, window sash balance, patio door roller, window lock, weatherstripping, sash keeper, tilt latch, window hardware, door hardware, veteran owned"
+        description="All Window Door Parts is a veteran-owned supplier with 40+ years of experience. Shop 4,000+ in-stock replacement window and door parts. Free Parts ID and expert help."
         structuredData={[websiteSchema, organizationSchema, faqSchema] as unknown as object}
       />
 

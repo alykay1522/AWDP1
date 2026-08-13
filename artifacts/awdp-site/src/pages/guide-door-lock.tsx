@@ -128,7 +128,6 @@ export default function GuideDoorLock() {
         title="How to Identify Your Door Lock — Sliding, Patio, and Entry Door Lock Identification Guide"
         description="Identify your sliding door lock or entry door handleset by faceplate shape, screw spacing, mortise depth, and latch style. Includes measurement instructions and brand clues."
         path="/guides/door-lock"
-        keywords="door lock identification, sliding door lock replacement, mortise lock, multi-point lock, patio door lock, hook latch, door lock backset, door lock faceplate measurement"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 

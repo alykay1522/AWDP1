@@ -132,7 +132,6 @@ export default function GuidePatioDoorRoller() {
         title="How to Identify Your Patio Door Roller — Sliding Door Roller Identification Guide"
         description="Learn how to identify your patio door roller by wheel type, housing shape, dimensions, and mounting style. Includes measurement instructions and common mistakes."
         path="/guides/patio-door-roller"
-        keywords="patio door roller identification, sliding door roller replacement, tandem roller, nylon wheel roller, steel wheel roller, measure patio door roller, door roller housing"
         structuredData={[howToSchema, faqSchema, breadcrumbSchema] as unknown as object[]}
       />
 
