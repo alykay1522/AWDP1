@@ -36,11 +36,6 @@
       "permanent": true
     },
     {
-      "source": "/category/:slug",
-      "destination": "/categories",
-      "permanent": true
-    },
-    {
       "source": "/brands",
       "destination": "/categories",
       "permanent": true
@@ -89,6 +84,10 @@
     {
       "source": "/categories",
       "destination": "/api/ssr?path=/categories"
+    },
+    {
+      "source": "/category/:slug",
+      "destination": "/api/ssr?path=/category/:slug"
     },
     {
       "source": "/parts-identification",
