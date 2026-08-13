@@ -17,11 +17,10 @@ interface Props {
   disabled?: boolean;
 }
 
-declare global {
-  interface Window {
-    paypal?: any;
-  }
-}
+// NOTE: @paypal/paypal-js already augments Window.paypal. Re-declaring it here
+// as `any` conflicts with that declaration (TS2717). The SDK is injected at
+// runtime via a <script> tag below, so it is read through a local alias and
+// guarded before use rather than re-typed globally.
 
 export function PayPalCheckoutButton({ items, totalPrice, onSuccess, onError, disabled }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,7 +59,8 @@ export function PayPalCheckoutButton({ items, totalPrice, onSuccess, onError, di
 
   // Render PayPal buttons
   useEffect(() => {
-    if (!scriptLoaded || !window.paypal || !containerRef.current || disabled) return;
+    const paypalSdk = window.paypal as any;
+    if (!scriptLoaded || !paypalSdk || !containerRef.current || disabled) return;
     if (renderedRef.current) return;
 
     renderedRef.current = true;
@@ -72,7 +72,7 @@ export function PayPalCheckoutButton({ items, totalPrice, onSuccess, onError, di
       quantity: item.quantity,
     }));
 
-    window.paypal.Buttons({
+    paypalSdk.Buttons({
       style: {
         layout: "vertical",
         color: "blue",

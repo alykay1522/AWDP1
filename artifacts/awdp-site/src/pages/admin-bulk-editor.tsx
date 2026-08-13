@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
+import { parseApiResponseBody, readApiErrorMessage, readStringField } from "@/lib/api-response";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -195,7 +195,6 @@ export default function AdminBulkEditor() {
       const res = await fetch("/api/admin/products/bulk-update", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(body),
       });
       const parsed = await parseApiResponseBody(res);
@@ -203,7 +202,7 @@ export default function AdminBulkEditor() {
       return parsed.json ?? {};
     },
     onSuccess: (data) => {
-      toast({ title: "Done", description: data.message });
+      toast({ title: "Done", description: readStringField(data, "message") });
       qc.invalidateQueries({ queryKey: ["admin-bulk"] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       clearSelection();

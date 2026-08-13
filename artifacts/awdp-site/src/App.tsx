@@ -17,6 +17,7 @@ import Home from "./pages/home.jsx";
 // Keep the homepage in the entry bundle and split every secondary storefront page.
 // The prior eager imports produced a nearly 1 MB entry chunk for first-time visitors.
 const Shop = lazy(() => import("./pages/shop.jsx"));
+const CategoryPage = lazy(() => import("./pages/category.jsx"));
 const ProductDetail = lazy(() => import("./pages/product.jsx"));
 const Categories = lazy(() => import("./pages/categories.jsx"));
 const PartsIdentification = lazy(() => import("./pages/parts-id.jsx"));
@@ -33,6 +34,7 @@ const GuideWindowOperator = lazy(() => import("./pages/guide-window-operator.jsx
 const GuideDoorLock = lazy(() => import("./pages/guide-door-lock.jsx"));
 const GuideGlazingBead = lazy(() => import("./pages/guide-glazing-bead.jsx"));
 const Resources = lazy(() => import("./pages/resources.jsx"));
+const Faq = lazy(() => import("./pages/faq.jsx"));
 const Login = lazy(() => import("./pages/login.jsx"));
 const Account = lazy(() => import("./pages/account.jsx"));
 const BalanceWizard = lazy(() => import("./components/BalanceWizard.jsx"));
@@ -204,6 +206,7 @@ function PublicRoutes() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/shop" component={Shop} />
+        <Route path="/category/:slug" component={CategoryPage} />
         <Route path="/product/:sku" component={ProductDetail} />
         <Route path="/categories" component={Categories} />
         <Route path="/parts-identification" component={PartsIdentificationWithNotice} />
@@ -223,6 +226,7 @@ function PublicRoutes() {
         <Route path="/guides/door-lock" component={GuideDoorLock} />
         <Route path="/guides/glazing-bead" component={GuideGlazingBead} />
         <Route path="/resources" component={Resources} />
+        <Route path="/faq" component={Faq} />
         <Route path="/identify-balance" component={BalanceWizard} />
         <Route component={NotFound} />
       </Switch>

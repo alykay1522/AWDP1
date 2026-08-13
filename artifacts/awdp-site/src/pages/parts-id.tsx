@@ -245,8 +245,8 @@ export default function PartsIdentification() {
         throw new Error("The request was received, but the photo was not stored. Please try again.");
       }
       analytics.track("Parts ID Submission Success", {
-        imageStored: result.imageStored,
-        notificationDelivered: result.notificationDelivered,
+        imageStored: result.imageStored ?? false,
+        notificationDelivered: result.notificationDelivered ?? false,
       });
       setTicketId(result.ticketId);
       setIsSubmitted(true);

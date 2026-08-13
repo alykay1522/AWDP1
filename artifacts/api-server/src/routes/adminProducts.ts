@@ -15,7 +15,15 @@ import { resolveProductCategory } from "../lib/resolveProductCategory";
 const upload = multer({
   storage: multer.diskStorage({
     destination: os.tmpdir(),
-    filename: (_req, file, cb) => cb(null, `awdp-upload-${Date.now()}-${file.originalname}`),
+    // multer does NOT sanitise file.originalname. Interpolating it straight into
+    // the on-disk filename lets a crafted upload ("../../x") escape tmpdir and
+    // write anywhere the process can. Strip directory components and restrict to
+    // a safe character set before use.
+    filename: (_req, file, cb) => {
+      const base = path.basename(file.originalname || "");
+      const safe = base.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^\.+/, "").slice(0, 120);
+      cb(null, `awdp-upload-${Date.now()}-${safe || "upload"}`);
+    },
   }),
   limits: { fileSize: 2 * 1024 * 1024 * 1024 },
 });

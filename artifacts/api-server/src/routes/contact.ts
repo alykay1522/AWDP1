@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { db } from "@workspace/db";
 import { contactSubmissionsTable } from "@workspace/db/schema";
 import { forwardContactEmail } from "../lib/email.js";
@@ -6,7 +7,18 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
-router.post("/contact", async (req, res) => {
+// Unauthenticated endpoint that forwards to staff inboxes and writes to the
+// database. Without a limit a single client can flood both.
+const contactRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many messages sent. Please try again in 15 minutes, or call 785-533-0244." },
+  statusCode: 429,
+});
+
+router.post("/contact", contactRateLimiter, async (req, res) => {
   try {
     const { name, email, phone, subject, message } = req.body ?? {};
     const cleanName = typeof name === "string" ? name.trim().slice(0, 150) : "";

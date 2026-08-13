@@ -65,7 +65,10 @@ const schema = z.object({
   ),
   category: z.string().min(1),
   supplier: z.string().optional(),
-  inStock: z.boolean().default(true),
+  // No .default() here: it would make the zod *input* type optional while the
+  // *output* stays required, which desynchronises useForm<FormValues> from
+  // zodResolver's inferred input. defaultValues below already supplies `true`.
+  inStock: z.boolean(),
   tagsRaw: z.string().optional(),
   brandsRaw: z.string().optional(),
   specKey: z.string().optional(),

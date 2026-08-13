@@ -24,6 +24,45 @@ export async function parseApiResponseBody(res: Response): Promise<ParsedApiBody
   }
 }
 
+/**
+ * Read a numeric field from an untrusted JSON body.
+ * Returns `fallback` for missing/non-finite values, and coerces numeric strings,
+ * so callers can safely do arithmetic without `+=` silently producing a string.
+ */
+export function readNumberField(
+  body: Record<string, unknown> | null | undefined,
+  key: string,
+  fallback = 0,
+): number {
+  const raw = body?.[key];
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : fallback;
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const n = Number(raw);
+    if (Number.isFinite(n)) return n;
+  }
+  return fallback;
+}
+
+/** Read a string[] field from an untrusted JSON body, dropping non-string entries. */
+export function readStringArrayField(
+  body: Record<string, unknown> | null | undefined,
+  key: string,
+): string[] {
+  const raw = body?.[key];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is string => typeof v === "string");
+}
+
+/** Read a string field from an untrusted JSON body. */
+export function readStringField(
+  body: Record<string, unknown> | null | undefined,
+  key: string,
+  fallback = "",
+): string {
+  const raw = body?.[key];
+  return typeof raw === "string" ? raw : fallback;
+}
+
 export function readApiErrorMessage(
   res: Response,
   body: ParsedApiBody,

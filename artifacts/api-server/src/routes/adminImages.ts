@@ -253,12 +253,32 @@ router.post("/admin/images/link-products", async (req, res) => {
 });
 
 // Legacy GCS image proxy retained so existing catalog URLs continue to work.
+//
+// SECURITY: this route is deliberately UNAUTHENTICATED — requireAdmin exempts
+// "/images/serve/" so catalog images render for anonymous visitors. That makes
+// objectName attacker-controlled, so it MUST be constrained to the public image
+// prefix. Without this check the route streams any object in the bucket to
+// anyone, including customer-submitted "parts-id/" photos (see partsId.ts) and
+// anything else stored alongside them.
+const PUBLIC_SERVE_PREFIX = "product-images/";
+
 router.get("/admin/images/serve/*objectName", async (req, res) => {
   try {
     const bucketId = getBucketId();
     const raw = req.params.objectName;
     const objectName = Array.isArray(raw) ? raw.join("/") : raw;
     if (!objectName) return res.status(400).json({ error: "objectName required" });
+
+    // 404 rather than 403: do not confirm the existence of out-of-scope objects.
+    if (
+      objectName.startsWith("/") ||
+      objectName.includes("..") ||
+      objectName.includes("\\") ||
+      !objectName.startsWith(PUBLIC_SERVE_PREFIX)
+    ) {
+      logger.warn({ objectName }, "Rejected out-of-scope image serve request");
+      return res.status(404).json({ error: "Image not found" });
+    }
 
     const file = objectStorageClient.bucket(bucketId).file(objectName);
     const [exists] = await file.exists();

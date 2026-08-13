@@ -12,13 +12,13 @@ import { Input } from "./ui/input.jsx";
 import { SITE_CUSTOMER_EMAIL, SITE_CUSTOMER_MAILTO } from "../lib/siteContact.js";
 
 const SHOP_CATEGORIES = [
-  ["Window Balances",               "Window+Balances"],
-  ["Window Hardware",               "Window+Hardware"],
-  ["Sash Hardware",                 "Sash+Hardware"],
-  ["Door Hardware",                 "Door+Hardware"],
-  ["Weatherstrip & Glazing",        "Window+Glazing+and+Weatherstrip"],
-  ["Screen Hardware & Accessories", "Screen+Hardware+and+Accessories"],
-  ["Other Hardware",                "Other+Hardware"],
+  ["Window Balances",               "window-balances"],
+  ["Window Hardware",               "window-hardware"],
+  ["Sash Hardware",                 "sash-hardware"],
+  ["Door Hardware",                 "door-hardware"],
+  ["Weatherstrip & Glazing",        "window-glazing-and-weatherstrip"],
+  ["Screen Hardware & Accessories", "screen-hardware-and-accessories"],
+  ["Other Hardware",                "other-hardware"],
 ] as const;
 
 const SHOP_BY_PROBLEM = [
@@ -89,7 +89,7 @@ setNavSuggestionsOpen(data.length > 0);
           src={headerBg}
           alt="All Window Door Parts — info@AllWindowDoorParts.com — Veteran Owned and Operated"
           className="w-full h-auto max-h-24 sm:max-h-32 md:max-h-44 object-contain mx-auto block"
-          fetchpriority="high"
+          fetchPriority="high"
           loading="eager"
         />
       </div>
@@ -138,10 +138,10 @@ setNavSuggestionsOpen(data.length > 0);
                           >
                             All 4,000+ In-Stock Parts
                           </Link>
-                          {SHOP_CATEGORIES.map(([label, cat]) => (
+                          {SHOP_CATEGORIES.map(([label, slug]) => (
                             <Link
-                              key={cat}
-                              href={`/shop?category=${cat}`}
+                              key={slug}
+                              href={`/category/${slug}`}
                               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors"
                               onClick={() => setShopDropdownOpen(false)}
                             >
@@ -374,7 +374,7 @@ setNavSuggestionsOpen(data.length > 0);
                         </div>
                       ) : (
                         <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">Shipping calculated at checkout</p>
+                          <p className="text-xs text-muted-foreground">Shipping is determined at checkout</p>
                           <p className="text-xs text-slate-600 flex items-center gap-1 font-medium">
                             <Truck className="w-3 h-3" /> Some items may require sourcing from our distributors before shipping
                           </p>
@@ -515,7 +515,7 @@ setNavSuggestionsOpen(data.length > 0);
               <Link href="/shop?search=lock" className="text-slate-300 hover:text-white underline underline-offset-2">locks</Link>,{" "}
               <Link href="/shop?search=latch" className="text-slate-300 hover:text-white underline underline-offset-2">tilt latches</Link>,{" "}
               <Link href="/shop?search=hinge" className="text-slate-300 hover:text-white underline underline-offset-2">hinges</Link>, and{" "}
-              <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-slate-300 hover:text-white underline underline-offset-2">weatherstripping</Link>,
+              <Link href="/category/window-glazing-and-weatherstrip" className="text-slate-300 hover:text-white underline underline-offset-2">weatherstripping</Link>,
               we carry solutions for nearly every brand and window type. Can't find your part?{" "}
               <Link href="/parts-identification" className="text-accent hover:text-white font-semibold underline underline-offset-2">Use our Free Parts ID service</Link>{" "}
               and our experts will match it for you — at no charge.
@@ -563,7 +563,7 @@ setNavSuggestionsOpen(data.length > 0);
                 <span>Shipping is determined at checkout. Some items may need to be sourced from our distributors before they can ship — we will contact you if additional lead time is needed.</span>
               </div>
               <div className="mt-3 bg-amber-500/20 border border-amber-500/40 rounded-md px-3 py-2.5 text-amber-300 text-xs leading-snug">
-                Orders under $50 may require additional shipping. We'll contact you before processing.
+                Our minimum merchandise order is $50. Checkout is available once the cart subtotal reaches $50.
               </div>
             </div>
 

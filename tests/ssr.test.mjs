@@ -20,19 +20,23 @@ const FAKE_TEMPLATE = [
 ].join('\n');
 
 // ── Create a temp dir with the template so readTemplate() can find it ─────────
-// ssr.mjs checks: path.join(process.cwd(), "dist/public/index.html")
-// By chdir-ing before the import, that candidate resolves into our temp dir.
+// ssr.mjs resolves SSR_TEMPLATE_PATH ahead of its built-in candidate list.
+// chdir alone is NOT enough: two candidates are anchored to __dirname, so once
+// artifacts/awdp-site/dist/public exists (i.e. after any `pnpm build`) they
+// shadow a cwd-relative fixture and these tests read the real built shell.
 const tmpBase = join(tmpdir(), 'awdp-ssr-test-' + Date.now());
 const templatePath = join(tmpBase, 'dist', 'public', 'index.html');
 mkdirSync(join(tmpBase, 'dist', 'public'), { recursive: true });
 writeFileSync(templatePath, FAKE_TEMPLATE, 'utf8');
 
 const originalCwd = process.cwd();
-process.chdir(tmpBase); // must happen before import so templateCandidates captures tmpBase
+process.env.SSR_TEMPLATE_PATH = templatePath;
+process.chdir(tmpBase);
 
 const { default: handler } = await import('../artifacts/awdp-site/api/ssr.mjs');
 
 after(() => {
+  delete process.env.SSR_TEMPLATE_PATH;
   process.chdir(originalCwd);
   rmSync(tmpBase, { recursive: true, force: true });
 });
@@ -253,16 +257,17 @@ describe('Product page metadata', () => {
     );
   });
 
-  test('product API 404 returns 200 with fallback metadata (graceful degradation)', async () => {
+  test('product API 404 returns a real 404, not a soft-404 shell', async () => {
+    // ssr.mjs deliberately distinguishes "confirmed not found" (404 from the
+    // products API) from "could not reach the API" (network error). Only the
+    // latter degrades to a 200 shell; a known-missing SKU must return 404 so
+    // search engines do not index it. See ssr.mjs readProduct/injectPage.
     const res = await withFetch(
       async () => ({ ok: false, status: 404, json: async () => ({}) }),
       () => run('GET', '/product/UNKNOWN-SKU'),
     );
-    assert.equal(res.statusCode, 200, 'should still return 200 on API failure');
-    const html = String(res.body);
-    // SKU and description appear in managedHead meta tags even when body injection is skipped
-    assert.ok(html.includes('UNKNOWN-SKU'), 'SKU in fallback meta title/description');
-    assert.ok(html.toLowerCase().includes('parts identification'), 'fallback description mentions parts identification');
+    assert.equal(res.statusCode, 404, 'confirmed-missing product must not return a 200 shell');
+    assert.equal(String(res.body), FAKE_TEMPLATE, 'serves the raw template for the SPA to render');
   });
 
   test('product API network error returns 200 with fallback metadata', async () => {

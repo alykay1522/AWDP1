@@ -165,7 +165,17 @@ export async function capturePayPalOrder(
   purchase_units?: Array<{
     reference_id?: string;
     shipping?: { address?: Record<string, string>; name?: { full_name?: string } };
-    payments?: { captures?: Array<{ id: string; amount: { currency_code: string; value: string } }> };
+    payments?: {
+      captures?: Array<{
+        id: string;
+        // The ORDER can report status COMPLETED while an individual capture is
+        // still PENDING (e.g. PENDING_REVIEW fraud hold) or DECLINED. Callers
+        // must check this before treating the money as settled.
+        status?: string;
+        status_details?: { reason?: string };
+        amount: { currency_code: string; value: string };
+      }>;
+    };
   }>;
 }> {
   const token = await getAccessToken();

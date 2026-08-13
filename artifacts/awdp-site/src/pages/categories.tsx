@@ -103,7 +103,7 @@ const PART_TYPE_TILES = [
   {
     name: "Weatherstripping & Seals",
     desc: "Glazing seals, urethane strips, corner seals, and weatherstripping.",
-    href: "/shop?category=Window+Glazing+and+Weatherstrip",
+    href: "/category/window-glazing-and-weatherstrip",
     Icon: Wind,
   },
   {
@@ -121,7 +121,7 @@ const PART_TYPE_TILES = [
   {
     name: "Screen Hardware",
     desc: "Screen frame corners, spline, clips, rollers, and accessories.",
-    href: "/shop?category=Screen+Hardware+and+Accessories",
+    href: "/category/screen-hardware-and-accessories",
     Icon: LayoutGrid,
   },
 ];
@@ -238,7 +238,7 @@ const categories = (Array.isArray(categoriesRaw) ? categoriesRaw : []).filter((c
                 return (
                   <Link
                     key={category.id}
-                    href={`/shop?category=${encodeURIComponent(category.name)}`}
+                    href={`/category/${category.slug}`}
                     className="group bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-lg hover:border-primary transition-all flex flex-col relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { productsTable } from "@workspace/db/schema";
+import { productsTable, categoriesTable } from "@workspace/db/schema";
 import { publicListingCondition } from "../lib/catalogVisibility";
 import { logger } from "../lib/logger";
 
@@ -39,6 +39,10 @@ function productPath(sku: string): string {
   return `/product/${encodeURIComponent(sku)}`;
 }
 
+function categoryPath(slug: string): string {
+  return `/category/${encodeURIComponent(slug)}`;
+}
+
 function renderUrl(path: string, changefreq: string, priority: string, lastmod?: Date | null): string {
   const modified = lastmod && Number.isFinite(lastmod.getTime())
     ? `\n    <lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>`
@@ -52,17 +56,21 @@ function renderUrl(path: string, changefreq: string, priority: string, lastmod?:
 
 router.get("/sitemap.xml", async (_req, res) => {
   try {
-    const products = await db
-      .select({
-        sku: productsTable.sku,
-        createdAt: productsTable.createdAt,
-      })
-      .from(productsTable)
-      .where(publicListingCondition);
+    const [products, categories] = await Promise.all([
+      db
+        .select({
+          sku: productsTable.sku,
+          createdAt: productsTable.createdAt,
+        })
+        .from(productsTable)
+        .where(publicListingCondition),
+      db.select({ slug: categoriesTable.slug }).from(categoriesTable),
+    ]);
 
     const urls = [
       ...STATIC_PAGES.map((page) => renderUrl(page.path, page.changefreq, page.priority)),
-      ...products.map((product) => renderUrl(productPath(product.sku), "monthly", "0.6", product.createdAt)),
+      ...categories.map((category: { slug: string }) => renderUrl(categoryPath(category.slug), "weekly", "0.8")),
+      ...products.map((product: { sku: string; createdAt: Date | null }) => renderUrl(productPath(product.sku), "monthly", "0.6", product.createdAt)),
     ];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

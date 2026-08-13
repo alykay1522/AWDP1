@@ -3,6 +3,8 @@
  * Fetches page-specific metadata from the API for server-side rendering
  */
 
+import { getCategoryBySlug } from "./lib/categories.js";
+
 const API_BASE = process.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export interface PageMetadata {
@@ -27,7 +29,7 @@ export async function getShopMetadata(): Promise<PageMetadata> {
     return {
       title: "Shop Window & Door Parts | 35,000+ Replacement Hardware",
       description:
-        "Browse 35,000+ replacement window and door parts. Casement operators, sash balances, patio door rollers, locks, weatherstripping, and more. Fast shipping.",
+        "Browse 35,000+ replacement window and door parts. Casement operators, sash balances, patio door rollers, locks, weatherstripping, and more.",
       keywords:
         "window parts, door parts, replacement hardware, casement operators, window balances",
       canonicalPath: "/shop",
@@ -52,8 +54,59 @@ export async function getShopMetadata(): Promise<PageMetadata> {
     return {
       title: "Shop Window & Door Parts | 35,000+ Replacement Hardware",
       description:
-        "Browse 35,000+ replacement window and door parts. Fast shipping and expert support.",
+        "Browse 35,000+ replacement window and door parts with expert support.",
       canonicalPath: "/shop",
+    };
+  }
+}
+
+/**
+ * Fetch metadata for /category/:slug pages
+ */
+export async function getCategoryMetadata(slug: string): Promise<PageMetadata> {
+  const category = getCategoryBySlug(slug);
+  if (!category) {
+    return {
+      title: "Category Not Found | All Window Door Parts",
+      description: "Browse window and door parts by category at All Window Door Parts.",
+      canonicalPath: `/category/${slug}`,
+    };
+  }
+
+  const canonicalPath = `/category/${category.slug}`;
+  const url = `https://www.allwindowdoorparts.com${canonicalPath}`;
+
+  try {
+    const res = await fetch(`${API_BASE}/products?category=${encodeURIComponent(category.name)}&limit=1`);
+    const data = await res.json();
+    const count = (data as any).total ?? 0;
+
+    return {
+      title: category.seoTitle,
+      description: category.seoDescription,
+      keywords: `${category.name}, window parts, door parts, replacement hardware`,
+      canonicalPath,
+      image: "https://www.allwindowdoorparts.com/opengraph.jpg",
+      imageAlt: category.name,
+      structuredData: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: category.name,
+        description: category.seoDescription,
+        url,
+        mainEntity: {
+          "@type": "OfferCatalog",
+          name: category.name,
+          numberOfItems: count,
+        },
+      },
+    };
+  } catch (error) {
+    console.error(`Error fetching category metadata for ${slug}:`, error);
+    return {
+      title: category.seoTitle,
+      description: category.seoDescription,
+      canonicalPath,
     };
   }
 }

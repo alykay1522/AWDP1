@@ -94,7 +94,7 @@ export default function Policies() {
                   <PackageCheck className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-sm">Standard Shipping</span>
                 </div>
-                <p className="text-slate-600 text-sm">3&ndash;5 business days</p>
+                <p className="text-slate-600 text-sm">3&ndash;5 business days (estimate)</p>
                 <p className="text-xs text-slate-400">UPS / FedEx / USPS</p>
               </div>
               <div className="border rounded-xl p-4 flex flex-col gap-2">
@@ -102,7 +102,7 @@ export default function Policies() {
                   <Zap className="w-5 h-5 text-amber-500" />
                   <span className="font-semibold text-sm">Expedited Shipping</span>
                 </div>
-                <p className="text-slate-600 text-sm">2&ndash;3 business days</p>
+                <p className="text-slate-600 text-sm">2&ndash;3 business days (estimate)</p>
                 <p className="text-xs text-slate-400">UPS / FedEx</p>
               </div>
               <div className="border rounded-xl p-4 flex flex-col gap-2">
@@ -110,7 +110,7 @@ export default function Policies() {
                   <Truck className="w-5 h-5 text-blue-500" />
                   <span className="font-semibold text-sm">Next Day Air</span>
                 </div>
-                <p className="text-slate-600 text-sm">Next business day</p>
+                <p className="text-slate-600 text-sm">Next business day (estimate)</p>
                 <p className="text-xs text-slate-400">Available at checkout</p>
               </div>
             </div>

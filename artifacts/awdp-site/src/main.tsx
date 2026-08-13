@@ -1,7 +1,7 @@
 import "./installApiBaseUrl.js";
 import "./installCsrfProtection.js";
 import { createRoot } from "react-dom/client";
-import App from "./AppEnhanced.jsx";
+import App from "./App.jsx";
 import "./index.css";
 import "./site-fixes.css";
 

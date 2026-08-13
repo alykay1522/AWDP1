@@ -1,4 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
+import rateLimit from "express-rate-limit";
 import { db } from "@workspace/db";
 import { partsIdRequestsTable } from "@workspace/db/schema";
 import { randomUUID } from "crypto";
@@ -163,7 +164,20 @@ async function handlePartsId(req: Request, res: Response) {
 }
 
 // Keep the legacy endpoint working, and support the endpoint generated from openapi.yaml.
-router.post("/parts-identification", handlePartsId);
-router.post("/parts-id", handlePartsId);
+// Unauthenticated, forwards to staff inboxes AND writes images to blob
+// storage. Unlimited submissions mean unbounded inbox spam and storage cost.
+// 5 per 15 min also matches the on-site guidance asking customers to wait for
+// a reply before submitting again.
+const partsIdRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many parts identification requests. Please wait for our reply, or call 785-533-0244." },
+  statusCode: 429,
+});
+
+router.post("/parts-identification", partsIdRateLimiter, handlePartsId);
+router.post("/parts-id", partsIdRateLimiter, handlePartsId);
 
 export default router;

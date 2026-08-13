@@ -127,6 +127,13 @@ function canonicalProductPath(sku) {
 }
 
 function readTemplate() {
+  // Explicit override wins. Tests need to pin the template to a fixture; the
+  // __dirname-anchored candidates below are immune to process.chdir(), so once
+  // dist/public exists they always shadow a cwd-relative fixture.
+  const override = process.env.SSR_TEMPLATE_PATH;
+  if (override) {
+    return fs.existsSync(override) ? fs.readFileSync(override, "utf8") : null;
+  }
   const templatePath = templateCandidates.find((candidate) => fs.existsSync(candidate));
   return templatePath ? fs.readFileSync(templatePath, "utf8") : null;
 }

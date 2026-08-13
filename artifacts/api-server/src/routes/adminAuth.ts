@@ -6,6 +6,7 @@ import { clearCsrfCookie, getOrCreateCsrfToken, setCsrfCookie } from "../middlew
 import { verifyEmailTransport } from "../lib/email.js";
 import { probeSmtpPort } from "../lib/smtpProbe.js";
 import crypto from "crypto";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -64,15 +65,29 @@ router.post("/admin/login", loginSlowDown, loginRateLimiter, (req: Request, res:
     return res.status(401).json({ error: "Invalid password" });
   }
 
-  const csrfToken = getOrCreateCsrfToken(req);
-  setCsrfCookie(res, csrfToken);
-  (req.session as any).adminAuthenticated = true;
-  req.session.save((err) => {
-    if (err) {
-      console.error("Session save error:", err);
+  // Regenerate the session ID before granting privileges. Without this, a
+  // session fixed on the victim's browser before login (subdomain XSS, a
+  // pre-set cookie, a shared machine) stays valid and becomes an authenticated
+  // admin session the moment the real admin signs in.
+  req.session.regenerate((regenerateError) => {
+    if (regenerateError) {
+      logger.error({ err: regenerateError }, "Admin login session regenerate failed");
       return res.status(500).json({ error: "Session error" });
     }
-    return res.json({ ok: true, csrfToken });
+
+    // Must come after regenerate(): regeneration discards existing session data,
+    // which would otherwise orphan the CSRF token issued against the old session.
+    const csrfToken = getOrCreateCsrfToken(req);
+    setCsrfCookie(res, csrfToken);
+    (req.session as any).adminAuthenticated = true;
+
+    req.session.save((err) => {
+      if (err) {
+        logger.error({ err }, "Admin login session save failed");
+        return res.status(500).json({ error: "Session error" });
+      }
+      return res.json({ ok: true, csrfToken });
+    });
   });
 });
 
@@ -88,7 +103,7 @@ router.get("/admin/auth-check", requireAdmin, (_req: Request, res: Response) => 
   res.json({ authenticated: true });
 });
 
-router.get("/admin/env-check", (_req: Request, res: Response) => {
+router.get("/admin/env-check", requireAdmin, (_req: Request, res: Response) => {
   res.json({
     DATABASE_URL: !!process.env.DATABASE_URL,
     SESSION_SECRET: !!process.env.SESSION_SECRET && process.env.SESSION_SECRET !== "change-me-in-production",
@@ -110,7 +125,7 @@ router.get("/admin/env-check", (_req: Request, res: Response) => {
   });
 });
 
-router.get("/admin/email-health", adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
+router.get("/admin/email-health", requireAdmin, adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
   const result = await verifyEmailTransport();
   res.status(200).json({
     ...result,
@@ -119,7 +134,7 @@ router.get("/admin/email-health", adminDiagnosticsRateLimiter, async (_req: Requ
   });
 });
 
-router.get("/admin/smtp-ports", adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
+router.get("/admin/smtp-ports", requireAdmin, adminDiagnosticsRateLimiter, async (_req: Request, res: Response) => {
   const [port465, port587] = await Promise.all([probeSmtpPort(465), probeSmtpPort(587)]);
   res.json({ port465, port587 });
 });

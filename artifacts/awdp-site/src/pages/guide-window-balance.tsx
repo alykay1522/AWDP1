@@ -482,7 +482,7 @@ export default function GuideWindowBalance() {
               className="border border-white/30 text-white hover:bg-white/10 h-12 px-8"
               asChild
             >
-              <Link href="/shop?category=Window+Balances">
+              <Link href="/category/window-balances">
                 Browse All Window Balances <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" />
               </Link>
             </Button>
@@ -514,7 +514,7 @@ export default function GuideWindowBalance() {
             Reviewed by the All Window Door Parts team — 40+ years of industry experience.
           </div>
           <div className="flex gap-4">
-            <Link href="/shop?category=Window+Balances" className="text-primary font-semibold hover:underline">
+            <Link href="/category/window-balances" className="text-primary font-semibold hover:underline">
               Shop Window Balances
             </Link>
             <Link href="/parts-identification" className="text-primary font-semibold hover:underline">

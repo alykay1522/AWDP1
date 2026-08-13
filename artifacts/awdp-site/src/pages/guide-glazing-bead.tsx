@@ -325,7 +325,7 @@ export default function GuideGlazingBead() {
               <Link href="/parts-identification"><PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> Upload a Photo — Free Parts ID</Link>
             </Button>
             <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 h-12 px-8" asChild>
-              <Link href="/shop?category=Window+Glazing+and+Weatherstrip">Browse Glazing &amp; Weatherstrip <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" /></Link>
+              <Link href="/category/window-glazing-and-weatherstrip">Browse Glazing &amp; Weatherstrip <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" /></Link>
             </Button>
           </div>
         </section>
@@ -351,7 +351,7 @@ export default function GuideGlazingBead() {
             Reviewed by the All Window Door Parts team — 40+ years of industry experience.
           </div>
           <div className="flex gap-4">
-            <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-primary font-semibold hover:underline">Shop Glazing &amp; Weatherstrip</Link>
+            <Link href="/category/window-glazing-and-weatherstrip" className="text-primary font-semibold hover:underline">Shop Glazing &amp; Weatherstrip</Link>
             <Link href="/parts-identification" className="text-primary font-semibold hover:underline">Free Parts ID</Link>
           </div>
         </div>

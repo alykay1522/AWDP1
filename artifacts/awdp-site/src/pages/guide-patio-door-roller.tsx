@@ -383,7 +383,7 @@ export default function GuidePatioDoorRoller() {
             Reviewed by the All Window Door Parts team — 40+ years of industry experience.
           </div>
           <div className="flex gap-4">
-            <Link href="/shop?category=Door+Hardware" className="text-primary font-semibold hover:underline">Shop Door Hardware</Link>
+            <Link href="/category/door-hardware" className="text-primary font-semibold hover:underline">Shop Door Hardware</Link>
             <Link href="/parts-identification" className="text-primary font-semibold hover:underline">Free Parts ID</Link>
           </div>
         </div>

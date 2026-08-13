@@ -265,7 +265,7 @@ export function CatalogSeoBlock() {
         <Link href="/shop?search=lock" className="text-primary font-semibold hover:underline">locks</Link>,{" "}
         <Link href="/shop?search=latch" className="text-primary font-semibold hover:underline">tilt latches</Link>,{" "}
         <Link href="/shop?search=hinge" className="text-primary font-semibold hover:underline">hinges</Link>, and{" "}
-        <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
+        <Link href="/category/window-glazing-and-weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
         we carry solutions for nearly every brand and window type.
       </p>
 

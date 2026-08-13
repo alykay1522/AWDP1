@@ -21,7 +21,6 @@ export default function AdminLogin() {
         res = await fetch("/api/admin/login", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ password: pw }),
         });
       } catch (e) {

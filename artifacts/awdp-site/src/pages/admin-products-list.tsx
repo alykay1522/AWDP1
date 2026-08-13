@@ -9,7 +9,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
+import { parseApiResponseBody, readApiErrorMessage, readNumberField, readStringArrayField } from "@/lib/api-response";
 import { AdminQueryError } from "@/components/admin/admin-error";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -256,7 +256,6 @@ export default function AdminProductsList() {
         const res = await fetch("/api/admin/products/import", { credentials: "include",
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ rows: slice }),
           signal: AbortSignal.timeout(longWait),
         });
@@ -266,21 +265,19 @@ export default function AdminProductsList() {
             readApiErrorMessage(res, parsed, `Import failed (batch ${c + 1}/${totalChunks})`),
           );
         }
-        const result = parsed.json ?? {};
+        const result = parsed.json;
         if (!parsed.json && parsed.text.trim()) {
           throw new Error(
             readApiErrorMessage(res, parsed, `Import returned a non-JSON response (batch ${c + 1}/${totalChunks})`),
           );
         }
-        acc.inserted += result.inserted ?? 0;
-        acc.updated += result.updated ?? 0;
-        acc.errored += result.errored ?? 0;
-        acc.skipped += result.skipped ?? 0;
-        acc.needsPricing += result.needsPricing ?? 0;
-        if (Array.isArray(result.errors)) {
-          for (const line of result.errors as string[]) {
-            if (errSamples.length < 12) errSamples.push(line);
-          }
+        acc.inserted     += readNumberField(result, "inserted");
+        acc.updated      += readNumberField(result, "updated");
+        acc.errored      += readNumberField(result, "errored");
+        acc.skipped      += readNumberField(result, "skipped");
+        acc.needsPricing += readNumberField(result, "needsPricing");
+        for (const line of readStringArrayField(result, "errors")) {
+          if (errSamples.length < 12) errSamples.push(line);
         }
       }
 
@@ -327,28 +324,31 @@ export default function AdminProductsList() {
       const res = await fetch("/api/admin/products/bulk-rename", { credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ rows }),
       });
       const parsed = await parseApiResponseBody(res);
       if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Rename failed"));
-      const result = parsed.json ?? {};
+      const result = parsed.json;
+      const productsUpdated = readNumberField(result, "productsUpdated");
+      const notFound        = readNumberField(result, "notFound");
+      const skipped         = readNumberField(result, "skipped");
+      const misses          = readStringArrayField(result, "misses");
 
       qc.invalidateQueries({ queryKey: ["admin-products"] });
 
       const parts = [
-        result.productsUpdated && `${result.productsUpdated} products renamed`,
-        result.notFound        && `${result.notFound} names not found in catalog`,
-        result.skipped         && `${result.skipped} rows skipped`,
+        productsUpdated && `${productsUpdated} products renamed`,
+        notFound        && `${notFound} names not found in catalog`,
+        skipped         && `${skipped} rows skipped`,
       ].filter(Boolean).join(" · ");
 
       toast({
-        title: result.notFound > 0 ? "Rename complete (some misses)" : "Rename complete",
+        title: notFound > 0 ? "Rename complete (some misses)" : "Rename complete",
         description: parts || "No changes",
       });
 
-      if (result.misses?.length > 0) {
-        console.warn("Names not found in catalog:", result.misses);
+      if (misses.length > 0) {
+        console.warn("Names not found in catalog:", misses);
       }
     } catch (e: any) {
       toast({ title: "Rename failed", description: e.message, variant: "destructive" });

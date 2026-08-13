@@ -9,12 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Truck, ShieldCheck, AlertCircle, PackageCheck, PackageSearch, Mail, Camera, Wrench, ChevronRight, CheckCircle2, Layers, Star } from "lucide-react";
+import { ShoppingCart, ShieldCheck, AlertCircle, PackageCheck, PackageSearch, Mail, Camera, Wrench, ChevronRight, CheckCircle2, Layers, Star } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } from "@/components/measurement-diagrams";
 import { AttributeConfigurator } from "@/components/attribute-configurator";
 import type { Product } from "@/lib/schema/product";
+import { getCategoryByName } from "@/lib/categories";
+
+function categoryHref(category: string): string {
+  const known = getCategoryByName(category);
+  return known ? `/category/${known.slug}` : `/shop?category=${encodeURIComponent(category)}`;
+}
 
 interface Variant {
   sku: string; name: string; variantLabel: string | null;
@@ -270,7 +276,7 @@ export default function ProductDetail() {
   const isGenericDesc = !product.description || product.description.toLowerCase().includes("email us photos");
   const categoryDesc = CATEGORY_DESCRIPTIONS[product.category] ?? "window or door replacement hardware part";
   const seoDescription = isGenericDesc
-    ? `Buy ${product.name} (SKU: ${product.sku}) — ${categoryDesc} In stock at All Window Door Parts. Veteran-owned, 40+ years experience. Free Parts ID service available.`
+    ? `Buy ${product.name} (SKU: ${product.sku}) — ${categoryDesc} Available from All Window Door Parts. Veteran-owned, 40+ years experience. Free Parts ID service available.`
     : `${product.name} (SKU: ${product.sku}) — ${product.description!.slice(0, 120)}`;
 
   const productSchema = {
@@ -327,7 +333,7 @@ export default function ProductDetail() {
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Home", item: "https://www.allwindowdoorparts.com/" },
               { "@type": "ListItem", position: 2, name: "Shop Parts", item: "https://www.allwindowdoorparts.com/shop" },
-              { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com/shop?category=${encodeURIComponent(product.category)}` },
+              { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com${categoryHref(product.category)}` },
               { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com/product/${product.sku}` },
             ],
           },
@@ -336,7 +342,7 @@ export default function ProductDetail() {
 
       <Breadcrumb items={[
         { label: "Shop Parts", href: "/shop" },
-        { label: product.category, href: `/shop?category=${encodeURIComponent(product.category)}` },
+        { label: product.category, href: `${categoryHref(product.category)}` },
         { label: product.name },
       ]} />
 
@@ -534,19 +540,11 @@ export default function ProductDetail() {
                 </div>
                 
                 <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 font-medium border-t pt-6">
-                  
-                  <div className="flex items-center gap-3">
-                    <Truck className="w-5 h-5 text-primary shrink-0" /> Shipping calculated at checkout
-                  </div>
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-primary shrink-0" /> Genuine replacement part — quality guaranteed
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> 40+ years expertise — we verify compatibility
-                  </div>
-                  <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-amber-800 font-semibold text-xs mt-1">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    Orders under $50 may require additional shipping charges — we'll contact you before processing
                   </div>
                 </div>
               </div>
@@ -566,7 +564,7 @@ export default function ProductDetail() {
               {/* Supplier / category info */}
               {product.supplier && (
                 <p className="mt-5 text-xs text-slate-400">
-                  Supplied by <span className="font-semibold text-slate-600">{product.supplier}</span> &middot; Category: <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-primary transition-colors">{product.category}</Link>
+                  Supplied by <span className="font-semibold text-slate-600">{product.supplier}</span> &middot; Category: <Link href={`${categoryHref(product.category)}`} className="hover:text-primary transition-colors">{product.category}</Link>
                 </p>
               )}
             </div>
@@ -614,7 +612,7 @@ export default function ProductDetail() {
                       <tr className={Object.keys(product.specifications).length % 2 === 0 ? "bg-slate-50" : "bg-white"}>
                         <th className="py-3 px-4 font-medium text-slate-500 border-y">Category</th>
                         <td className="py-3 px-4 text-slate-900 font-medium border-y">
-                          <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-primary transition-colors">
+                          <Link href={`${categoryHref(product.category)}`} className="hover:text-primary transition-colors">
                             {product.category}
                           </Link>
                           {product.subcategory ? ` > ${product.subcategory}` : ''}
@@ -638,7 +636,7 @@ export default function ProductDetail() {
                       <tr className="bg-white">
                         <th className="py-3 px-4 font-medium text-slate-500 border-y">Category</th>
                         <td className="py-3 px-4 text-slate-900 font-medium border-y">
-                          <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-primary transition-colors">
+                          <Link href={`${categoryHref(product.category)}`} className="hover:text-primary transition-colors">
                             {product.category}
                           </Link>
                           {product.subcategory ? ` > ${product.subcategory}` : ''}
@@ -691,7 +689,7 @@ export default function ProductDetail() {
             
             {["Window Balances", "Window Hardware", "Door Hardware", "Window Glazing and Weatherstrip"].includes(product.category) && (
               <TabsContent value="measure" className="mt-0 text-slate-600 space-y-6 max-w-3xl">
-                {{
+                {(({
                   "Window Balances": (
                     <>
                       <BalanceDiagram />
@@ -780,7 +778,7 @@ export default function ProductDetail() {
                       </div>
                     </>
                   ),
-                }[product.category as any]}
+                }) as Record<string, React.ReactNode>)[product.category]}
                 <div className="flex items-center gap-3 mt-4 pt-4 border-t">
                   <Link href="/parts-identification" className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
                     <Camera className="w-4 h-4" /> Use Free Parts ID — Upload a Photo
@@ -793,7 +791,7 @@ export default function ProductDetail() {
             )}
 
             <TabsContent value="install" className="mt-0 text-slate-600 space-y-6 max-w-3xl">
-              {{
+              {(({
                 "Window Balances": (
                   <>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">How to Replace a Window Balance</h3>
@@ -883,7 +881,7 @@ export default function ProductDetail() {
                     </div>
                   </>
                 ),
-              }[product.category as any] ?? (
+              }) as Record<string, React.ReactNode>)[product.category] ?? (
                 <>
                   <h3 className="text-lg font-bold text-slate-900 mb-1">Installation Help</h3>
                   <p className="text-sm">Installation steps vary by part type and window or door model. If you need guidance specific to this part, our experts are happy to help before you purchase.</p>
@@ -907,8 +905,8 @@ export default function ProductDetail() {
               <p>Shipping costs are calculated at checkout based on your delivery address, package weight, and dimensions. We ship via UPS, FedEx, and/or USPS.</p>
               <p>Please note that <strong>not all orders ship immediately</strong>. Some items need to be sourced from our distributors before they can be sent out. If your order requires additional lead time, we will contact you.</p>
               <ul className="list-disc pl-5 space-y-1 mb-6">
-                <li>Standard Shipping (3-5 business days from ship date)</li>
-                <li>Expedited Shipping (2-3 business days from ship date)</li>
+                <li>Standard Shipping (estimated 3-5 business days from ship date)</li>
+                <li>Expedited Shipping (estimated 2-3 business days from ship date)</li>
                 <li>Next Day Air available at checkout</li>
               </ul>
               
@@ -953,7 +951,7 @@ export default function ProductDetail() {
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-serif font-bold text-slate-900">More {product.category}</h2>
               <Button variant="ghost" asChild>
-                <Link href={`/shop?category=${encodeURIComponent(product.category)}`}>View All <ChevronRight className="w-4 h-4 ml-1" /></Link>
+                <Link href={`${categoryHref(product.category)}`}>View All <ChevronRight className="w-4 h-4 ml-1" /></Link>
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

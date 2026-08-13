@@ -126,7 +126,7 @@ const faqSchema = {
       name: "What is the minimum order amount?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing.",
+        text: "Our minimum merchandise order is $50. Checkout is available once the cart subtotal reaches $50.",
       },
     },
     {
@@ -134,7 +134,7 @@ const faqSchema = {
       name: "How long does shipping take?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Shipping is calculated at checkout based on your delivery address and package details. We ship via UPS, FedEx, and USPS. Standard shipping takes 3-5 business days from the ship date. Not all items ship immediately — some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
+        text: "Shipping is calculated at checkout based on your delivery address and package details. We ship via UPS, FedEx, and USPS. Standard shipping is estimated at 3-5 business days from the ship date. Not all items ship immediately — some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
       },
     },
     {
@@ -167,11 +167,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "What is the minimum order amount?",
-    a: "Our minimum order is $50. Orders below $50 may require additional handling charges and we will contact you before processing.",
+    a: "Our minimum merchandise order is $50. Checkout is available once the cart subtotal reaches $50.",
   },
   {
     q: "How long does shipping take?",
-    a: "Standard shipping takes 3–5 business days from the ship date via UPS, FedEx, and USPS. Some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
+    a: "Standard shipping is estimated at 3–5 business days from the ship date via UPS, FedEx, and USPS. Some parts must be sourced from our distributors first, and we will contact you if additional lead time is needed.",
   },
   {
     q: "Do you ship window and door parts nationwide?",
@@ -223,6 +223,11 @@ function FaqSection() {
               </Button>
               <Button asChild className="font-bold bg-red-600 hover:bg-red-700 text-white border-0">
                 <Link href="/parts-identification"><PackageSearch className="w-4 h-4 mr-2" aria-hidden="true" />Free Parts ID</Link>
+              </Button>
+            </div>
+            <div className="mt-6">
+              <Button asChild variant="link" className="font-bold">
+                <Link href="/faq">View all frequently asked questions</Link>
               </Button>
             </div>
           </div>
@@ -285,7 +290,7 @@ export default function Home() {
             aria-hidden="true"
             width="1920"
             height="1080"
-            fetchpriority="high"
+            fetchPriority="high"
             loading="eager"
             decoding="async"
             className="w-full h-full object-cover opacity-30"
@@ -429,7 +434,7 @@ export default function Home() {
               <Link href="/shop?search=balance" className="text-primary font-semibold hover:underline">window balance</Link>,{" "}
               <Link href="/shop?search=casement" className="text-primary font-semibold hover:underline">casement operator</Link>,{" "}
               <Link href="/shop?search=roller" className="text-primary font-semibold hover:underline">patio door roller</Link>, or hard-to-find{" "}
-              <Link href="/shop?category=Window+Glazing+and+Weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
+              <Link href="/category/window-glazing-and-weatherstrip" className="text-primary font-semibold hover:underline">weatherstripping</Link>,
               our inventory covers virtually every make and model — including obsolete and discontinued hardware
               that nobody else stocks. Homeowners, contractors, and property managers across the country trust us to
               identify and deliver the exact part they need.
@@ -496,9 +501,9 @@ export default function Home() {
               { icon: ArrowUp,    label: "Window Won't Stay Up",      desc: "Broken balance or spring",             href: "/shop?search=balance" },
               { icon: Wrench,     label: "Crank Operator Broken",      desc: "Casement or awning won't open/close", href: "/shop?search=casement" },
               { icon: Move,       label: "Patio Door Hard to Slide",   desc: "Worn rollers or track damage",         href: "/shop?search=roller" },
-              { icon: Wind,       label: "Weatherstripping Worn Out",  desc: "Drafts, leaks, or worn seals",         href: "/shop?category=Window+Glazing+and+Weatherstrip" },
+              { icon: Wind,       label: "Weatherstripping Worn Out",  desc: "Drafts, leaks, or worn seals",         href: "/category/window-glazing-and-weatherstrip" },
               { icon: Lock,       label: "Lock Won't Latch",           desc: "Broken or misaligned lock hardware",   href: "/shop?search=lock" },
-              { icon: LayoutGrid, label: "Screen Door Damaged",        desc: "Torn screen, bent frame, or hardware", href: "/shop?category=Screen+Hardware+and+Accessories" },
+              { icon: LayoutGrid, label: "Screen Door Damaged",        desc: "Torn screen, bent frame, or hardware", href: "/category/screen-hardware-and-accessories" },
               { icon: Key,        label: "Handle Broken or Loose",     desc: "Door or window handle replacement",    href: "/shop?search=handle" },
               { icon: Droplets,   label: "Window Leaks Air or Water",  desc: "Glazing, seals, or frame repair",      href: "/parts-identification" },
             ].map(({ icon: Icon, label, desc, href }) => (
@@ -784,15 +789,15 @@ export default function Home() {
               { name: "Casement Operators",        href: "/shop?search=casement",                           Icon: Wrench,            desc: "Roto-Gear, dual-arm & awning operators" },
               { name: "Window Balances",            href: "/shop?search=balance",                            Icon: SlidersHorizontal, desc: "Spiral, block-and-tackle, constant force" },
               { name: "Window Locks & Latches",     href: "/shop?search=lock",                               Icon: Lock,              desc: "Cam locks, sash locks, tilt latches" },
-              { name: "Weatherstripping & Seals",   href: "/shop?category=Window+Glazing+and+Weatherstrip",  Icon: Wind,              desc: "Pile, bulb, foam & kerf seal strips" },
+              { name: "Weatherstripping & Seals",   href: "/category/window-glazing-and-weatherstrip",       Icon: Wind,              desc: "Pile, bulb, foam & kerf seal strips" },
               { name: "Glazing Bead",               href: "/shop?search=glazing",                            Icon: Box,               desc: "Vinyl, aluminum & PVC bead profiles" },
               { name: "Patio Door Rollers",         href: "/shop?search=roller",                             Icon: Move,              desc: "Steel, nylon & tandem roller sets" },
               { name: "Window & Door Hinges",       href: "/shop?search=hinge",                              Icon: RotateCcw,         desc: "Casement, awning & friction hinges" },
-              { name: "Screens & Screen Hardware",  href: "/shop?category=Screen+Hardware+and+Accessories",  Icon: LayoutGrid,        desc: "Frames, spline, corners & screen kits" },
+              { name: "Screens & Screen Hardware",  href: "/category/screen-hardware-and-accessories",       Icon: LayoutGrid,        desc: "Frames, spline, corners & screen kits" },
               { name: "Jambliners",                 href: "/shop?search=jambliner",                          Icon: PanelLeft,         desc: "Wood window retrofit jamb-liner kits" },
               { name: "Door Sweeps",                href: "/shop?search=sweep",                              Icon: ArrowDownToLine,   desc: "Under-door seals & Air-Tite strips" },
               { name: "Door Hardware",              href: "/shop?search=handle",                             Icon: Key,               desc: "Handle sets, locksets & entry hardware" },
-              { name: "Sash Hardware",              href: "/shop?category=Sash+Hardware",                    Icon: Layers,            desc: "Tilt latches, keepers & sash locks" },
+              { name: "Sash Hardware",              href: "/category/sash-hardware",                         Icon: Layers,            desc: "Tilt latches, keepers & sash locks" },
             ].map(({ name, href, Icon, desc }) => (
               <Link key={name} href={href} className="bg-white p-5 rounded-xl border shadow-sm hover:shadow-md hover:border-primary transition-all text-center group">
                 <div className="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors mb-3">
@@ -824,7 +829,7 @@ export default function Home() {
               { icon: Award,        title: "40+ Years Experience",    desc: "Unmatched industry knowledge to help you find the right part every time." },
               { icon: Shield,       title: "Veteran Owned",           desc: "Proudly American, veteran-owned and operated with integrity." },
               { icon: PackageSearch,title: "Free Parts ID",           desc: "Send a photo — our experts identify and source any part at no charge." },
-              { icon: Truck,        title: "Nationwide Shipping",     desc: "We ship to homeowners, contractors, and property managers across the country. Shipping calculated at checkout." },
+              { icon: Truck,        title: "Nationwide Shipping",     desc: "We ship to homeowners, contractors, and property managers across the country." },
               { icon: Wrench,       title: "Obsolete Parts Experts",  desc: "Discontinued or hard-to-find? We specialize in parts nobody else stocks." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="text-center p-6 rounded-xl border bg-slate-50">

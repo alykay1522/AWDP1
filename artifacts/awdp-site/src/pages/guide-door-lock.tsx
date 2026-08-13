@@ -340,7 +340,7 @@ export default function GuideDoorLock() {
               <Link href="/parts-identification"><PackageSearch className="mr-2 w-5 h-5" aria-hidden="true" /> Upload a Photo — Free Parts ID</Link>
             </Button>
             <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 h-12 px-8" asChild>
-              <Link href="/shop?category=Door+Hardware">Browse All Door Hardware <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" /></Link>
+              <Link href="/category/door-hardware">Browse All Door Hardware <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" /></Link>
             </Button>
           </div>
         </section>
@@ -368,7 +368,7 @@ export default function GuideDoorLock() {
             Reviewed by the All Window Door Parts team — 40+ years of industry experience.
           </div>
           <div className="flex gap-4">
-            <Link href="/shop?category=Door+Hardware" className="text-primary font-semibold hover:underline">Shop Door Hardware</Link>
+            <Link href="/category/door-hardware" className="text-primary font-semibold hover:underline">Shop Door Hardware</Link>
             <Link href="/parts-identification" className="text-primary font-semibold hover:underline">Free Parts ID</Link>
           </div>
         </div>

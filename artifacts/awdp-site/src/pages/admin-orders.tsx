@@ -72,6 +72,12 @@ async function readApiError(res: Response, fallback: string) {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending:    { label: "Pending",    color: "bg-yellow-100 text-yellow-800 border-yellow-200",  icon: <Clock className="w-3 h-3" /> },
+  // Transient lock held while a PayPal capture is in flight (seconds). Seeing
+  // this persist means a capture died mid-request — check the order manually.
+  capturing:  { label: "Capturing…", color: "bg-slate-100 text-slate-700 border-slate-200",      icon: <Clock className="w-3 h-3" /> },
+  // PayPal took the money but it could not be reconciled (risk review, amount
+  // or reference mismatch). Requires a human. Retries are blocked server-side.
+  payment_review: { label: "Payment review", color: "bg-orange-100 text-orange-900 border-orange-300", icon: <AlertCircle className="w-3 h-3" /> },
   paid:       { label: "Paid",       color: "bg-blue-100 text-blue-800 border-blue-200",         icon: <DollarSign className="w-3 h-3" /> },
   processing: { label: "Processing", color: "bg-purple-100 text-purple-800 border-purple-200",   icon: <Package className="w-3 h-3" /> },
   shipped:    { label: "Shipped",    color: "bg-indigo-100 text-indigo-800 border-indigo-200",   icon: <Truck className="w-3 h-3" /> },
@@ -80,7 +86,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   refunded:   { label: "Refunded",   color: "bg-gray-100 text-gray-700 border-gray-200",         icon: <AlertCircle className="w-3 h-3" /> },
 };
 
-const STATUS_ORDER = ["pending", "paid", "processing", "shipped", "completed", "cancelled", "refunded"];
+// "capturing" is deliberately omitted: it lasts seconds and never needs a filter
+// tab. "payment_review" is listed early because it is the queue staff must clear.
+const STATUS_ORDER = ["pending", "payment_review", "paid", "processing", "shipped", "completed", "cancelled", "refunded"];
 
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, color: "bg-gray-100 text-gray-600 border-gray-200", icon: null };

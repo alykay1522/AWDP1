@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { ordersTable, productsTable } from "@workspace/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { createPayPalOrder, capturePayPalOrder } from "../paypalClient";
 import { z } from "zod";
 import { sendOrderNotification } from "../emailNotifier";
@@ -286,7 +286,63 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
       return res.json({ success: true, orderId, alreadyProcessed: true });
     }
 
-    const capture = await capturePayPalOrder(paypalOrderId);
+    // Funds are held by PayPal in a non-final state; a retry here would attempt a
+    // second capture. Staff must reconcile instead.
+    if (localOrder.status === "payment_review") {
+      return res.status(409).json({
+        error: "This payment is being reviewed by PayPal. Do not retry — we will email you once it settles.",
+      });
+    }
+
+    // Atomically claim the order before talking to PayPal. Without this, two
+    // concurrent requests can both observe status "pending" and both capture:
+    // the second gets an error from PayPal and the customer sees a 500 despite
+    // having been charged, and the fulfilment email fires twice.
+    const claimed = await db
+      .update(ordersTable)
+      .set({ status: "capturing", updatedAt: new Date() })
+      .where(and(eq(ordersTable.orderId, orderId), eq(ordersTable.status, "pending")))
+      .returning({ orderId: ordersTable.orderId });
+
+    if (claimed.length === 0) {
+      const [current] = await db
+        .select({ status: ordersTable.status })
+        .from(ordersTable)
+        .where(eq(ordersTable.orderId, orderId))
+        .limit(1);
+      if (current?.status === "paid") {
+        return res.json({ success: true, orderId, alreadyProcessed: true });
+      }
+      logger.warn({ orderId, status: current?.status }, "Concurrent PayPal capture rejected");
+      return res.status(409).json({ error: "This payment is already being processed. Please wait." });
+    }
+
+    /** Return the order to "pending" so a legitimate retry can proceed. Only safe
+     *  when PayPal did NOT take any money. */
+    const releaseClaim = async () => {
+      await db
+        .update(ordersTable)
+        .set({ status: "pending", updatedAt: new Date() })
+        .where(and(eq(ordersTable.orderId, orderId), eq(ordersTable.status, "capturing")));
+    };
+
+    /** Funds were taken but could not be reconciled. Park the order for staff and
+     *  block retries, since retrying would attempt a second capture. */
+    const markPaymentReview = async (reason: string) => {
+      await db
+        .update(ordersTable)
+        .set({ status: "payment_review", updatedAt: new Date() })
+        .where(eq(ordersTable.orderId, orderId));
+      logger.error({ orderId, reason }, "Order parked for manual payment review");
+    };
+
+    let capture: Awaited<ReturnType<typeof capturePayPalOrder>>;
+    try {
+      capture = await capturePayPalOrder(paypalOrderId);
+    } catch (captureError) {
+      await releaseClaim();
+      throw captureError;
+    }
 
     if (capture.status === "COMPLETED") {
       const capturedReferenceId = capture.purchase_units?.[0]?.reference_id;
@@ -295,10 +351,27 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
           { capturedReferenceId, requestedOrderId: orderId },
           "[PayPal] reference_id mismatch",
         );
+        await markPaymentReview("reference_id mismatch");
         return res.status(400).json({ error: "Order reference mismatch. Payment not applied." });
       }
 
-      const capturedAmountStr = capture.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
+      // The ORDER can be COMPLETED while the individual capture is still PENDING
+      // (PayPal fraud/risk review) or DECLINED. Marking those "paid" ships goods
+      // against money that may never settle.
+      const captureRecord = capture.purchase_units?.[0]?.payments?.captures?.[0];
+      if (captureRecord?.status && captureRecord.status !== "COMPLETED") {
+        logger.error(
+          { orderId, captureStatus: captureRecord.status, reason: captureRecord.status_details?.reason },
+          "[PayPal] capture not COMPLETED",
+        );
+        await markPaymentReview(`capture status ${captureRecord.status}`);
+        return res.status(402).json({
+          error: "PayPal is still reviewing this payment. We will email you as soon as it clears — please do not retry.",
+          status: captureRecord.status,
+        });
+      }
+
+      const capturedAmountStr = captureRecord?.amount?.value;
       const capturedAmount = capturedAmountStr ? parseFloat(capturedAmountStr) : null;
       const localTotal = parseFloat(localOrder.total as string);
       if (capturedAmount === null || Math.abs(capturedAmount - localTotal) > 0.02) {
@@ -306,6 +379,7 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
           { capturedAmount: capturedAmountStr, localTotal: localOrder.total },
           "[PayPal] Amount mismatch",
         );
+        await markPaymentReview("captured amount does not match order total");
         return res.status(400).json({ error: "Captured payment amount does not match order total." });
       }
 
@@ -377,6 +451,8 @@ router.post("/paypal/capture-order", captureOrderRateLimiter, async (req, res) =
 
       res.json({ success: true, orderId, captureId });
     } else {
+      // Order was not completed, so PayPal took no money — safe to allow a retry.
+      await releaseClaim();
       res.status(400).json({ error: "Payment not completed", status: capture.status });
     }
   } catch (error: any) {

@@ -6,6 +6,7 @@
 import type { PageMetadata } from "./ssr-metadata.js";
 import {
   getShopMetadata,
+  getCategoryMetadata,
   getCategoriesMetadata,
   getProductMetadata,
   getGuideHubMetadata,
@@ -60,6 +61,14 @@ export async function getRouteMetadata(pathname: string): Promise<PageMetadata |
   // Categories
   if (route === "/categories") {
     return getCategoriesMetadata();
+  }
+
+  // Category detail: /category/:slug
+  if (route.startsWith("/category/")) {
+    const slug = route.replace("/category/", "");
+    if (slug && slug.length > 0) {
+      return getCategoryMetadata(slug);
+    }
   }
 
   // Product detail: /product/:sku
@@ -139,6 +148,7 @@ export function shouldSSRRoute(pathname: string): boolean {
     "/",
     "/shop",
     "/categories",
+    "/category",
     "/product",
     "/guides",
     "/about",

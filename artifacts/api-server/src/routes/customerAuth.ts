@@ -9,7 +9,7 @@ import { Router, type Request, type Response, type NextFunction } from "express"
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import { z } from "zod";
-import { eq, or, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { customersTable, ordersTable } from "@workspace/db/schema";
 import { hashPassword, verifyPassword } from "../lib/passwords";
@@ -288,12 +288,12 @@ router.get("/account/orders", requireCustomer, async (req, res) => {
         createdAt: ordersTable.createdAt,
       })
       .from(ordersTable)
-      .where(
-        or(
-          eq(ordersTable.customerId, customerId),
-          eq(ordersTable.customerEmail, customer.email),
-        ),
-      )
+      // Scoped to customerId ONLY. Also matching customerEmail would let anyone
+      // who registers an unverified address inherit that address's guest order
+      // history — name, shipping address, phone, line items, totals. There is no
+      // email-verification column on customersTable, so an email address is not
+      // proof of ownership. Re-enable email matching only behind verified email.
+      .where(eq(ordersTable.customerId, customerId))
       .orderBy(desc(ordersTable.createdAt))
       .limit(50);
 

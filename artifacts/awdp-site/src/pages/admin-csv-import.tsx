@@ -60,7 +60,6 @@ export default function AdminCsvImport() {
       const res = await fetch(`/api/admin/csv-import?mode=${mode}`, { credentials: "include",
         method: "POST",
         body: fd,
-        credentials: "include",
       });
       const parsed = await parseApiResponseBody(res);
       if (!res.ok) {

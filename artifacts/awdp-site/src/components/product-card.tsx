@@ -1,4 +1,5 @@
 import { useCart } from "../lib/cart.jsx";
+import type { Product as CartProduct } from "../lib/cart.jsx";
 import type { Product } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Link } from "wouter";
 import { ShoppingCart, Layers } from "lucide-react";
@@ -26,7 +27,7 @@ function productPath(sku: string): string {
   return `/product/${encodeURIComponent(sku)}`;
 }
 
-type ProductWithVariantCount = Product & { variantCount?: number };
+export type ProductWithVariantCount = Product & { variantCount?: number };
 
 interface ProductCardProps {
   product: ProductWithVariantCount;
@@ -106,7 +107,7 @@ export function ProductCard({ product }: ProductCardProps) {
             aria-label={`Add ${product.name} to cart`}
             onClick={(event) => {
               event.preventDefault();
-              addToCart(product);
+              addToCart(product as unknown as CartProduct);
             }}
           >
             <ShoppingCart className="w-4 h-4" aria-hidden="true" />

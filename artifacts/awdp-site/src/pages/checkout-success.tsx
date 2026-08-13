@@ -73,7 +73,7 @@ export default function CheckoutSuccess() {
               <p className="font-semibold text-blue-900 mb-1">What happens next?</p>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>We'll review your order and confirm availability</li>
-                <li>Most orders ship within 1-2 business days</li>
+                <li>Most orders ship within an estimated 1-2 business days</li>
                 <li>You'll receive tracking information by email</li>
                 <li>Questions? We're here to help</li>
               </ul>
