@@ -247,6 +247,113 @@ async function productMetadata(pathname, origin) {
   }
 }
 
+// Mirrors artifacts/awdp-site/src/lib/categories.ts — that file is TypeScript
+// and this is a hand-authored .mjs Vercel function with no build step of its
+// own, so the category list is duplicated here rather than imported. Keep
+// both in sync when categories change (see also categories.json seed data).
+const CATEGORY_DEFS = [
+  {
+    name: "Window Balances",
+    slug: "window-balances",
+    seoTitle: "Replacement Window Balances | Channel, Block & Tackle, Spiral — Fast Shipping",
+    seoDescription: "Shop replacement window balances for vinyl, aluminum, and wood windows. Block & tackle, spiral, constant force, and specialty balances, with expert support.",
+  },
+  {
+    name: "Window Hardware",
+    slug: "window-hardware",
+    seoTitle: "Casement & Awning Window Operators | Truth, EntryGard, Andersen",
+    seoDescription: "Shop casement and awning window operators from Truth, EntryGard, Andersen, Pella, and more. Left/right handing, split arms, dual arms, and specialty operators.",
+  },
+  {
+    name: "Sash Hardware",
+    slug: "sash-hardware",
+    seoTitle: "Sash Hardware — Locks, Lifts, Keepers & Tilt Latches",
+    seoDescription: "Shop sash locks, sash lifts, tilt latches, keepers, and pivot bars for double-hung and single-hung windows. Veteran-owned, 40+ years experience.",
+  },
+  {
+    name: "Door Hardware",
+    slug: "door-hardware",
+    seoTitle: "Patio Door Rollers | Sliding Door Replacement Wheels — Veteran Owned",
+    seoDescription: "Find the correct patio door rollers for sliding glass doors. Stainless steel, tandem, nylon, and precision rollers. Identify your part with our free Parts ID service.",
+  },
+  {
+    name: "Window Glazing and Weatherstrip",
+    slug: "window-glazing-and-weatherstrip",
+    seoTitle: "Weatherstripping for Windows & Doors | Kerf, Foam, Bulb, Fin Seal",
+    seoDescription: "Replace worn weatherstripping to stop drafts and improve efficiency. Kerf, bulb, fin seal, foam, and OEM-specific profiles.",
+  },
+  {
+    name: "Screen Hardware and Accessories",
+    slug: "screen-hardware-and-accessories",
+    seoTitle: "Screen Door & Window Screen Hardware | Frames, Spline, Rollers, Corners",
+    seoDescription: "Shop replacement screen hardware for window and door screens — frames, corner keys, spline, clips, and rollers. Veteran-owned, 40+ years experience.",
+  },
+  {
+    name: "Other Hardware",
+    slug: "other-hardware",
+    seoTitle: "Specialty Window & Door Hardware | Hard-to-Find & Discontinued Parts",
+    seoDescription: "Shop specialty and hard-to-find window and door hardware, including skylights, deer blind windows, and obsolete parts other suppliers don't carry.",
+  },
+];
+
+async function categoryMetadata(pathname, origin) {
+  if (!pathname.startsWith("/category/")) return undefined;
+  const slug = pathname.slice("/category/".length);
+  if (!slug) return null;
+
+  const category = CATEGORY_DEFS.find((c) => c.slug === slug);
+  if (!category) return null;
+
+  const canonicalPath = `/category/${category.slug}`;
+  const canonical = `${BASE_URL}${canonicalPath}`;
+  let count = null;
+  try {
+    const res = await fetch(`${origin}/api/products?category=${encodeURIComponent(category.name)}&limit=1`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(7000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      count = data?.total ?? null;
+    }
+  } catch (error) {
+    console.error(`[seo-render] Unable to reach products API for category ${slug}:`, error);
+  }
+
+  return {
+    title: category.seoTitle,
+    description: category.seoDescription,
+    heading: category.name,
+    intro: category.seoDescription,
+    keywords: `${category.name}, window parts, door parts, replacement hardware`,
+    canonicalPath,
+    image: DEFAULT_IMAGE,
+    imageAlt: category.name,
+    schemaType: "CollectionPage",
+    links: [["Shop All Parts", "/shop"], ["Browse All Categories", "/categories"], ["Free Parts Identification", "/parts-identification"]],
+    structuredData: {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          name: category.name,
+          description: category.seoDescription,
+          url: canonical,
+          ...(count != null ? { mainEntity: { "@type": "OfferCatalog", name: category.name, numberOfItems: count } } : {}),
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+            { "@type": "ListItem", position: 2, name: "Categories", item: `${BASE_URL}/categories` },
+            { "@type": "ListItem", position: 3, name: category.name, item: canonical },
+          ],
+        },
+      ],
+    },
+  };
+}
+
 function pageStructuredData(metadata) {
   if (metadata.structuredData) return metadata.structuredData;
   return {
@@ -371,7 +478,10 @@ export default async function handler(req, res) {
   const pathname = normalizePath(req.query.path || req.url || "/");
   const origin = (process.env.SITE_URL || BASE_URL).replace(/\/+$/, "");
   const productResult = await productMetadata(pathname, origin);
-  const metadata = productResult === undefined ? staticMetadata(pathname) : productResult;
+  const categoryResult = productResult === undefined ? await categoryMetadata(pathname, origin) : undefined;
+  const metadata = productResult !== undefined ? productResult
+    : categoryResult !== undefined ? categoryResult
+    : staticMetadata(pathname);
 
   if (!metadata) {
     const html = injectPage(template, notFoundMetadata(pathname), false);
