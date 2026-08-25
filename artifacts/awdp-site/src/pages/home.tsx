@@ -763,13 +763,17 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="md:w-2/5 bg-slate-800 relative hidden md:block">
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-overlay"
-                style={{ backgroundImage: `url(${ctaBg})` }}
-                role="img"
-                aria-label="Window hardware parts"
-              />
+            <div className="md:w-2/5 bg-slate-800 relative hidden md:block overflow-hidden">
+              <picture>
+                <source type="image/webp" srcSet={ctaBgWebp} />
+                <img
+                  src={ctaBg}
+                  alt="Window hardware parts"
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
+                />
+              </picture>
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-transparent w-32" />
             </div>
           </div>
