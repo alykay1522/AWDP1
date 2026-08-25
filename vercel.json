@@ -10,6 +10,17 @@
                 "permanent": true
         },
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "allwindowdoorparts.com"
+        }
+      ],
+      "destination": "https://www.allwindowdoorparts.com/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -134,8 +145,28 @@
       "destination": "/admin.html"
     },
     {
-      "source": "/:path*",
+      "source": "/checkout",
       "destination": "/app.html"
+    },
+    {
+      "source": "/checkout/success",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/account",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/api/ssr?path=/:path*"
     }
   ],
   "headers": [
