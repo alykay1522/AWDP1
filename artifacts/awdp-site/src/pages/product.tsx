@@ -16,6 +16,7 @@ import { BalanceDiagram, OperatorDiagram, RollerDiagram, WeatherstripDiagram } f
 import { AttributeConfigurator } from "@/components/attribute-configurator";
 import type { Product } from "@/lib/schema/product";
 import { getCategoryByName } from "@/lib/categories";
+import { productPath, productSlug } from "@/lib/product-url.mjs";
 
 function categoryHref(category: string): string {
   const known = getCategoryByName(category);
@@ -301,7 +302,7 @@ export default function ProductDetail() {
             priceCurrency: "USD",
             availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             itemCondition: "https://schema.org/NewCondition",
-            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+            url: `https://www.allwindowdoorparts.com${productPath(product.sku)}`,
             seller: { "@type": "Organization", name: "All Window Door Parts" },
           },
         }
@@ -310,7 +311,7 @@ export default function ProductDetail() {
             "@type": "Offer",
             availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             itemCondition: "https://schema.org/NewCondition",
-            url: `https://www.allwindowdoorparts.com/product/${product.sku}`,
+            url: `https://www.allwindowdoorparts.com${productPath(product.sku)}`,
             seller: { "@type": "Organization", name: "All Window Door Parts" },
           },
         }),
@@ -320,7 +321,7 @@ export default function ProductDetail() {
     <div className="bg-slate-50 min-h-screen pb-20">
       <PageSeo
         title={`${product.name} — SKU ${product.sku}`}
-        path={`/product/${product.sku}`}
+        path={productPath(product.sku)}
         description={seoDescription}
         image={product.imageUrl ?? undefined}
         imageAlt={productAlt}
@@ -334,7 +335,7 @@ export default function ProductDetail() {
               { "@type": "ListItem", position: 1, name: "Home", item: "https://www.allwindowdoorparts.com/" },
               { "@type": "ListItem", position: 2, name: "Shop Parts", item: "https://www.allwindowdoorparts.com/shop" },
               { "@type": "ListItem", position: 3, name: product.category, item: `https://www.allwindowdoorparts.com${categoryHref(product.category)}` },
-              { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com/product/${product.sku}` },
+              { "@type": "ListItem", position: 4, name: product.name, item: `https://www.allwindowdoorparts.com${productPath(product.sku)}` },
             ],
           },
         ] as unknown as object}
@@ -459,16 +460,16 @@ export default function ProductDetail() {
                     </p>
                   </div>
                   <Select
-                    value={sku}
+                    value={productSlug(sku)}
                     disabled={isSwitchingVariant}
-                    onValueChange={(val) => navigate(`/product/${encodeURIComponent(val)}`, { replace: true })}
+                    onValueChange={(val) => navigate(productPath(val), { replace: true })}
                   >
                     <SelectTrigger className={`w-full bg-white transition-opacity ${isSwitchingVariant ? "opacity-60" : ""}`}>
                       <SelectValue placeholder="Select a variant…" />
                     </SelectTrigger>
                     <SelectContent>
                       {variants.map((v) => (
-                        <SelectItem key={v.sku} value={v.sku}>
+                        <SelectItem key={v.sku} value={productSlug(v.sku)}>
                           <span className="font-medium">{v.variantLabel ?? v.name}</span>
                           {v.price && Number(v.price) > 0 && (
                             <span className="ml-2 text-muted-foreground text-xs">

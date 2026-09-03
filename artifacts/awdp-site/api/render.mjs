@@ -13,6 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { productPath, productSlug } from "../src/lib/product-url.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, "../.vercel/output/static");
@@ -114,7 +115,7 @@ async function fetchMetadata(pathname) {
     if (route.startsWith("/product/")) {
       const sku = route.replace("/product/", "");
       try {
-        const res = await fetch(`${apiBase}/products/${sku}`);
+        const res = await fetch(`${apiBase}/products/${encodeURIComponent(productSlug(sku))}`);
         if (res.ok) {
           const product = await res.json();
           return {
@@ -123,7 +124,7 @@ async function fetchMetadata(pathname) {
               .substring(0, 160)
               .trim(),
             keywords: `${product.name || ""}, ${product.category || ""}, window parts`,
-            canonicalPath: `/product/${sku}`,
+            canonicalPath: productPath(sku),
             image: product.image_url || "https://www.allwindowdoorparts.com/opengraph.jpg",
             imageAlt: product.name || sku,
           };
@@ -134,7 +135,7 @@ async function fetchMetadata(pathname) {
       return {
         title: `Product ${sku} | All Window Door Parts`,
         description: `Find replacement window and door parts at All Window Door Parts.`,
-        canonicalPath: `/product/${sku}`,
+        canonicalPath: productPath(sku),
       };
     }
 

@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { ShoppingCart, Layers } from "lucide-react";
 import { Button } from "./ui/button.jsx";
 import { ProductImage } from "./product-image.jsx";
+import { productPath } from "../lib/product-url.mjs";
 
 const CATEGORY_SNIPPETS: Record<string, string> = {
   "Window Balances": "Replacement sash balance for smooth, reliable window operation.",
@@ -21,10 +22,6 @@ function getCategorySnippet(category?: string | null, description?: string | nul
   const isGeneric = description?.toLowerCase().includes("email us photos");
   if (!isGeneric && description && description.length > 20) return null;
   return CATEGORY_SNIPPETS[category] ?? null;
-}
-
-function productPath(sku: string): string {
-  return `/product/${encodeURIComponent(sku)}`;
 }
 
 export type ProductWithVariantCount = Product & { variantCount?: number };

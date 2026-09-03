@@ -4,6 +4,7 @@
  */
 
 import { getCategoryBySlug } from "./lib/categories.js";
+import { productPath, productSlug } from "./lib/product-url.mjs";
 
 const API_BASE = process.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
@@ -160,7 +161,7 @@ export async function getCategoriesMetadata(): Promise<PageMetadata> {
  */
 export async function getProductMetadata(sku: string): Promise<PageMetadata> {
   try {
-    const res = await fetch(`${API_BASE}/products/${sku}`);
+    const res = await fetch(`${API_BASE}/products/${encodeURIComponent(productSlug(sku))}`);
     if (!res.ok) {
       return getProductNotFoundMetadata(sku);
     }
@@ -182,7 +183,7 @@ export async function getProductMetadata(sku: string): Promise<PageMetadata> {
       title,
       description,
       keywords: `${product.name || ""}, ${product.category || ""}, window parts, door parts`,
-      canonicalPath: `/product/${sku}`,
+      canonicalPath: productPath(sku),
       image,
       imageAlt: product.name || sku,
       structuredData: {
@@ -199,7 +200,7 @@ export async function getProductMetadata(sku: string): Promise<PageMetadata> {
         ...(product.price && {
           offers: {
             "@type": "Offer",
-            url: `https://www.allwindowdoorparts.com/product/${sku}`,
+            url: `https://www.allwindowdoorparts.com${productPath(sku)}`,
             priceCurrency: "USD",
             price: product.price,
             availability:
@@ -223,7 +224,7 @@ function getProductNotFoundMetadata(sku: string): PageMetadata {
   return {
     title: `Product ${sku} | All Window Door Parts`,
     description: `Find replacement window and door parts at All Window Door Parts. Search SKU: ${sku}`,
-    canonicalPath: `/product/${sku}`,
+    canonicalPath: productPath(sku),
   };
 }
 

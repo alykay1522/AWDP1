@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { productsTable, categoriesTable } from "@workspace/db/schema";
 import { publicListingCondition } from "../lib/catalogVisibility";
+import { productPath } from "../lib/productUrl.mjs";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -33,10 +34,6 @@ function xmlEscape(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&apos;");
-}
-
-function productPath(sku: string): string {
-  return `/product/${encodeURIComponent(sku)}`;
 }
 
 function categoryPath(slug: string): string {

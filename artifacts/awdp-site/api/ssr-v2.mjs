@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { productPath, productSlug } from "../src/lib/product-url.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE_URL = (process.env.PUBLIC_SITE_URL || "https://www.allwindowdoorparts.com").replace(/\/+$/, "");
@@ -122,10 +123,6 @@ function normalizePath(value) {
   return normalized.replace(/\/{2,}/g, "/").replace(/\/+$/, "") || "/";
 }
 
-function canonicalProductPath(sku) {
-  return `/product/${encodeURIComponent(String(sku))}`;
-}
-
 function readTemplate() {
   // Explicit override wins. Tests need to pin the template to a fixture; the
   // __dirname-anchored candidates below are immune to process.chdir(), so once
@@ -161,7 +158,7 @@ function transientProductFallback(sku) {
     description: `Find replacement window and door hardware for SKU ${sku}. Contact our experts for free parts identification and compatibility help.`,
     heading: `Replacement Part ${sku}`,
     intro: "Product details are temporarily unavailable. Search the catalog or send photos to our experts for free identification help.",
-    canonicalPath: canonicalProductPath(sku),
+    canonicalPath: productPath(sku),
     sku,
     links: [["Search the Catalog", `/shop?search=${encodeURIComponent(sku)}`], ["Free Parts Identification", "/parts-identification"]],
   };
@@ -176,7 +173,7 @@ async function productMetadata(pathname, origin) {
 
   let response;
   try {
-    response = await fetch(`${origin}/api/products/${encodeURIComponent(sku)}`, {
+    response = await fetch(`${origin}/api/products/${encodeURIComponent(productSlug(sku))}`, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(7000),
     });
@@ -195,7 +192,7 @@ async function productMetadata(pathname, origin) {
     const image = product.imageUrl || product.image_url || product.image || DEFAULT_IMAGE;
     const price = product.price == null ? null : Number(product.price);
     const inStock = product.inStock ?? product.in_stock ?? Number(product.stock || 0) > 0;
-    const canonicalPath = canonicalProductPath(product.sku || sku);
+    const canonicalPath = productPath(product.sku || sku);
     const canonical = `${BASE_URL}${canonicalPath}`;
 
     return {
@@ -454,6 +451,31 @@ function injectPage(template, metadata, indexable = true) {
   return `${output.slice(0, rootOpenEnd)}\n${renderBody(metadata)}\n${output.slice(rootClose)}`;
 }
 
+/**
+ * Permanent target for a legacy product URL, or null when the path is already
+ * canonical.
+ *
+ * Product links used to be built as `/product/${encodeURIComponent(sku)}`, so
+ * a SKU containing a slash shipped as %2F. Vercel decodes %2F back to "/"
+ * before invoking this function, so such a request arrives with an extra path
+ * segment and matches no product — 72 SKUs, every one of them a 404 that is
+ * still sitting in the sitemap and in Google's index.
+ *
+ * The comparison is decoded-against-decoded on purpose. Comparing against
+ * `pathname` would also flag an ordinary SKU containing a space (its encoded
+ * form differs from the decoded path Vercel hands us), and redirecting there
+ * would loop forever.
+ */
+function productRedirect(pathname) {
+  if (!pathname.startsWith("/product/")) return null;
+  const rawSku = pathname.slice("/product/".length);
+  let decoded;
+  try { decoded = decodeURIComponent(rawSku); } catch { decoded = rawSku; }
+  if (!decoded) return null;
+  const slug = productSlug(decoded);
+  return slug === decoded ? null : `/product/${encodeURIComponent(slug)}`;
+}
+
 function notFoundMetadata(pathname) {
   return {
     title: "Page Not Found | All Window Door Parts",
@@ -476,6 +498,14 @@ export default async function handler(req, res) {
   if (!template) return res.status(500).send("Unable to load storefront template");
 
   const pathname = normalizePath(req.query.path || req.url || "/");
+
+  const redirectTo = productRedirect(pathname);
+  if (redirectTo) {
+    res.setHeader("Location", redirectTo);
+    res.setHeader("Cache-Control", "public, s-maxage=86400");
+    return res.status(301).end();
+  }
+
   const origin = (process.env.SITE_URL || BASE_URL).replace(/\/+$/, "");
   const productResult = await productMetadata(pathname, origin);
   const categoryResult = productResult === undefined ? await categoryMetadata(pathname, origin) : undefined;

@@ -12,7 +12,7 @@
     "build": "pnpm --filter @workspace/api-server run build && pnpm --filter awdp-site run build",
     "preview": "pnpm --filter awdp-site run serve",
     "vercel:set-api": "node scripts/vercel-set-api-origin.mjs",
-    "test": "node --test tests/ssr.test.mjs"
+    "test": "node --test tests/ssr.test.mjs tests/product-url.test.mjs tests/ssr-product-redirect.test.mjs"
   },
   "engines": {
     "node": "24.x"
