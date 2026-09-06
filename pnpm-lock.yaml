@@ -92,8 +92,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@paypal/paypal-js':
-        specifier: ^10.0.0
-        version: 10.1.0
+        specifier: ^11.0.0
+        version: 11.0.0
       '@types/adm-zip':
         specifier: ^0.5.8
         version: 0.5.8
@@ -382,8 +382,8 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       lucide-react:
-        specifier: ^1.17.0
-        version: 1.28.0(react@19.2.8)
+        specifier: ^1.34.0
+        version: 1.39.0(react@19.2.8)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1279,6 +1279,9 @@ packages:
 
   '@paypal/paypal-js@10.1.0':
     resolution: {integrity: sha512-OolzHD7lu2K03HApg+YyMtBsPnrVc+ASj1MzuH/mz7feHj5OnxYyLWQiCcCm4douJFJ6P19JW8+LzsAN4x3jHw==}
+
+  '@paypal/paypal-js@11.0.0':
+    resolution: {integrity: sha512-V1xjR8oTPRU55V11OzsUd2wXE9QUTqs8ybPcgtkp4rVN+XB05taMFzn5nfhsK+LlTCehs07IfHSdXJdjXXgXYQ==}
 
   '@paypal/react-paypal-js@10.3.0':
     resolution: {integrity: sha512-7hSrJU0TRmyEuilrsDxGTjT9SaY5ll1CZv4cnCHFwIZ8pC5U0fPHeq1iuGERCg1XBFvOWtg7FcH1DIkHXZ6W5g==}
@@ -3894,13 +3897,13 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  lucide-react@1.28.0:
-    resolution: {integrity: sha512-fARAFJULsGuDDydjp6+6blekG/sBIM29TerzLjc9bQUKAcEfrSc4ZQKb25KRz4OMKd87cZTb5dgq0w/T6KufVg==}
+  lucide-react@1.34.0:
+    resolution: {integrity: sha512-vnjGJNI7Htk5+oWW8gXGuaLgwgAb0T6/iZbBrp9JCfRFwdNWZ0YTm3eyxjOLgwN6r8iyAf3UA70zNmBRBNv7yg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  lucide-react@1.34.0:
-    resolution: {integrity: sha512-vnjGJNI7Htk5+oWW8gXGuaLgwgAb0T6/iZbBrp9JCfRFwdNWZ0YTm3eyxjOLgwN6r8iyAf3UA70zNmBRBNv7yg==}
+  lucide-react@1.39.0:
+    resolution: {integrity: sha512-y8nXoEwvqqIsF927NBWXODa4bfMrcUeEb/9sgpwFqg0gUjgn3j5Hznk+v7STmPgZ2iQ11JKlbQGdFRuTOwvYkA==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -5524,6 +5527,10 @@ snapshots:
   '@oxc-project/types@0.139.0': {}
 
   '@paypal/paypal-js@10.1.0':
+    dependencies:
+      promise-polyfill: 8.3.0
+
+  '@paypal/paypal-js@11.0.0':
     dependencies:
       promise-polyfill: 8.3.0
 
@@ -8956,13 +8963,13 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  lucide-react@1.28.0(react@19.2.8):
-    dependencies:
-      react: 19.2.8
-
   lucide-react@1.34.0(react@19.1.0):
     dependencies:
       react: 19.1.0
+
+  lucide-react@1.39.0(react@19.2.8):
+    dependencies:
+      react: 19.2.8
 
   lunr@2.3.9: {}
 
