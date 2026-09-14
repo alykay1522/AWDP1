@@ -92,8 +92,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@paypal/paypal-js':
-        specifier: ^10.0.0
-        version: 10.1.0
+        specifier: ^11.0.1
+        version: 11.0.1
       '@types/adm-zip':
         specifier: ^0.5.8
         version: 0.5.8
@@ -243,8 +243,8 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       nodemailer:
-        specifier: ^9.0.1
-        version: 9.0.3
+        specifier: ^9.1.1
+        version: 9.1.1
       pg:
         specifier: ^8.23.0
         version: 8.23.0
@@ -1280,6 +1280,9 @@ packages:
 
   '@paypal/paypal-js@10.1.0':
     resolution: {integrity: sha512-OolzHD7lu2K03HApg+YyMtBsPnrVc+ASj1MzuH/mz7feHj5OnxYyLWQiCcCm4douJFJ6P19JW8+LzsAN4x3jHw==}
+
+  '@paypal/paypal-js@11.0.1':
+    resolution: {integrity: sha512-yFBfFDVU/fbD8g4tK1XrkjP7wo/P3NYDPicNEA7njuwK1RDr+2wkOtwbyO3KnZe4hoeNkrsOLUbtr15rj3rnUg==}
 
   '@paypal/react-paypal-js@10.3.0':
     resolution: {integrity: sha512-7hSrJU0TRmyEuilrsDxGTjT9SaY5ll1CZv4cnCHFwIZ8pC5U0fPHeq1iuGERCg1XBFvOWtg7FcH1DIkHXZ6W5g==}
@@ -4045,6 +4048,10 @@ packages:
     resolution: {integrity: sha512-n+YP+NKwR5zRWa60k3GiQ6Q3B4KXCoAw40dAKeCtYn020iNN74aWK2liXIC3ZEATeGql7we3tE3t8QwhY0eskw==}
     engines: {node: '>=6.0.0'}
 
+  nodemailer@9.1.1:
+    resolution: {integrity: sha512-izw9mVKFix6YSnC9eLgV6g1opl9DUlRio9ZNcq+Wu9Ujn2UwF+8Nl0B8nz22kEC+CTZCvinkxwJ0DeFbb6NwcQ==}
+    engines: {node: '>=6.0.0'}
+
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
@@ -5527,6 +5534,10 @@ snapshots:
   '@oxc-project/types@0.139.0': {}
 
   '@paypal/paypal-js@10.1.0':
+    dependencies:
+      promise-polyfill: 8.3.0
+
+  '@paypal/paypal-js@11.0.1':
     dependencies:
       promise-polyfill: 8.3.0
 
@@ -9079,6 +9090,8 @@ snapshots:
       entities: 8.0.0
 
   nodemailer@9.0.3: {}
+
+  nodemailer@9.1.1: {}
 
   npm-run-path@4.0.1:
     dependencies:
