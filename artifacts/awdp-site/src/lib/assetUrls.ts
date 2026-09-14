@@ -21,5 +21,9 @@ export const headerBg    = "/assets/header_bg.png?v=approved-20260629-2";
 export const logo        = "/assets/logo-banner.png";
 /** Wide trimmed banner logo used in mobile nav link */
 export const logoBanner  = "/assets/logo_banner_trimmed.png";
+/** Parts ID helper: what a profile / end view looks like */
+export const profileEndViewWebp = "/assets/profile-end-view.webp";
+export const profileEndView     = "/assets/profile-end-view.jpg";
+
 /** PayPal acceptance badge */
 export const paypalImg   = "/assets/paypal_badge.png";
