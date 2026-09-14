@@ -201,32 +201,37 @@ describe('Guide page metadata', () => {
     assert.ok(String(res.body).includes('Weatherstripping'));
   });
 
-  test('unknown guide slug "/guides/no-such-guide" serves raw template', async () => {
+  test('unknown guide slug "/guides/no-such-guide" returns a real 404', async () => {
     const res = await run('GET', '/guides/no-such-guide');
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body, FAKE_TEMPLATE, 'unknown guide slug should fall through to raw template');
+    assert.equal(res.statusCode, 404, 'unknown guide slug should return a real 404');
+    assert.ok(String(res.body).includes('Page Not Found'), 'renders the 404 page shell');
   });
 });
 
 // ── Unknown routes ────────────────────────────────────────────────────────────
 
 describe('Unknown routes', () => {
-  test('unknown route returns 200 with raw template (SPA handles it)', async () => {
+  test('unknown route returns a real 404 with noindex', async () => {
     const res = await run('GET', '/some-nonexistent-page-xyz');
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body, FAKE_TEMPLATE);
+    assert.equal(res.statusCode, 404);
+    assert.ok(String(res.body).includes('Page Not Found'));
+    assert.equal(res._headers['X-Robots-Tag'], 'noindex, follow');
   });
 
-  test('"/cart" (SPA route) serves raw template', async () => {
+  test('"/cart" (client-only SPA route, not in STATIC_PAGES) returns a real 404', async () => {
+    // ssr-v2.mjs only serves the rendered shell for paths it recognizes
+    // (STATIC_PAGES, GUIDE_PAGES, products, categories); "/cart" is not
+    // registered there, so it now falls through to a real 404 like any
+    // other unknown path.
     const res = await run('GET', '/cart');
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body, FAKE_TEMPLATE);
+    assert.equal(res.statusCode, 404);
+    assert.ok(String(res.body).includes('Page Not Found'));
   });
 
-  test('"/checkout" (SPA route) serves raw template', async () => {
+  test('"/checkout" (client-only SPA route, not in STATIC_PAGES) returns a real 404', async () => {
     const res = await run('GET', '/checkout');
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body, FAKE_TEMPLATE);
+    assert.equal(res.statusCode, 404);
+    assert.ok(String(res.body).includes('Page Not Found'));
   });
 });
 
@@ -257,17 +262,20 @@ describe('Product page metadata', () => {
     );
   });
 
-  test('product API 404 returns a real 404, not a soft-404 shell', async () => {
-    // ssr.mjs deliberately distinguishes "confirmed not found" (404 from the
-    // products API) from "could not reach the API" (network error). Only the
-    // latter degrades to a 200 shell; a known-missing SKU must return 404 so
-    // search engines do not index it. See ssr.mjs readProduct/injectPage.
+  test('product API 404 returns a real 404 page, not a soft-404 shell', async () => {
+    // ssr-v2.mjs deliberately distinguishes "confirmed not found" (404 from
+    // the products API) from "could not reach the API" (network error). Only
+    // the latter degrades to a 200 shell with fallback metadata; a
+    // known-missing SKU renders the notFoundMetadata() 404 page with
+    // noindex so search engines do not index it. See productMetadata/
+    // notFoundMetadata in ssr-v2.mjs.
     const res = await withFetch(
       async () => ({ ok: false, status: 404, json: async () => ({}) }),
       () => run('GET', '/product/UNKNOWN-SKU'),
     );
     assert.equal(res.statusCode, 404, 'confirmed-missing product must not return a 200 shell');
-    assert.equal(String(res.body), FAKE_TEMPLATE, 'serves the raw template for the SPA to render');
+    assert.ok(String(res.body).includes('Page Not Found'), 'renders the 404 page shell');
+    assert.equal(res._headers['X-Robots-Tag'], 'noindex, follow', 'confirmed-missing product must be noindexed');
   });
 
   test('product API network error returns 200 with fallback metadata', async () => {
@@ -292,11 +300,14 @@ describe('Product page metadata', () => {
     assert.ok(capturedUrl.includes('MY'), 'decoded SKU appears in fetch URL');
   });
 
-  test('"/product/" with no SKU serves raw template', async () => {
+  test('"/product/" with no SKU returns a real 404', async () => {
     // normalizePath strips trailing slash: "/product/" -> "/product"
-    // "/product" does not match startsWith("/product/") so productMetadata returns null
+    // "/product" does not match startsWith("/product/"), so productMetadata
+    // returns undefined and staticMetadata("/product") returns null, which
+    // renders the notFoundMetadata() 404 page.
     const res = await run('GET', '/product/');
-    assert.equal(res.body, FAKE_TEMPLATE, 'empty product path should fall through to raw template');
+    assert.equal(res.statusCode, 404, 'empty product path should return a real 404');
+    assert.ok(String(res.body).includes('Page Not Found'), 'renders the 404 page shell');
   });
 });
 
