@@ -1,6 +1,10 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { CheckCircle2, Info, Package, Tag } from "lucide-react";
 import {
+  isInternalAttributeKey,
+  isInternalAttributeValue,
+} from "@/lib/internal-attributes";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -48,7 +52,6 @@ const ATTR_LABELS: Record<string, string> = {
   keyed: "Keyed",
 };
 
-const HIDDEN_KEYS = new Set(["subcategory", "original_sku"]);
 const ATTR_ORDER = [
   "balance_type", "operator_type", "part_type", "series", "length",
   "length_inches", "diameter", "arm_length_inches", "weight_code",
@@ -125,7 +128,13 @@ function publishSelection(selection: Record<string, string>) {
 }
 
 function uniqueValues(values: string[]): string[] {
-  return [...new Set(values.map((item) => item.trim()).filter(Boolean))];
+  return [
+    ...new Set(
+      values
+        .map((item) => item.trim())
+        .filter((item) => item && !isInternalAttributeValue(item)),
+    ),
+  ];
 }
 
 function normalizeToArray(value: unknown): string[] {
@@ -136,7 +145,7 @@ function normalizeToArray(value: unknown): string[] {
   if (typeof value === "boolean") return [value ? "Yes" : "No"];
 
   const text = String(value).trim();
-  if (!text) return [];
+  if (!text || isInternalAttributeValue(text)) return [];
 
   // Marvin import rows store dropdown choices in specifications as pipe-delimited
   // JSON strings, e.g. {"Color":"White ($68.88)|Bronze ($68.88)"}.
@@ -166,7 +175,7 @@ export function AttributeConfigurator({
   const allKeys = useMemo(() => {
     if (!attributes) return [];
     const visibleKeys = Object.keys(attributes).filter(
-      (key) => !HIDDEN_KEYS.has(key) && normalizeToArray(attributes[key]).length > 0,
+      (key) => !isInternalAttributeKey(key) && normalizeToArray(attributes[key]).length > 0,
     );
     return [
       ...ATTR_ORDER.filter((key) => visibleKeys.includes(key)),

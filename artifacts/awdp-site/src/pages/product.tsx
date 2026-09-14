@@ -17,6 +17,7 @@ import { AttributeConfigurator } from "@/components/attribute-configurator";
 import type { Product } from "@/lib/schema/product";
 import { getCategoryByName } from "@/lib/categories";
 import { productPath, productSlug } from "@/lib/product-url.mjs";
+import { isInternalAttribute } from "@/lib/internal-attributes";
 
 function categoryHref(category: string): string {
   const known = getCategoryByName(category);
@@ -139,6 +140,15 @@ export default function ProductDetail() {
   // `products` table columns below, so it doesn't structurally overlap.
   const productAttributes = (product as unknown as Product).attributes;
   const productSoldAs = (product as unknown as Product).soldAs;
+
+  // Drop scraper/import bookkeeping (source, product_url, image_urls, raw
+  // site_specs) before the Specifications table renders it to customers.
+  const visibleSpecifications = Object.fromEntries(
+    Object.entries(product.specifications ?? {}).filter(
+      ([key, value]) => !isInternalAttribute(key, value),
+    ),
+  );
+  const visibleSpecCount = Object.keys(visibleSpecifications).length;
   const balanceTypeRaw = productAttributes?.balance_type;
   const balanceType = (Array.isArray(balanceTypeRaw) ? balanceTypeRaw[0] : balanceTypeRaw)?.toString().toLowerCase() ?? "";
   const attrNotes: string[] =
@@ -600,17 +610,17 @@ export default function ProductDetail() {
             </TabsList>
             
             <TabsContent value="specs" className="mt-0">
-              {product.specifications && Object.keys(product.specifications).length > 0 ? (
+              {visibleSpecCount > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full max-w-2xl text-left border-collapse">
                     <tbody>
-                      {Object.entries(product.specifications).map(([key, value], i) => (
+                      {Object.entries(visibleSpecifications).map(([key, value], i) => (
                         <tr key={key} className={i % 2 === 0 ? "bg-slate-50" : "bg-white"}>
                           <th className="py-3 px-4 font-medium text-slate-500 border-y w-1/3">{key}</th>
                           <td className="py-3 px-4 text-slate-900 font-medium border-y">{String(value)}</td>
                         </tr>
                       ))}
-                      <tr className={Object.keys(product.specifications).length % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                      <tr className={visibleSpecCount % 2 === 0 ? "bg-slate-50" : "bg-white"}>
                         <th className="py-3 px-4 font-medium text-slate-500 border-y">Category</th>
                         <td className="py-3 px-4 text-slate-900 font-medium border-y">
                           <Link href={`${categoryHref(product.category)}`} className="hover:text-primary transition-colors">
@@ -619,7 +629,7 @@ export default function ProductDetail() {
                           {product.subcategory ? ` > ${product.subcategory}` : ''}
                         </td>
                       </tr>
-                      <tr className={(Object.keys(product.specifications).length + 1) % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                      <tr className={(visibleSpecCount + 1) % 2 === 0 ? "bg-slate-50" : "bg-white"}>
                         <th className="py-3 px-4 font-medium text-slate-500 border-y">Supplier</th>
                         <td className="py-3 px-4 text-slate-900 font-medium border-y">{product.supplier}</td>
                       </tr>
