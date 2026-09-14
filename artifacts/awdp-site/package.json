@@ -19,7 +19,7 @@
     "@vercel/blob": "^2.5.0",
     "@vercel/speed-insights": "^2.0.0",
     "jszip": "^3.10.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^9.1.1",
     "pg": "^8.23.0",
     "react-helmet-async": "^3.0.0"
   },
