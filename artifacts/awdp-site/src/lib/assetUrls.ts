@@ -9,9 +9,9 @@
  * /public/assets/ at any time to activate them.
  */
 
-export const heroBg     = "/assets/hero_hardware_bg.png";
+export const heroBg     = "/assets/hero_hardware_bg.jpg";
 export const heroBgWebp = "/assets/hero_hardware_bg.webp";
-export const ctaBg      = "/assets/cta_hardware_bg.png";
+export const ctaBg      = "/assets/cta_hardware_bg.jpg";
 export const ctaBgWebp  = "/assets/cta_hardware_bg.webp";
 
 /** Approved full-width flag banner. Versioned to bypass stale browser/CDN copies. */
@@ -20,6 +20,6 @@ export const headerBg    = "/assets/header_bg.png?v=approved-20260629-2";
 /** Logo used in footer / mobile nav */
 export const logo        = "/assets/logo-banner.png";
 /** Wide trimmed banner logo used in mobile nav link */
-export const logoBanner  = "/assets/logo_banner_trimmed.png";
+export const logoBanner  = "/assets/logo_banner_trimmed.webp";
 /** PayPal acceptance badge */
 export const paypalImg   = "/assets/paypal_badge.png";
