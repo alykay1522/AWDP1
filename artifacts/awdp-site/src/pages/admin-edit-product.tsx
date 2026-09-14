@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
+import { useParams, useLocation, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Plus, Sparkles, Tag, Package, DollarSign, Layers, FolderTree,
-  CheckCircle2, ArrowLeft, Info, X, Loader2, ArrowRight,
+  Plus, Tag, Package, DollarSign, Layers, FolderTree,
+  CheckCircle2, ArrowLeft, X, Loader2, Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,50 +14,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { PageSeo } from "@/components/page-seo";
+import { parseApiResponseBody, readApiErrorMessage } from "@/lib/api-response";
+import { AdminQueryError } from "@/components/admin/admin-error";
 
-// ── PROFITABLE Cipher ──────────────────────────────────────────────────────────
-// P=1 R=2 O=3 F=4 I=5 T=6 A=7 B=8 L=9 E=0
-// Digit → PROFITABLE letter, PROFITABLE letter → digit, everything else passes through
-const NUM_TO_LETTER: Record<string, string> = {
-  "0": "E", "1": "P", "2": "R", "3": "O", "4": "F",
-  "5": "I", "6": "T", "7": "A", "8": "B", "9": "L",
-};
-const LETTER_TO_NUM: Record<string, string> = {
-  "P": "1", "R": "2", "O": "3", "F": "4", "I": "5",
-  "T": "6", "A": "7", "B": "8", "L": "9", "E": "0",
-};
-
-function applyCipher(input: string): string {
-  return input
-    .toUpperCase()
-    .split("")
-    .map((ch) => {
-      if (NUM_TO_LETTER[ch] !== undefined) return NUM_TO_LETTER[ch];
-      if (LETTER_TO_NUM[ch] !== undefined) return LETTER_TO_NUM[ch];
-      return ch;
-    })
-    .join("");
+interface Product {
+  id: number; sku: string; name: string; description: string;
+  price: string; originalPrice: string | null; category: string;
+  subcategory: string | null; supplier: string; inStock: boolean;
+  imageUrl: string | null; tags: string[]; compatibleBrands: string[];
+  specifications: Record<string, string>; createdAt: string;
 }
 
-function buildAwdpSku(originalSku: string): string {
-  const trimmed = originalSku.trim();
-  if (!trimmed) return "";
-  return "AWDP-" + applyCipher(trimmed);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Fallback shown only until /api/categories responds — keep in sync with the
-// canonical list in artifacts/api-server/src/lib/resolveProductCategory.ts.
-const FALLBACK_CATEGORIES = [
-  "Window Hardware", "Door Hardware", "Window Balances", "Sash Hardware",
-  "Window Glazing and Weatherstrip", "Screen Hardware and Accessories", "Other Hardware",
-];
-
-interface CategoryOption { id: number; name: string; }
+interface Category { id: number; name: string; }
 
 const schema = z.object({
-  originalSku: z.string().min(1, "Supplier part number is required"),
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
   price: z.string().refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Enter a valid price"),
@@ -65,12 +35,13 @@ const schema = z.object({
     (v) => !v || (!isNaN(Number(v)) && Number(v) > 0),
     "Enter a valid original price"
   ),
-  category: z.string().min(1),
+  category: z.string().min(1, "Choose a category"),
   subcategory: z.string().optional(),
   supplier: z.string().optional(),
-  // No .default() here: it would make the zod *input* type optional while the
-  // *output* stays required, which desynchronises useForm<FormValues> from
-  // zodResolver's inferred input. defaultValues below already supplies `true`.
+  imageUrl: z.string().optional().refine(
+    (v) => !v || /^https?:\/\//.test(v) || v.startsWith("/"),
+    "Enter a full URL or a path starting with /"
+  ),
   inStock: z.boolean(),
   tagsRaw: z.string().optional(),
   brandsRaw: z.string().optional(),
@@ -80,12 +51,34 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function AdminNewProduct() {
+export default function AdminEditProduct() {
+  const { sku } = useParams<{ sku: string }>();
   const [, setLocation] = useLocation();
+  const qc = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   const [specs, setSpecs] = useState<Record<string, string>>({});
+  const [hydrated, setHydrated] = useState(false);
 
-  const { data: categories } = useQuery<CategoryOption[]>({
+  const encodedSku = encodeURIComponent(sku ?? "");
+
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<Product>({
+    queryKey: ["admin-product", sku],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/products/${encodedSku}`, { credentials: "include" });
+      if (!res.ok) throw new Error(res.status === 404 ? "Product not found" : "Failed to load product");
+      const body = await res.json();
+      return body.product as Product;
+    },
+    enabled: Boolean(sku),
+  });
+
+  const { data: categories } = useQuery<Category[]>({
     queryKey: ["admin-categories-list"],
     queryFn: async () => {
       const res = await fetch("/api/categories", { credentials: "include" });
@@ -94,29 +87,37 @@ export default function AdminNewProduct() {
     },
     staleTime: 60_000,
   });
-  const categoryOptions = categories?.length ? categories.map((c) => c.name) : FALLBACK_CATEGORIES;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      originalSku: "",
-      name: "",
-      description: "",
-      price: "",
-      originalPrice: "",
-      category: FALLBACK_CATEGORIES[0],
-      subcategory: "",
-      supplier: "",
-      inStock: true,
-      tagsRaw: "",
-      brandsRaw: "",
-      specKey: "",
-      specValue: "",
+      name: "", description: "", price: "", originalPrice: "",
+      category: "", subcategory: "", supplier: "", imageUrl: "",
+      inStock: true, tagsRaw: "", brandsRaw: "", specKey: "", specValue: "",
     },
   });
 
-  const originalSkuWatch = form.watch("originalSku");
-  const previewSku = buildAwdpSku(originalSkuWatch);
+  // Prefill the form once the product loads (only once, so in-progress edits aren't clobbered by refetches)
+  useEffect(() => {
+    if (!product || hydrated) return;
+    form.reset({
+      name: product.name,
+      description: product.description ?? "",
+      price: product.price,
+      originalPrice: product.originalPrice ?? "",
+      category: product.category,
+      subcategory: product.subcategory ?? "",
+      supplier: product.supplier ?? "",
+      imageUrl: product.imageUrl ?? "",
+      inStock: product.inStock,
+      tagsRaw: (product.tags ?? []).join(", "),
+      brandsRaw: (product.compatibleBrands ?? []).join(", "),
+      specKey: "",
+      specValue: "",
+    });
+    setSpecs(product.specifications ?? {});
+    setHydrated(true);
+  }, [product, hydrated, form]);
 
   const addSpec = () => {
     const key = form.getValues("specKey")?.trim();
@@ -135,79 +136,95 @@ export default function AdminNewProduct() {
     });
   };
 
-  const onSubmit = async (values: FormValues) => {
-    setSubmitting(true);
-    try {
-      const tags = values.tagsRaw
-        ? values.tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
-        : [];
-      const brands = values.brandsRaw
-        ? values.brandsRaw.split(",").map((b) => b.trim()).filter(Boolean)
-        : [];
+  const updateMutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const tags = values.tagsRaw ? values.tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
+      const compatibleBrands = values.brandsRaw ? values.brandsRaw.split(",").map((b) => b.trim()).filter(Boolean) : [];
 
       const payload = {
-        originalSku: values.originalSku.trim(),
         name: values.name,
         description: values.description ?? "",
         price: Number(values.price),
-        originalPrice: values.originalPrice ? Number(values.originalPrice) : undefined,
+        originalPrice: values.originalPrice ? Number(values.originalPrice) : null,
         category: values.category,
-        subcategory: values.subcategory?.trim() || undefined,
+        subcategory: values.subcategory?.trim() || null,
         supplier: values.supplier ?? "",
+        imageUrl: values.imageUrl?.trim() || null,
         inStock: values.inStock,
         tags,
-        compatibleBrands: brands,
+        compatibleBrands,
         specifications: specs,
       };
 
-      const res = await fetch("/api/admin/products", { credentials: "include",
-        method: "POST",
+      const res = await fetch(`/api/admin/products/${encodedSku}`, {
+        credentials: "include",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const parsed = await parseApiResponseBody(res);
+      if (!res.ok) throw new Error(readApiErrorMessage(res, parsed, "Failed to save product"));
+      return parsed.json;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["admin-product", sku] });
+      qc.invalidateQueries({ queryKey: ["admin-categories-list"] });
+      toast({ title: "Product updated", description: `${sku} saved.` });
+      setLocation("/admin/products");
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "Failed to create product");
-      }
-
-      const { product, sku } = await res.json();
-
-      toast({
-        title: "Product created",
-        description: `${product.name} saved as ${sku}`,
-      });
-
-      form.reset();
-      setSpecs({});
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+  const onSubmit = async (values: FormValues) => {
+    setSubmitting(true);
+    try {
+      await updateMutation.mutateAsync(values);
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (isLoading || !hydrated) {
+    if (isError) {
+      return (
+        <div className="p-8">
+          <AdminQueryError error={error} onRetry={refetch} />
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center justify-center gap-3 py-24 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" /> Loading product…
+      </div>
+    );
+  }
+
+  // Ensure the product's saved category is selectable even if it isn't in the
+  // categories table (free-text legacy values) — otherwise saving would silently
+  // move the product to whatever option happens to be first in the list.
+  const categoryOptions = (() => {
+    const names = (categories ?? []).map((c) => c.name);
+    if (product && !names.includes(product.category)) names.unshift(product.category);
+    return names;
+  })();
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
-      <PageSeo title="Admin — Add New Product" path="/admin/products/new" noIndex />
+      <PageSeo title={`Admin — Edit ${product?.name ?? sku}`} path={`/admin/products/${sku}/edit`} noIndex />
 
       {/* Header */}
       <div className="bg-slate-900 text-white py-6 px-6">
         <div className="flex items-center gap-4 max-w-4xl">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-slate-300 hover:text-white hover:bg-slate-700 gap-1.5"
-            onClick={() => setLocation("/admin/products")}
-          >
-            <ArrowLeft className="w-4 h-4" /> Products
-          </Button>
+          <Link href="/admin/products">
+            <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-700 gap-1.5">
+              <ArrowLeft className="w-4 h-4" /> Products
+            </Button>
+          </Link>
           <div className="h-5 w-px bg-slate-600" />
           <div>
-            <h1 className="text-xl font-bold">Add New Product</h1>
-            <p className="text-slate-400 text-xs mt-0.5">
-              AWDP SKU is encoded from the supplier's original part number using the PROFITABLE cipher
-            </p>
+            <h1 className="text-xl font-bold">Edit Product</h1>
+            <p className="text-slate-400 text-xs mt-0.5 font-mono">{sku}</p>
           </div>
         </div>
       </div>
@@ -215,61 +232,6 @@ export default function AdminNewProduct() {
       <div className="px-6 max-w-4xl py-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
-            {/* SKU Encoding card */}
-            <div className="bg-white border-2 border-dashed border-primary/30 rounded-xl p-5">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                SKU Encoding — Supplier Part No. → AWDP SKU
-              </div>
-
-              <FormField control={form.control} name="originalSku" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-semibold">Supplier / Original Part Number <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g. 35-1234, TRUTH-35-1234, 9021032"
-                      className="font-mono text-base tracking-wide"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    The manufacturer's or distributor's original part number — this is what gets encoded
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              {/* Live preview */}
-              {originalSkuWatch.trim() && (
-                <div className="mt-4 flex items-center gap-3 flex-wrap">
-                  <div className="bg-slate-100 rounded-lg px-3 py-2 font-mono text-sm text-slate-600">
-                    {originalSkuWatch.trim().toUpperCase()}
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="font-mono text-xl font-bold text-primary tracking-widest bg-primary/5 rounded-lg px-4 py-2 border border-primary/20">
-                    {previewSku}
-                  </div>
-                </div>
-              )}
-
-              {!originalSkuWatch.trim() && (
-                <div className="mt-4 text-sm text-muted-foreground italic">
-                  Enter the supplier part number above to see the encoded AWDP SKU
-                </div>
-              )}
-
-              {/* Cipher key reference */}
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-xs text-muted-foreground font-medium mb-2">PROFITABLE key (bidirectional):</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {["P=1","R=2","O=3","F=4","I=5","T=6","A=7","B=8","L=9","E=0"].map((k) => (
-                    <span key={k} className="bg-slate-100 rounded px-2 py-0.5 text-xs font-mono text-slate-600">{k}</span>
-                  ))}
-                  <span className="text-xs text-muted-foreground self-center ml-1">· all other characters pass through</span>
-                </div>
-              </div>
-            </div>
 
             {/* Product Info */}
             <div className="bg-white rounded-xl border shadow-sm p-6 space-y-5">
@@ -281,7 +243,7 @@ export default function AdminNewProduct() {
                 <FormItem>
                   <FormLabel>Product Name <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g. Marvin Casement Operator, Right Hand" className="font-medium" />
+                    <Input {...field} className="font-medium" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -291,16 +253,45 @@ export default function AdminNewProduct() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={4} placeholder="Include part details, dimensions, compatible window/door brands and models…" />
+                    <Textarea {...field} rows={4} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
 
               <div className="grid sm:grid-cols-2 gap-4">
+                <FormField control={form.control} name="supplier" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Supplier / Brand</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Marvin, Alcosupply, Strybuc…" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="imageUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5" /> Image URL</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="https://…" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </div>
+
+            {/* Category */}
+            <div className="bg-white rounded-xl border shadow-sm p-6 space-y-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 pb-2 border-b">
+                <FolderTree className="w-4 h-4 text-primary" /> Category
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
                 <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1.5"><FolderTree className="w-3.5 h-3.5" /> Category <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <select
                         {...field}
@@ -326,16 +317,6 @@ export default function AdminNewProduct() {
                   </FormItem>
                 )} />
               </div>
-
-              <FormField control={form.control} name="supplier" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Supplier / Brand</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Marvin, Alcosupply, Strybuc…" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
             </div>
 
             {/* Pricing */}
@@ -471,34 +452,21 @@ export default function AdminNewProduct() {
             </div>
 
             {/* Submit */}
-            <div className="flex items-center justify-between gap-4 pt-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Info className="w-4 h-4 shrink-0" />
-                {previewSku
-                  ? <span>Will be saved as <span className="font-mono font-semibold text-slate-700">{previewSku}</span></span>
-                  : <span>Enter the supplier part number to see your AWDP SKU</span>
-                }
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => { form.reset(); setSpecs({}); }}
-                >
-                  Clear
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-green-600 hover:bg-green-700 text-white gap-2 px-8"
-                >
-                  {submitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-                  ) : (
-                    <><CheckCircle2 className="w-4 h-4" /> Save Product</>
-                  )}
-                </Button>
-              </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Link href="/admin/products">
+                <Button type="button" variant="outline">Cancel</Button>
+              </Link>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-green-600 hover:bg-green-700 text-white gap-2 px-8"
+              >
+                {submitting ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                ) : (
+                  <><CheckCircle2 className="w-4 h-4" /> Save Changes</>
+                )}
+              </Button>
             </div>
 
           </form>

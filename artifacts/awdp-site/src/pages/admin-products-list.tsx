@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Search, PlusCircle, Edit2, Trash2, Check, X,
+  Search, PlusCircle, Edit2, Pencil, Trash2, Check, X,
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Package, ExternalLink, RefreshCw, Download, Upload, Loader2,
 } from "lucide-react";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { parseApiResponseBody, readApiErrorMessage, readNumberField, readStringArrayField } from "@/lib/api-response";
 import { AdminQueryError } from "@/components/admin/admin-error";
+import { productPath } from "@/lib/product-url.mjs";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -557,8 +558,9 @@ export default function AdminProductsList() {
                               </>
                             ) : (
                               <>
-                                <button onClick={() => startEdit(p)} className="p-1 rounded hover:bg-blue-100 text-blue-600"><Edit2 className="w-3.5 h-3.5" /></button>
-                                <a href={`/product/${p.sku}`} className="p-1 rounded hover:bg-slate-100 text-slate-500" target="_blank" rel="noreferrer"><ExternalLink className="w-3.5 h-3.5" /></a>
+                                <button onClick={() => startEdit(p)} title="Quick edit (name, description, supplier, price)" className="p-1 rounded hover:bg-blue-100 text-blue-600"><Edit2 className="w-3.5 h-3.5" /></button>
+                                <Link href={`/admin/products/${encodeURIComponent(p.sku)}/edit`} title="Full edit (category, image, tags, specs…)" className="p-1 rounded hover:bg-blue-100 text-blue-600"><Pencil className="w-3.5 h-3.5" /></Link>
+                                <a href={productPath(p.sku)} className="p-1 rounded hover:bg-slate-100 text-slate-500" target="_blank" rel="noreferrer"><ExternalLink className="w-3.5 h-3.5" /></a>
                                 <button onClick={() => setPendingDeleteSku(p.sku)} className="p-1 rounded hover:bg-red-100 text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                               </>
                             )}

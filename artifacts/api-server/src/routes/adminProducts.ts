@@ -71,6 +71,7 @@ const CreateProductSchema = z.object({
   price: z.number().positive(),
   originalPrice: z.number().positive().optional(),
   category: z.string().min(1),
+  subcategory: z.string().optional(),
   supplier: z.string().default(""),
   inStock: z.boolean().default(true),
   tags: z.array(z.string()).default([]),
@@ -149,6 +150,23 @@ router.get("/admin/products", async (req, res) => {
   }
 });
 
+// GET /api/admin/products/:sku — fetch a single product (admin, all fields, no visibility filter)
+router.get("/admin/products/:sku", async (req, res) => {
+  try {
+    const { sku } = req.params;
+    const [product] = await db
+      .select()
+      .from(productsTable)
+      .where(eq(productsTable.sku, sku))
+      .limit(1);
+
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    res.json({ product });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/admin/products — create a new product
 router.post("/admin/products", async (req, res) => {
   try {
@@ -169,6 +187,7 @@ router.post("/admin/products", async (req, res) => {
         price: String(data.price.toFixed(2)),
         originalPrice: data.originalPrice ? String(data.originalPrice.toFixed(2)) : undefined,
         category: data.category,
+        subcategory: data.subcategory || null,
         supplier: data.supplier,
         inStock: data.inStock,
         tags: data.tags,
@@ -191,7 +210,10 @@ router.post("/admin/products", async (req, res) => {
 router.patch("/admin/products/:sku", async (req, res) => {
   try {
     const { sku } = req.params;
-    const { name, description, price, originalPrice, inStock, supplier, tags, compatibleBrands, specifications } = req.body;
+    const {
+      name, description, price, originalPrice, inStock, supplier,
+      tags, compatibleBrands, specifications, category, subcategory, imageUrl,
+    } = req.body;
 
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
@@ -203,6 +225,14 @@ router.patch("/admin/products/:sku", async (req, res) => {
     if (tags !== undefined) updates.tags = tags;
     if (compatibleBrands !== undefined) updates.compatibleBrands = compatibleBrands;
     if (specifications !== undefined) updates.specifications = specifications;
+    if (category !== undefined) {
+      if (typeof category !== "string" || !category.trim()) {
+        return res.status(400).json({ error: "category must be a non-empty string" });
+      }
+      updates.category = category;
+    }
+    if (subcategory !== undefined) updates.subcategory = subcategory ? String(subcategory) : null;
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl ? String(imageUrl) : null;
 
     const [updated] = await db
       .update(productsTable)

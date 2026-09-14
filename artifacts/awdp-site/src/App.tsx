@@ -43,6 +43,7 @@ const AdminLogin = lazy(() => import("./pages/admin-login.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin-dashboard.jsx"));
 const AdminProductsList = lazy(() => import("./pages/admin-products-list.jsx"));
 const AdminNewProduct = lazy(() => import("./pages/admin-new-product.jsx"));
+const AdminEditProduct = lazy(() => import("./pages/admin-edit-product.jsx"));
 const AdminOrders = lazy(() => import("./pages/admin-orders.jsx"));
 const AdminCategories = lazy(() => import("./pages/admin-categories.jsx"));
 const AdminPartsIdList = lazy(() => import("./pages/admin-parts-id-list.jsx"));
@@ -177,6 +178,7 @@ function AdminRoutes() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/products/new" component={AdminNewProduct} />
               <Route path="/admin/products/bulk-editor" component={AdminBulkEditor} />
+              <Route path="/admin/products/:sku/edit" component={AdminEditProduct} />
               <Route path="/admin/products/import-package" component={AdminProductPackageImport} />
               <Route path="/admin/products" component={AdminProductsList} />
               <Route path="/admin/orders" component={AdminOrders} />
