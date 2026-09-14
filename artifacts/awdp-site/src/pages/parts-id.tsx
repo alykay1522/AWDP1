@@ -305,7 +305,22 @@ export default function PartsIdentification() {
           <Shield className="w-3.5 h-3.5" /> FREE PARTS IDENTIFICATION
         </div>
         <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">Find My Part</h1>
-        <p className="text-primary-foreground/80 max-w-xl mx-auto text-lg">Tell us about the part, attach a clear photo, and our team will help identify it.</p>
+        <p className="text-primary-foreground/80 max-w-2xl mx-auto text-lg">
+          A clear, well-lit photo from a few feet back tells us more than any description. Include how many you need,
+          the color or finish, measurements, what it came out of (sash, frame, screen, door panel), and any brand names
+          or numbers stamped on the hardware. Send what you have — we’ll work from there.
+        </p>
+        <p className="text-primary-foreground/70 max-w-2xl mx-auto mt-3 text-sm">
+          We help customers nationwide find discontinued hardware and parts for older brands and models. New to this?{" "}
+          <a
+            href="https://youtu.be/Mdwg9CjQtDM"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-2 hover:text-white"
+          >
+            Watch the photo guide.
+          </a>
+        </p>
       </div>
 
       <div className="bg-white border-b sticky top-0 z-30">
@@ -369,7 +384,22 @@ export default function PartsIdentification() {
 
           {step === 2 && (
             <div className="space-y-6">
-              <div className="text-center"><h2 className="text-2xl font-serif font-bold text-slate-900">Upload a clear photo</h2><p className="text-slate-500 mt-1">The photo is optimized before submission so it reaches us reliably.</p></div>
+              <div className="text-center">
+                <h2 className="text-2xl font-serif font-bold text-slate-900">Upload a clear photo</h2>
+                <p className="text-slate-600 mt-2 max-w-xl mx-auto">
+                  Upload clear, well-lit photos from a few feet back, plus measurements, quantity, and any numbers
+                  stamped on the part. Not sure what to shoot?{" "}
+                  <a
+                    href="https://youtu.be/Mdwg9CjQtDM"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary underline underline-offset-2"
+                  >
+                    Watch the photo guide.
+                  </a>
+                </p>
+                <p className="text-slate-400 text-sm mt-2">The photo is optimized before submission so it reaches us reliably.</p>
+              </div>
               <div className="bg-white rounded-2xl border shadow-sm p-6">
                 <input
                   id="photo-upload"
