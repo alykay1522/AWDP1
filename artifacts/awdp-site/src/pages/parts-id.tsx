@@ -28,6 +28,7 @@ import {
 import { ErrorBoundary } from "@/components/error-boundary";
 import { analytics } from "@/lib/analytics";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { profileEndView, profileEndViewWebp } from "@/lib/assetUrls";
 
 const partsIdSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -399,6 +400,27 @@ export default function PartsIdentification() {
                   </a>
                 </p>
                 <p className="text-slate-400 text-sm mt-2">The photo is optimized before submission so it reaches us reliably.</p>
+              </div>
+
+              <div className="bg-white rounded-2xl border shadow-sm p-6">
+                <h3 className="font-serif text-lg font-bold text-slate-900">What we mean by “profile” or “end view”</h3>
+                <p className="text-sm text-slate-600 mt-2">
+                  For weatherstrip, gasket, glazing bead, or trim, the shape of the cut end is what identifies the
+                  part — not its length. Photograph the end straight on, with a ruler or tape measure next to it if
+                  you can.
+                </p>
+                <picture>
+                  <source srcSet={profileEndViewWebp} type="image/webp" />
+                  <img
+                    src={profileEndView}
+                    alt="Examples of window and door part profiles and end views: cross-section drawings with measurements, and photos of weatherstrip and gasket ends showing their shapes"
+                    width={491}
+                    height={443}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full max-w-md mx-auto mt-4 rounded-xl border bg-white"
+                  />
+                </picture>
               </div>
               <div className="bg-white rounded-2xl border shadow-sm p-6">
                 <input
